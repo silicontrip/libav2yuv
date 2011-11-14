@@ -45,7 +45,7 @@
 			{
 				// DEBUG: print out codec
 				//			fprintf (stderr,"Video Codec ID: %d (%s)\n",pFormatCtx->streams[i]->codec->codec_id ,pFormatCtx->streams[i]->codec->codec_name);
-				if (avStream == -1 && st == 0) {
+				if (avStream == -1 && streamNumber == 0) {
 					// May still be overridden by the -s option
 					avStream=i;
 				}
@@ -61,9 +61,9 @@
 			return nil; // Didn't find the requested stream
 		}
 		
-	pCodecCtx = pFormatCtx->streams[avStream]->codec
+		pCodecCtx = pFormatCtx->streams[avStream]->codec;
 		pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
-
+		
 		if(pCodec==NULL) {
 			NSLog(@"initWithFile: could not find codec");
 			[self release];
@@ -80,18 +80,47 @@
 				[self release];
 				return nil; // Could not open codec
 			}
-			
+		
+		pFrame=avcodec_alloc_frame();
 		
 		return self;
-		
 	}
-	
-	- (void)dumpFormat {	
+	return nil;
+}
+
+- (void)dumpFormat {	
 #if LIBAVFORMAT_VERSION_MAJOR  < 53
-		dump_format(pFormatCtx, 0, NULL, 0);
+	dump_format(pFormatCtx, 0, NULL, 0);
 #else
-		av_dump_format(pFormatCtx, 0, NULL, 0);
+	av_dump_format(pFormatCtx, 0, NULL, 0);
 #endif
-	}
-	
-	@end
+}
+
+-(void)readFrame {
+	;
+}
+
+- (int)getFrameRateNum {
+	return pFormatCtx->streams[avStream]->r_frame_rate.num;
+}
+- (int)getFrameRateDen {
+	return pFormatCtx->streams[avStream]->r_frame_rate.den;
+}
+
+- (int)getSampleAspectNum {
+	return pCodecCtx-> sample_aspect_ratio.num;
+}
+- (int)getSampleAspectDen {
+	pCodecCtx-> sample_aspect_ratio.den;
+}
+- (int)getChromaSampling {
+	return pCodecCtx->pix_fmt;
+}
+- (int)getHeight {
+	return pCodecCtx->height;
+}
+- (int)getWidth {
+	return pCodecCtx->width;
+}
+
+@end

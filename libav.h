@@ -21,11 +21,12 @@
 	AVFrame *pFrame;
 	AVPacket packet;
 	
+	int avStream;
 	int frameCounter;
 	
 }
 
-- (void)initWithFile:(char *)filename;
+- (id)initWithFile:(char *)filename:(int)streamType:(int)streamNumber;
 - (void)dumpFormat;
 - (void)readFrame;
 - (int)getFrameRateNum;
