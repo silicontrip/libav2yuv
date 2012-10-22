@@ -3,7 +3,7 @@
 //  
 //
 //  Created by Mark Heath on 15/11/11.
-//  Copyright 2011 . All rights reserved.
+//  Copyright 2011. All rights reserved.
 //
 
 #import "libav.h"
@@ -11,12 +11,22 @@
 
 @implementation libav
 
-- (id)initWithFile:(char *)filename:(int)streamType:(int)streamNumber {
+- (id)initVideoWithFile:(char *)filename {
+	return [self initWithFile:filename:AVMEDIA_TYPE_VIDEO:0];
+}
+
+- (id)initAudioWithFile:(char *)filename {
+	return [self initWithFile:filename:AVMEDIA_TYPE_AUDIO:0];
+}
+
+- (id)initWithFile:(char *)filename:(int)st:(int)streamNumber {
 	
 	self = [super init];
 	
 	CFIndex i;
 	avStream = -1;
+	
+	streamType = st;
 	
 	if (self) {
 #if LIBAVFORMAT_VERSION_MAJOR  < 53
@@ -40,11 +50,14 @@
 			}
 		
 		
-		for(i=0; i<pFormatCtx->nb_streams; i++)
+		for(i=0; i<pFormatCtx->nb_streams; i++) {
+			if (pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO) {
+				frameRate.num = pFormatCtx->streams[i]->r_frame_rate.num;
+				frameRate.den = pFormatCtx->streams[i]->r_frame_rate.den;
+			}
 			if(pFormatCtx->streams[i]->codec->codec_type==streamType)
 			{
 				// DEBUG: print out codec
-				//			fprintf (stderr,"Video Codec ID: %d (%s)\n",pFormatCtx->streams[i]->codec->codec_id ,pFormatCtx->streams[i]->codec->codec_name);
 				if (avStream == -1 && streamNumber == 0) {
 					// May still be overridden by the -s option
 					avStream=i;
@@ -54,7 +67,7 @@
 					break;
 				}
 			}
-		
+		}
 		if(avStream==-1) {
 			NSLog(@"initWithFile: could not find an AV stream");
 			[self release];
@@ -82,6 +95,11 @@
 			}
 		
 		pFrame=avcodec_alloc_frame();
+		if (pFrame == NULL) {
+			NSLog(@"initWithFile: avmalloc pFrame");
+			[self release];
+			return nil;
+		}
 		
 		return self;
 	}
@@ -97,14 +115,38 @@
 }
 
 -(void)readFrame {
-	;
+	
+	av_read_frame(pFormatCtx, &packet);
+	if(packet.stream_index==avStream)
+	{
+		frameCounter ++;
+	}
+	
+}
+
+-(void)decodeFrame {
+	int frameFinished;
+#if LIBAVCODEC_VERSION_MAJOR < 52
+	 avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
+#else
+	 avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+	
+#endif
+	if (frameFinished) {
+#if LIBAVCODEC_VERSION_MAJOR < 52 
+		av_freep(&packet);
+#else
+		av_free_packet(&packet);
+#endif
+	}
+	
 }
 
 - (int)getFrameRateNum {
-	return pFormatCtx->streams[avStream]->r_frame_rate.num;
+	return frameRate.num;
 }
 - (int)getFrameRateDen {
-	return pFormatCtx->streams[avStream]->r_frame_rate.den;
+	return frameRate.den;
 }
 
 - (int)getSampleAspectNum {
@@ -122,5 +164,20 @@
 - (int)getWidth {
 	return pCodecCtx->width;
 }
+
+- (int)getFrameCounter {
+	return frameCounter;
+}
+
+- (void)setIn:(int)fin {
+	// validate
+	frameIn = fin;
+}
+
+- (void)setOut:(int)fout {
+	// validate
+	frameOut = fout;
+}
+
 
 @end

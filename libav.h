@@ -23,12 +23,21 @@
 	
 	int avStream;
 	int frameCounter;
+	int streamType;
+	int frameIn;
+	int frameOut;
+	
+	AVRational frameRate;
+	AVRational sampleAspect;
 	
 }
 
 - (id)initWithFile:(char *)filename:(int)streamType:(int)streamNumber;
+- (id)initVideoWithFile:(char *)filename;
+- (id)initAudioWithFile:(char *)filename;
 - (void)dumpFormat;
 - (void)readFrame;
+- (void)decodeFrame;
 - (int)getFrameRateNum;
 - (int)getFrameRateDen;
 - (int)getSampleAspectNum;
@@ -36,6 +45,10 @@
 - (int)getChromaSampling;
 - (int)getHeight;
 - (int)getWidth;
+- (int)getFrameCounter;
+- (void)setIn:(int)fin;
+- (void)setOut:(int)fout;
+
 
 
 
