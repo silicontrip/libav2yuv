@@ -8,7 +8,6 @@
 
 #import "libav.h"
 
-
 @implementation libav
 
 - (id)initVideoWithFile:(char *)filename {
@@ -23,18 +22,27 @@
 	
 	self = [super init];
 	
+	pFormatCtx = nil;
+	avif = nil;
 	CFIndex i;
 	avStream = -1;
-	
 	streamType = st;
 	
+	lavFileName = [[NSString alloc] initWithUTF8String:filename];
+	
+	[self setIn:0];
+	[self setOut:INT32_MAX];
+	
 	if (self) {
+		av_register_all();
+
 #if LIBAVFORMAT_VERSION_MAJOR  < 53
 		if(av_open_input_file(&pFormatCtx, filename, avif, 0, NULL)!=0) 
 #else
 			if(avformat_open_input(&pFormatCtx, filename, avif, NULL)!=0) 
 #endif
 			{
+				NSLog(@"initWithFile: avformat_open_input failed to open: %s",filename);
 				[self release];
 				return nil;
 			}
@@ -45,6 +53,8 @@
 			if(avformat_find_stream_info(pFormatCtx,NULL)<0) 
 #endif
 			{
+				NSLog(@"initWithFile: avformat_find_stream_info failed");
+
 				[self release];
 				return nil; // Couldn't find stream information
 			}
@@ -107,10 +117,13 @@
 }
 
 - (void)dumpFormat {	
+	
+	//NSLog (@"filename: %@",[self getFilename]);
+	
 #if LIBAVFORMAT_VERSION_MAJOR  < 53
-	dump_format(pFormatCtx, 0, NULL, 0);
+	dump_format(pFormatCtx, 0, [[self getFilename] UTF8String], 0);
 #else
-	av_dump_format(pFormatCtx, 0, NULL, 0);
+	av_dump_format(pFormatCtx, 0, [[self getFilename] UTF8String], 0);
 #endif
 }
 
@@ -153,7 +166,7 @@
 	return pCodecCtx-> sample_aspect_ratio.num;
 }
 - (int)getSampleAspectDen {
-	pCodecCtx-> sample_aspect_ratio.den;
+	return pCodecCtx-> sample_aspect_ratio.den;
 }
 - (int)getChromaSampling {
 	return pCodecCtx->pix_fmt;
@@ -167,6 +180,10 @@
 
 - (int)getFrameCounter {
 	return frameCounter;
+}
+
+- (NSString *)getFilename {
+	return lavFileName;
 }
 
 - (void)setIn:(int)fin {

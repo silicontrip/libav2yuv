@@ -680,10 +680,11 @@ int open_av_file (AVFormatContext **pfc, char *fn, AVInputFormat *avif, int st, 
 	
 	// Open codec
 #if LIBAVCODEC_VERSION_MAJOR < 53 
-	if(avcodec_open(pCodecCtx, *pCodec)<0) {
+	if(avcodec_open(pCodecCtx, *pCodec)<0) 
 #else
-	if(avcodec_open2(pCodecCtx, *pCodec,NULL)<0) {
+	if(avcodec_open2(pCodecCtx, *pCodec,NULL)<0) 
 #endif
+	{
 		mjpeg_error("open_av_file: could not open codec");
 		return -1; // Could not open codec
 	}

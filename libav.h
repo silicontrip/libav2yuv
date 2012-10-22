@@ -7,6 +7,9 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import <Foundation/NSString.h>
+
+#include <stdint.h>
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
@@ -20,6 +23,8 @@
 	AVCodec *pCodec;
 	AVFrame *pFrame;
 	AVPacket packet;
+	
+	NSString *lavFileName;
 	
 	int avStream;
 	int frameCounter;
@@ -46,6 +51,7 @@
 - (int)getHeight;
 - (int)getWidth;
 - (int)getFrameCounter;
+- (NSString *)getFilename;
 - (void)setIn:(int)fin;
 - (void)setOut:(int)fout;
 
