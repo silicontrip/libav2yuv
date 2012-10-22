@@ -62,8 +62,7 @@
 		
 		for(i=0; i<pFormatCtx->nb_streams; i++) {
 			if (pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO) {
-				frameRate.num = pFormatCtx->streams[i]->r_frame_rate.num;
-				frameRate.den = pFormatCtx->streams[i]->r_frame_rate.den;
+				[self setFrameRate:pFormatCtx->streams[i]->r_frame_rate];
 			}
 			if(pFormatCtx->streams[i]->codec->codec_type==streamType)
 			{
@@ -111,15 +110,18 @@
 			return nil;
 		}
 		
+		[self setSampleAspect:pCodecCtx->sample_aspect_ratio];
+		[self setChromaSampling:pCodecCtx->pix_fmt];
+		[self setHeight:pCodecCtx->height];
+		[self setWidth:pCodecCtx->width];
+
+		
 		return self;
 	}
 	return nil;
 }
 
 - (void)dumpFormat {	
-	
-	//NSLog (@"filename: %@",[self getFilename]);
-	
 #if LIBAVFORMAT_VERSION_MAJOR  < 53
 	dump_format(pFormatCtx, 0, [[self getFilename] UTF8String], 0);
 #else
@@ -127,14 +129,25 @@
 #endif
 }
 
--(void)readFrame {
+// think I might deprecate readFrame and decodeFrame before they even became production ready.
+-(int)readFrame {
 	
-	av_read_frame(pFormatCtx, &packet);
-	if(packet.stream_index==avStream)
-	{
+	int bytes;
+	
+	do {
+		bytes = av_read_frame(pFormatCtx, &packet);
+	// or end of file
+	// or outside of in and out
+		while (packet.stream_index != avStream && bytes >=0 )
+			bytes = av_read_frame(pFormatCtx, &packet);
+
+//	if(packet.stream_index==avStream)
+//	{
 		frameCounter ++;
-	}
+//	}
+	} while (frameCounter < [self getIn]);
 	
+	return bytes;
 }
 
 -(void)decodeFrame {
@@ -155,22 +168,6 @@
 	
 }
 
-- (int)getFrameRateNum {
-	return frameRate.num;
-}
-- (int)getFrameRateDen {
-	return frameRate.den;
-}
-
-- (int)getSampleAspectNum {
-	return pCodecCtx-> sample_aspect_ratio.num;
-}
-- (int)getSampleAspectDen {
-	return pCodecCtx-> sample_aspect_ratio.den;
-}
-- (int)getChromaSampling {
-	return pCodecCtx->pix_fmt;
-}
 - (int)getHeight {
 	return pCodecCtx->height;
 }
@@ -178,23 +175,8 @@
 	return pCodecCtx->width;
 }
 
-- (int)getFrameCounter {
-	return frameCounter;
-}
-
 - (NSString *)getFilename {
 	return lavFileName;
 }
-
-- (void)setIn:(int)fin {
-	// validate
-	frameIn = fin;
-}
-
-- (void)setOut:(int)fout {
-	// validate
-	frameOut = fout;
-}
-
 
 @end

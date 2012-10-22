@@ -11,8 +11,9 @@ FFMPEG_FLAGS= -lswscale -lavcodec -lavformat -lavutil
 
 all: test1
 
-libav.o: libav.m libav.h
+libav.o: libav.m libav.h AVObject.o
 
+AVObject.o: AVObject.m AVObject.h
 
 test1: test1.o libav.o
-	$(CC) $(COCOAFLAGS) $(FFMPEG_FLAGS) $(MJPEGFLAGS) $(LDFLAGS) -o test1 $< libav.o
+	$(CC) $(COCOAFLAGS) $(FFMPEG_FLAGS) $(MJPEGFLAGS) $(LDFLAGS) -o test1 $< libav.o AVObject.o
