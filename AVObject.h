@@ -23,8 +23,10 @@
 
 - (id)init;
 - (id)initWithChroma:(int)ch height:(int)h width:(int)w;
+- (AVRational)getFrameRate;
 - (int)getFrameRateNum;
 - (int)getFrameRateDen;
+- (AVRational)getSampleAspect;
 - (int)getSampleAspectNum;
 - (int)getSampleAspectDen;
 - (int)getChromaSampling;

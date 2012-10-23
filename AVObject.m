@@ -31,11 +31,21 @@
 	return self;
 }
 
+- (AVRational)getFrameRate
+{
+	return frameRate;
+}
+
 - (int)getFrameRateNum {
 	return frameRate.num;
 }
 - (int)getFrameRateDen {
 	return frameRate.den;
+}
+
+- (AVRational)getSampleAspect
+{
+	return sampleAspect;
 }
 
 - (int)getSampleAspectNum {

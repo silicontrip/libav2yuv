@@ -22,6 +22,18 @@
 	return self;
 }
 
+- (id)initWithWidth:(int)w Height:(int)h Chroma:(int)ch
+{
+	[self init];
+	
+	[self setWidth:w];
+	[self setHeight:h];
+	[self setChromaSampling:ch];
+
+	return self;
+	
+}
+
 - (id)initWithWidth:(int)w Height:(int)h  SampleAspect:(y4m_ratio_t)sa FrameRate:(y4m_ratio_t)fr Chroma:(int)ch
 {
 	[self init];
@@ -33,6 +45,20 @@
 	[self setChromaSampling:ch];
 	
 	return self;
+}
+
+- (id)initWithWidth:(int)w Height:(int)h SampleAspectAVRational:(AVRational)sa FrameRateAVRational:(AVRational)fr Chroma:(int)ch
+{
+	[self init];
+	
+	[self setWidth:w];
+	[self setHeight:h];
+	[self setSampleAspectAVRational:sa];
+	[self setFrameRateAVRational:fr];
+	[self setChromaSampling:ch];
+	
+	return self;
+	
 }
 
 - (void)allocFrameData
@@ -54,7 +80,10 @@
 
 - (int)setOutputFilename:(char *)filename
 {
-	return -1;
+
+	fdOut = open(filename,O_WRONLY|O_CREAT);
+	return fdOut;
+	
 }
 
 - (void)setOutputFd:(int)fd 
@@ -65,9 +94,43 @@
 - (void)setWidth:(int)w { y4m_si_set_width(&yuvStreamInfo, w); }
 - (void)setHeight:(int)h { y4m_si_set_height(&yuvStreamInfo, h); }
 - (void)setInterlacing:(int)i { y4m_si_set_interlace(&yuvStreamInfo,i); }
+- (void)setInterlaceAndOrder:(int)i topFieldFirst:(int)tff
+{
+
+	if (i) {
+		if (tff) {
+			[self setInterlacing:Y4M_ILACE_TOP_FIRST];
+		} else {
+			[self setInterlacing:Y4M_ILACE_BOTTOM_FIRST];
+		}
+	} else {
+		[self setInterlacing:Y4M_ILACE_NONE];
+	}
+	
+	
+}
+
 - (void)setChromaSampling:(int)ch { y4m_si_set_chroma(&yuvStreamInfo,ch); }
 - (void)setFrameRate:(y4m_ratio_t)fr { y4m_si_set_framerate(&yuvStreamInfo, fr); }
+- (void)setFrameRateAVRational:(AVRational)rational
+{
+	y4m_ratio_t fr;
+	
+	fr.d = rational.den;
+	fr.n = rational.num;
+	y4m_si_set_framerate(&yuvStreamInfo, fr);
+}
+
 - (void)setSampleAspect:(y4m_ratio_t)sa { y4m_si_set_sampleaspect(&yuvStreamInfo, sa); }
+- (void)setSampleAspectAVRational:(AVRational)rational
+{
+	y4m_ratio_t sa;
+	
+	sa.d = rational.den;
+	sa.n = rational.num;
+	y4m_si_set_sampleaspect(&yuvStreamInfo, sa);
+}
+
 
 - (int)writeHeader 
 {

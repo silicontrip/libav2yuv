@@ -2,6 +2,7 @@
 #import <Cocoa/Cocoa.h>
 #include <yuv4mpeg.h>
 #include <mpegconsts.h>
+#include <libavformat/avformat.h>
 
 
 @interface libyuv : NSObject {
@@ -20,26 +21,26 @@
 
 }
 - (id)init;
-- (id)initWithWidth:(int)w Height:(int)h  SampleAspect:(y4m_ratio_t)sa FrameRate:(y4m_ratio_t)fr Chroma:(int)ch;
+- (id)initWithWidth:(int)w Height:(int)h SampleAspect:(y4m_ratio_t)sa FrameRate:(y4m_ratio_t)fr Chroma:(int)ch;
+- (id)initWithWidth:(int)w Height:(int)h SampleAspectAVRational:(AVRational)sa FrameRateAVRational:(AVRational)fr Chroma:(int)ch;
+- (id)initWithWidth:(int)w Height:(int)h Chroma:(int)ch;
+
 - (void)allocFrameData;
 
 - (int)setOutputFilename:(char *)filename; // returns -1 on failure
 - (void)setOutputFd:(int)fd;
 
 - (void)setWidth:(int)w;
-- (void)setHeight:(int)w;
+- (void)setHeight:(int)h;
 - (void)setInterlacing:(int)i;
-//- (void)setSampleAspectNum:(int)num;
-//- (void)setSampleAspectDen:(int)den;
-- (void)setSampleAspect:(y4m_ratio_t)ratio;
-//- (void)setFrameRateNum:(int)num;
-//- (void)setFrameRateDen:(int)den;
-- (void)setFrameRate:(y4m_ratio_t)ratio;
+- (void)setInterlaceAndOrder:(int)i topFieldFirst:(int)tff;
+- (void)setSampleAspect:(y4m_ratio_t)sa;
+- (void)setSampleAspectAVRational:(AVRational)rational;
+- (void)setFrameRate:(y4m_ratio_t)fr;
+- (void)setFrameRateAVRational:(AVRational)rational;
 - (void)setChromaSampling:(int)ch;
-
 - (int)writeHeader;
 - (int)write;
-
 - (uint8_t **)getYUVFramePointer;
 - (void)setYUVFramePointer:(uint8_t *[])m;
 
