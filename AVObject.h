@@ -1,6 +1,7 @@
 #import <Cocoa/Cocoa.h>
 #include <libavutil/rational.h>
 #include <libavutil/pixfmt.h>
+#include <stdint.h>
 
 @interface AVObject : NSObject {
 
@@ -18,6 +19,8 @@
 	
 	}
 
+- (id)init;
+- (id)initWithChroma:(int)ch height:(int)h width:(int)w;
 - (int)getFrameRateNum;
 - (int)getFrameRateDen;
 - (int)getSampleAspectNum;
@@ -43,10 +46,8 @@
 - (void)setHeight:(int)hei;
 - (void)setWidth:(int)wid;
 
-
-
 // trying to think of the default call to get frame data
 // and behaviour when outside the set in out points.
-//- (int) decodeNextFrameToYUV:(uint8_t) **m;
+- (int) decodeNextFrameToYUV:(uint8_t **)m;
 
 @end

@@ -29,10 +29,7 @@
 	streamType = st;
 	
 	lavFileName = [[NSString alloc] initWithUTF8String:filename];
-	
-	[self setIn:0];
-	[self setOut:INT32_MAX];
-	
+		
 	if (self) {
 		av_register_all();
 
@@ -166,13 +163,6 @@
 #endif
 	}
 	
-}
-
-- (int)getHeight {
-	return pCodecCtx->height;
-}
-- (int)getWidth {
-	return pCodecCtx->width;
 }
 
 - (NSString *)getFilename {

@@ -15,5 +15,7 @@ libav.o: libav.m libav.h AVObject.o
 
 AVObject.o: AVObject.m AVObject.h
 
+libyuv.o: libyuv.m libyuv.h
+
 test1: test1.o libav.o
 	$(CC) $(COCOAFLAGS) $(FFMPEG_FLAGS) $(MJPEGFLAGS) $(LDFLAGS) -o test1 $< libav.o AVObject.o

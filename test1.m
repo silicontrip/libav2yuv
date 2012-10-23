@@ -28,7 +28,8 @@ int main(int argc, char *argv[])
 		NSLog(@"dim: %dx%d", [lav getWidth],[lav getHeight]);
 
 	
-	
+		NSLog(@"chroma dim: %dx%d", [lav getChromaWidth],[lav getChromaHeight]);
+
 		[lav release];
 	} else {
 		NSLog(@"Couldn't initialise video %s",argv[1]);
