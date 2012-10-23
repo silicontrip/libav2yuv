@@ -111,7 +111,6 @@
 		[self setChromaSampling:pCodecCtx->pix_fmt];
 		[self setHeight:pCodecCtx->height];
 		[self setWidth:pCodecCtx->width];
-
 		
 		return self;
 	}
@@ -138,11 +137,9 @@
 		while (packet.stream_index != avStream && bytes >=0 )
 			bytes = av_read_frame(pFormatCtx, &packet);
 
-//	if(packet.stream_index==avStream)
-//	{
 		frameCounter ++;
-//	}
-	} while (frameCounter < [self getIn]);
+		
+	} while (frameCounter < [self getIn] && bytes >= 0);
 	
 	return bytes;
 }
@@ -153,6 +150,9 @@
 	 avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
 #else
 	 avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+	
+	[self setInterlaced:pFrame->interlaced_frame];
+	[self setInterlaceTopFieldFirst:pFrame->top_field_first];
 	
 #endif
 	if (frameFinished) {

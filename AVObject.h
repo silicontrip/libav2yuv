@@ -16,6 +16,8 @@
 	AVRational sampleAspect;
 
 	int frameChromaSampling;
+	bool isInterlaced;
+	bool interlaceTopFieldFirst;
 	
 	}
 
@@ -26,6 +28,8 @@
 - (int)getSampleAspectNum;
 - (int)getSampleAspectDen;
 - (int)getChromaSampling;
+- (bool)getIsInterlaced;
+- (bool)getInterlaceTopFieldFirst;
 - (int)getHeight;
 - (int)getWidth;
 - (int)getChromaHeight;
@@ -43,6 +47,8 @@
 - (void)setSampleAspectNum:(int)num;
 - (void)setSampleAspectDen:(int)den;
 - (void)setChromaSampling:(int)samp;
+- (void)setInterlaced:(bool)i;
+- (void)setInterlaceTopFieldFirst:(bool)tff;
 - (void)setHeight:(int)hei;
 - (void)setWidth:(int)wid;
 

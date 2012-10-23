@@ -1,5 +1,7 @@
 
 #import <Cocoa/Cocoa.h>
+#include <yuv4mpeg.h>
+#include <mpegconsts.h>
 
 
 @interface libyuv : NSObject {
@@ -12,7 +14,7 @@
 */
 	y4m_stream_info_t yuvStreamInfo;
 	y4m_frame_info_t yuvFrameInfo;
-	uint8_t *frameData[3];
+	uint8_t **frameData;
 	int fdOut;
 	bool fileHeaderWritten;
 
@@ -20,7 +22,7 @@
 - (id)init;
 - (id)initWithWidth:(int)w Height:(int)h Interlace:(int)i SampleAspect:(y4m_ratio_t)sa FrameRate:(y4m_ratio_t)fr Chroma:(int)ch;
 
-- (void)setOutputFilename:(char *)filename;
+- (int)setOutputFilename:(char *)filename; // returns -1 on failure
 - (void)setOutputFd:(int)fd;
 
 - (void)setWidth:(int)w;
@@ -38,7 +40,7 @@
 - (int)write;
 
 - (uint8_t **)getYUVFramePointer;
-- (void)setYUVFramePointer(uint8_t **)m;
+- (void)setYUVFramePointer:(uint8_t *[])m;
 
 
 @end

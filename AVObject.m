@@ -47,6 +47,15 @@
 - (int)getChromaSampling {
 	return frameChromaSampling;
 }
+
+- (bool)getIsInterlaced {
+	return isInterlaced;
+}
+
+- (bool)getInterlaceTopFieldFirst {
+	return interlaceTopFieldFirst;
+}
+
 - (int)getHeight {
 	return frameHeight;
 }
@@ -159,6 +168,7 @@
 	}
 }
 
+
 - (void)setSampleAspectNum:(int)num {
 	if (num > 0)
 		sampleAspect.num = num;
@@ -172,6 +182,17 @@
 - (void)setChromaSampling:(int)samp {
 	frameChromaSampling = samp;
 }
+
+- (void)setInterlaced:(bool)i
+{
+	isInterlaced = i;
+}
+
+- (void)setInterlaceTopFieldFirst:(bool)tff
+{
+	interlaceTopFieldFirst = tff;
+}
+
 
 - (void)setHeight:(int)hei {
 	frameHeight = hei;
