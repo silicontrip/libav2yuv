@@ -3,6 +3,7 @@
 #import <Foundation/Foundation.h>
 #import "libav.h"
 #import "libyuv.h"
+#import "AVObject.h"
 
 
 NSAutoreleasePool  *pool;
@@ -19,6 +20,8 @@ int main(int argc, char *argv[])
 	
 	if (lav != nil) {
 		
+		//[lav setIn:25];
+		//[lav setOut:50];
 		[lav dumpFormat];
 		/*	
 		 NSLog(@"frame rate: %d:%d", [lav getFrameRateNum], [lav getFrameRateDen]);
@@ -34,6 +37,9 @@ int main(int argc, char *argv[])
 					 SampleAspectAVRational:[lav getSampleAspect]
 						FrameRateAVRational:[lav getFrameRate]
 									 Chroma:[lav getChromaSampling]];
+		
+		AVObject *black = [[AVObject alloc] initWithChroma:[lav getChromaSampling] height:[lav getHeight] width:[lav getWidth]];
+		[black setIn:0]; [black setOut:50];
 		if (yuv != nil) {
 			[yuv allocFrameData];
 			
@@ -43,7 +49,11 @@ int main(int argc, char *argv[])
 			[yuv setInterlaceAndOrder:[lav getIsInterlaced] topFieldFirst:[lav getInterlaceTopFieldFirst]];
 			[yuv writeHeader];
 			[yuv write];
+			
 			while (	[lav decodeNextFrameToYUV:[yuv getYUVFramePointer]] >= 0)
+				[yuv write];
+			
+			while ([black decodeNextFrameToYUV:[yuv getYUVFramePointer]] >=0)
 				[yuv write];
 			
 			[yuv release];

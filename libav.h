@@ -41,7 +41,4 @@
 // - (void)decodeNextFrame;
 - (NSString *)getFilename;
 
-
-
-
 @end

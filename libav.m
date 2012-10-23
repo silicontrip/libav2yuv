@@ -131,38 +131,36 @@
 	int bytes;
 	int frameFinished;
 	
-	// read frame
-//	NSLog(@"do...");
+	if (frameCounter > [self getOut])
+		return -1;
+	
 	do {
+		// read frame
 		do {
-		//	NSLog(@"av_read_frame");
 			
 			bytes = av_read_frame(pFormatCtx, &packet);
 			// or end of file
 			// or outside of in and out
-		//	NSLog(@"packet.stream_index != avStream");
 			
 			while (packet.stream_index != avStream && bytes >=0 )
 				bytes = av_read_frame(pFormatCtx, &packet);
 			
-			frameCounter ++;
-			
-		} while (frameCounter < [self getIn] && bytes >= 0);
-		
-		if (bytes >=0) {
-		//	NSLog(@"bytes >=0");
-			
-			int len;
-			
+			if (bytes >=0) {				
+				int len;
+				
 #if LIBAVCODEC_VERSION_MAJOR < 52
-			len = avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
+				len = avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
 #else
-			len = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+				len = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
 #endif
-			
-		//	NSLog(@"decoded: %d finished: %d",len,frameFinished);
-		}
-	} while (!frameFinished && bytes >=0);
+				
+				//	NSLog(@"decoded: %d finished: %d",len,frameFinished);
+			}
+		} while (!frameFinished && bytes >=0);
+		
+		frameCounter ++;
+		
+	} while (frameCounter < [self getIn]);
 	
 	if (bytes>=0) {
 		[self setInterlaced:pFrame->interlaced_frame];
@@ -177,7 +175,7 @@
 		int cw = [self getChromaWidth];
 		for (y=0; y<h; y++) {
 			//		mjpeg_debug ("copy %d bytes to: %x from: %x",w,dst[0]+y*w,(src->data[0])+y*src->linesize[0]);
-		//	NSLog(@"memcpy0 %d %d %x %x",w,pFrame->linesize[0],m[0],pFrame->data[0]);
+			//	NSLog(@"memcpy0 %d %d %x %x",w,pFrame->linesize[0],m[0],pFrame->data[0]);
 			
 			
 			
@@ -187,10 +185,10 @@
 #ifdef DEBUG
 				mjpeg_debug("copy %d bytes to: %x from: %x",cw,dst[1]+y*cw,(src->data[1])+y*src->linesize[1]);
 #endif
-			//	NSLog(@"memcpy1");
+				//	NSLog(@"memcpy1");
 				
 				memcpy(m[1]+y*cw,(pFrame->data[1])+y*pFrame->linesize[1],cw);
-			//	NSLog(@"memcpy2");
+				//	NSLog(@"memcpy2");
 				
 				memcpy(m[2]+y*cw,(pFrame->data[2])+y*pFrame->linesize[2],cw);
 			}

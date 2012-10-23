@@ -18,8 +18,6 @@
 {
 	self = [super init];
 
-//	[self setFrameRate:fr];
-//	[self setSampleAspect:sa];
 	[self setChromaSampling:ch];
 	[self setHeight:h];
 	[self setWidth:w];

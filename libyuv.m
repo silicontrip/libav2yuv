@@ -10,15 +10,16 @@
 	self=[super init];
 	y4m_init_stream_info (&yuvStreamInfo);
 	y4m_init_frame_info(&yuvFrameInfo);
-
+	
 	fileHeaderWritten = FALSE;
-	//frameData[0]=NULL;
-	//frameData[1]=NULL;
-	//frameData[2]=NULL;
-
+	frameData = (uint8_t **)malloc(sizeof (uint8_t *) * 3);
+	frameData[0]=nil;
+	frameData[1]=nil;
+	frameData[2]=nil;
+	
 	[self setOutputFd: 1]; // STDOUT
 	//NSLog(@"< libyuv init");
-
+	
 	return self;
 }
 
@@ -29,7 +30,7 @@
 	[self setWidth:w];
 	[self setHeight:h];
 	[self setChromaSampling:ch];
-
+	
 	return self;
 	
 }
@@ -63,13 +64,12 @@
 
 - (void)allocFrameData
 {
-
+	
 	int fs,cfs;
 	
 	fs = y4m_si_get_plane_length(&yuvStreamInfo,0);
 	cfs = y4m_si_get_plane_length(&yuvStreamInfo,1);
 	
-	frameData = (uint8_t **)malloc(sizeof (uint8_t *) * 3);
 	
 	frameData[0] = (uint8_t *)malloc( fs );
 	frameData[1] = (uint8_t *)malloc( cfs);
@@ -80,7 +80,7 @@
 
 - (int)setOutputFilename:(char *)filename
 {
-
+	
 	fdOut = open(filename,O_WRONLY|O_CREAT);
 	return fdOut;
 	
@@ -96,7 +96,7 @@
 - (void)setInterlacing:(int)i { y4m_si_set_interlace(&yuvStreamInfo,i); }
 - (void)setInterlaceAndOrder:(int)i topFieldFirst:(int)tff
 {
-
+	
 	if (i) {
 		if (tff) {
 			[self setInterlacing:Y4M_ILACE_TOP_FIRST];
@@ -144,9 +144,9 @@
 - (int)write
 {
 	int write_error_code;
-
+	
 	write_error_code = y4m_write_frame(fdOut, &yuvStreamInfo, &yuvFrameInfo, frameData); 
-
+	
 	return write_error_code;
 }
 
@@ -158,6 +158,24 @@
 - (void)setYUVFramePointer:(uint8_t **)m
 {
 	frameData = m;
+}
+
+- (void)dealloc
+{
+	
+	if (frameData != nil)
+	{
+		if (frameData[0] != nil)
+			free(frameData[0]);
+		if (frameData[1] != nil)
+			free(frameData[1]);
+		if (frameData[2] != nil)
+			free(frameData[2]);
+		
+		free(frameData);
+	}
+	
+	[super dealloc];
 }
 
 @end

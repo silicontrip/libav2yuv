@@ -3,6 +3,7 @@
 #include <yuv4mpeg.h>
 #include <mpegconsts.h>
 #include <libavformat/avformat.h>
+#include <fcntl.h>
 
 
 @interface libyuv : NSObject {
@@ -43,6 +44,7 @@
 - (int)write;
 - (uint8_t **)getYUVFramePointer;
 - (void)setYUVFramePointer:(uint8_t *[])m;
+- (void)dealloc;
 
 
 @end
