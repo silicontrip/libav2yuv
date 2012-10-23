@@ -48,14 +48,28 @@ int main(int argc, char *argv[])
 		
 		//NSLog(@"readFrame");
 
-		[lav readFrame];
+		//[lav readFrame];
 		
 		//NSLog(@"decodeFrame");
 
-		[lav decodeFrame];
+		//[lav decodeFrame];
 		
 		//NSLog(@"getIsInterlaced");
 
+		
+		//NSLog(@"libav alloc");
+
+		yuv = [[libyuv alloc] initWithWidth:[lav getWidth] Height:[lav getHeight] SampleAspect:sa FrameRate:fr  Chroma:[lav getChromaSampling]];
+	//	NSLog(@"allocFrameData");
+
+		[yuv allocFrameData];
+	//	NSLog(@"decodeNextFrameToYUV");
+
+		[lav decodeNextFrameToYUV:[yuv getYUVFramePointer]];
+
+	//	NSLog(@"getIsInterlaced");
+
+		//interlace flag is not available until the first frame is decoded.
 		if ([lav getIsInterlaced]) {
 			if ([lav getInterlaceTopFieldFirst]) {
 				yuv_interlacing = Y4M_ILACE_TOP_FIRST;
@@ -66,14 +80,22 @@ int main(int argc, char *argv[])
 			yuv_interlacing = Y4M_ILACE_NONE;
 		}
 		
-		//NSLog(@"libav alloc");
+	//	NSLog(@"setInterlacing");
 
-		yuv = [[libyuv alloc] initWithWidth:[lav getWidth] Height:[lav getHeight] Interlace:yuv_interlacing SampleAspect:sa FrameRate:fr  Chroma:[lav getChromaSampling]];
-		//NSLog(@"writeHeader");
+		[yuv setInterlacing:yuv_interlacing];
+		
+	//	NSLog(@"writeHeader");
 
 		[yuv writeHeader];
-		//NSLog(@"release");
+	//	NSLog(@"write");
 
+		[yuv write];
+		//NSLog(@"release");
+		while (	[lav decodeNextFrameToYUV:[yuv getYUVFramePointer]] >= 0)
+			[yuv write];
+
+		
+		
 		[yuv release];
 		[lav release];
 	} else {

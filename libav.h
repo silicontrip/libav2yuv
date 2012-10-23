@@ -36,9 +36,9 @@
 - (id)initVideoWithFile:(char *)filename;
 - (id)initAudioWithFile:(char *)filename;
 - (void)dumpFormat;
-- (int)readFrame;
-- (void)decodeFrame;
-//- (void)decodeNextFrame;
+// - (int)readFrame;
+// - (void)decodeFrame;
+// - (void)decodeNextFrame;
 - (NSString *)getFilename;
 
 

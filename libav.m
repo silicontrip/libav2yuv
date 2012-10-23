@@ -29,10 +29,10 @@
 	streamType = st;
 	
 	lavFileName = [[NSString alloc] initWithUTF8String:filename];
-		
+	
 	if (self) {
 		av_register_all();
-
+		
 #if LIBAVFORMAT_VERSION_MAJOR  < 53
 		if(av_open_input_file(&pFormatCtx, filename, avif, 0, NULL)!=0) 
 #else
@@ -51,7 +51,7 @@
 #endif
 			{
 				NSLog(@"initWithFile: avformat_find_stream_info failed");
-
+				
 				[self release];
 				return nil; // Couldn't find stream information
 			}
@@ -102,7 +102,7 @@
 		
 		pFrame=avcodec_alloc_frame();
 		if (pFrame == NULL) {
-			NSLog(@"initWithFile: avmalloc pFrame");
+			NSLog(@"initWithFile: avcodec_alloc_frame pFrame");
 			[self release];
 			return nil;
 		}
@@ -126,43 +126,86 @@
 }
 
 // think I might deprecate readFrame and decodeFrame before they even became production ready.
--(int)readFrame {
+-(int)decodeNextFrameToYUV:(uint8_t **)m {
 	
 	int bytes;
-	
-	do {
-		bytes = av_read_frame(pFormatCtx, &packet);
-	// or end of file
-	// or outside of in and out
-		while (packet.stream_index != avStream && bytes >=0 )
-			bytes = av_read_frame(pFormatCtx, &packet);
-
-		frameCounter ++;
-		
-	} while (frameCounter < [self getIn] && bytes >= 0);
-	
-	return bytes;
-}
-
--(void)decodeFrame {
 	int frameFinished;
+	
+	// read frame
+//	NSLog(@"do...");
+	do {
+		do {
+		//	NSLog(@"av_read_frame");
+			
+			bytes = av_read_frame(pFormatCtx, &packet);
+			// or end of file
+			// or outside of in and out
+		//	NSLog(@"packet.stream_index != avStream");
+			
+			while (packet.stream_index != avStream && bytes >=0 )
+				bytes = av_read_frame(pFormatCtx, &packet);
+			
+			frameCounter ++;
+			
+		} while (frameCounter < [self getIn] && bytes >= 0);
+		
+		if (bytes >=0) {
+		//	NSLog(@"bytes >=0");
+			
+			int len;
+			
 #if LIBAVCODEC_VERSION_MAJOR < 52
-	 avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
+			len = avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
 #else
-	 avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
-	
-	[self setInterlaced:pFrame->interlaced_frame];
-	[self setInterlaceTopFieldFirst:pFrame->top_field_first];
-	
+			len = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
 #endif
-	if (frameFinished) {
+			
+		//	NSLog(@"decoded: %d finished: %d",len,frameFinished);
+		}
+	} while (!frameFinished && bytes >=0);
+	
+	if (bytes>=0) {
+		[self setInterlaced:pFrame->interlaced_frame];
+		[self setInterlaceTopFieldFirst:pFrame->top_field_first];
+		
+		// copy to yuv frame
+		
+		int y;
+		int h = [self getHeight];
+		int w = [self getWidth];
+		int ch = [self getChromaHeight];
+		int cw = [self getChromaWidth];
+		for (y=0; y<h; y++) {
+			//		mjpeg_debug ("copy %d bytes to: %x from: %x",w,dst[0]+y*w,(src->data[0])+y*src->linesize[0]);
+		//	NSLog(@"memcpy0 %d %d %x %x",w,pFrame->linesize[0],m[0],pFrame->data[0]);
+			
+			
+			
+			memcpy(m[0]+y*w,(pFrame->data[0])+y*pFrame->linesize[0],w);
+			if (y<ch) {
+				
+#ifdef DEBUG
+				mjpeg_debug("copy %d bytes to: %x from: %x",cw,dst[1]+y*cw,(src->data[1])+y*src->linesize[1]);
+#endif
+			//	NSLog(@"memcpy1");
+				
+				memcpy(m[1]+y*cw,(pFrame->data[1])+y*pFrame->linesize[1],cw);
+			//	NSLog(@"memcpy2");
+				
+				memcpy(m[2]+y*cw,(pFrame->data[2])+y*pFrame->linesize[2],cw);
+			}
+		}
+		
+		
+		if (frameFinished) {
 #if LIBAVCODEC_VERSION_MAJOR < 52 
-		av_freep(&packet);
+			av_freep(&packet);
 #else
-		av_free_packet(&packet);
+			av_free_packet(&packet);
 #endif
+		}
 	}
-	
+	return bytes;
 }
 
 - (NSString *)getFilename {

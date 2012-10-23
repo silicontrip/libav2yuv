@@ -9,32 +9,48 @@
 	// NSLog(@"> libyuv init");
 	self=[super init];
 	y4m_init_stream_info (&yuvStreamInfo);
+	y4m_init_frame_info(&yuvFrameInfo);
+
 	fileHeaderWritten = FALSE;
 	//frameData[0]=NULL;
 	//frameData[1]=NULL;
 	//frameData[2]=NULL;
 
-	
-	
 	[self setOutputFd: 1]; // STDOUT
 	//NSLog(@"< libyuv init");
 
 	return self;
 }
 
-- (id)initWithWidth:(int)w Height:(int)h Interlace:(int)i SampleAspect:(y4m_ratio_t)sa FrameRate:(y4m_ratio_t)fr Chroma:(int)ch
+- (id)initWithWidth:(int)w Height:(int)h  SampleAspect:(y4m_ratio_t)sa FrameRate:(y4m_ratio_t)fr Chroma:(int)ch
 {
 	[self init];
 	
 	[self setWidth:w];
 	[self setHeight:h];
-	[self setInterlacing:i];
 	[self setSampleAspect:sa];
 	[self setFrameRate:fr];
 	[self setChromaSampling:ch];
 	
 	return self;
 }
+
+- (void)allocFrameData
+{
+
+	int fs,cfs;
+	
+	fs = y4m_si_get_plane_length(&yuvStreamInfo,0);
+	cfs = y4m_si_get_plane_length(&yuvStreamInfo,1);
+	
+	frameData = (uint8_t **)malloc(sizeof (uint8_t *) * 3);
+	
+	frameData[0] = (uint8_t *)malloc( fs );
+	frameData[1] = (uint8_t *)malloc( cfs);
+	frameData[2] = (uint8_t *)malloc( cfs);
+	
+}
+
 
 - (int)setOutputFilename:(char *)filename
 {
@@ -64,7 +80,11 @@
 
 - (int)write
 {
-	return -1;
+	int write_error_code;
+
+	write_error_code = y4m_write_frame(fdOut, &yuvStreamInfo, &yuvFrameInfo, frameData); 
+
+	return write_error_code;
 }
 
 - (uint8_t **)getYUVFramePointer

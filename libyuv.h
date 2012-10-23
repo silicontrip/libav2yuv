@@ -20,7 +20,8 @@
 
 }
 - (id)init;
-- (id)initWithWidth:(int)w Height:(int)h Interlace:(int)i SampleAspect:(y4m_ratio_t)sa FrameRate:(y4m_ratio_t)fr Chroma:(int)ch;
+- (id)initWithWidth:(int)w Height:(int)h  SampleAspect:(y4m_ratio_t)sa FrameRate:(y4m_ratio_t)fr Chroma:(int)ch;
+- (void)allocFrameData;
 
 - (int)setOutputFilename:(char *)filename; // returns -1 on failure
 - (void)setOutputFd:(int)fd;
