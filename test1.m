@@ -37,21 +37,42 @@ int main(int argc, char *argv[])
 					 SampleAspectAVRational:[lav getSampleAspect]
 						FrameRateAVRational:[lav getFrameRate]
 									 Chroma:[lav getChromaSampling]];
+
+
 		
-		AVObject *black = [[AVObject alloc] initWithChroma:[lav getChromaSampling] height:[lav getHeight] width:[lav getWidth]];
-		[black setIn:0]; [black setOut:50];
 		if (yuv != nil) {
-			[yuv allocFrameData];
 			
-			[lav decodeNextFrameToYUV:[yuv getYUVFramePointer]];
+			AVObject *black;
+			
+			black = [[AVObject alloc] initWithChroma:[lav getChromaSampling] height:[lav getHeight] width:[lav getWidth]];
+			[black setIn:0]; [black setOut:0];
+
+			
+			// need to decode the first frame to get the interlace type
+			[lav decodeNextFrame];
+			[yuv setInterlaceAndOrder:[lav getIsInterlaced] topFieldFirst:[lav getInterlaceTopFieldFirst]];
 			
 			//interlace flag is not available until the first frame is decoded.
-			[yuv setInterlaceAndOrder:[lav getIsInterlaced] topFieldFirst:[lav getInterlaceTopFieldFirst]];
+			//need to get the interlace flags before this. So we can use a generator.
 			[yuv writeHeader];
+			
+			
+			while ([black decodeNextFrameToYUV:[yuv getYUVFramePointer]] >=0)
+				[yuv write];
+			 
+			[yuv setYUVFrameDataWithAVFrame:[lav getAVFrame]];
 			[yuv write];
 			
-			while (	[lav decodeNextFrameToYUV:[yuv getYUVFramePointer]] >= 0)
+			while (	[lav decodeNextFrame] >= 0)
+			{ 		
+				[yuv setYUVFrameDataWithAVFrame:[lav getAVFrame]];
 				[yuv write];
+			}
+			
+			[black release];
+			black = [[AVObject alloc] initWithChroma:[lav getChromaSampling] height:[lav getHeight] width:[lav getWidth]];
+			[black setIn:0]; [black setOut:49];
+
 			
 			while ([black decodeNextFrameToYUV:[yuv getYUVFramePointer]] >=0)
 				[yuv write];

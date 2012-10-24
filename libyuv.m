@@ -30,6 +30,7 @@
 	[self setWidth:w];
 	[self setHeight:h];
 	[self setChromaSampling:ch];
+	[self allocFrameData];
 	
 	return self;
 	
@@ -44,7 +45,8 @@
 	[self setSampleAspect:sa];
 	[self setFrameRate:fr];
 	[self setChromaSampling:ch];
-	
+	[self allocFrameData];
+
 	return self;
 }
 
@@ -57,7 +59,8 @@
 	[self setSampleAspectAVRational:sa];
 	[self setFrameRateAVRational:fr];
 	[self setChromaSampling:ch];
-	
+	[self allocFrameData];
+
 	return self;
 	
 }
@@ -91,8 +94,8 @@
 	fdOut = fd;
 }
 
-- (void)setWidth:(int)w { y4m_si_set_width(&yuvStreamInfo, w); }
-- (void)setHeight:(int)h { y4m_si_set_height(&yuvStreamInfo, h); }
+- (void)setWidth:(int)w {  y4m_si_set_width(&yuvStreamInfo, w);  }
+- (void)setHeight:(int)h {  y4m_si_set_height(&yuvStreamInfo, h);  }
 - (void)setInterlacing:(int)i { y4m_si_set_interlace(&yuvStreamInfo,i); }
 - (void)setInterlaceAndOrder:(int)i topFieldFirst:(int)tff
 {
@@ -118,17 +121,61 @@
 	
 	fr.d = rational.den;
 	fr.n = rational.num;
-	y4m_si_set_framerate(&yuvStreamInfo, fr);
+	[self setFrameRate:fr];
 }
 
-- (void)setSampleAspect:(y4m_ratio_t)sa { y4m_si_set_sampleaspect(&yuvStreamInfo, sa); }
+- (void)setSampleAspect:(y4m_ratio_t)sa { 
+	
+	// check for invalid aspect ratio
+	if (sa.d==0 && sa.n==0) {
+		sa.d = 1;
+		sa.n=1;
+	}
+	
+	y4m_si_set_sampleaspect(&yuvStreamInfo, sa); 
+}
 - (void)setSampleAspectAVRational:(AVRational)rational
 {
 	y4m_ratio_t sa;
 	
 	sa.d = rational.den;
 	sa.n = rational.num;
-	y4m_si_set_sampleaspect(&yuvStreamInfo, sa);
+	[self setSampleAspect:sa];
+}
+
+- (int)getHeight { return y4m_si_get_plane_height(&yuvStreamInfo,0); }
+- (int)getWidth { return y4m_si_get_plane_width(&yuvStreamInfo,0); }
+- (int)getChromaHeight { return y4m_si_get_plane_height(&yuvStreamInfo,1); }
+- (int)getChromaWidth { return y4m_si_get_plane_width(&yuvStreamInfo,1); }
+
+- (void)setYUVFrameDataWithAVFrame:(AVFrame *)pFrame
+{
+	
+	int y;
+	int h = [self getHeight];
+	int w = [self getWidth];
+	int ch = [self getChromaHeight];
+	int cw = [self getChromaWidth];
+	for (y=0; y<h; y++) {
+		//		mjpeg_debug ("copy %d bytes to: %x from: %x",w,dst[0]+y*w,(src->data[0])+y*src->linesize[0]);
+		//	NSLog(@"memcpy0 %d %d %x %x",w,pFrame->linesize[0],m[0],pFrame->data[0]);
+		
+		memcpy(frameData[0]+y*w,(pFrame->data[0])+y*pFrame->linesize[0],w);
+		if (y<ch) {
+			
+#ifdef DEBUG
+			mjpeg_debug("copy %d bytes to: %x from: %x",cw,dst[1]+y*cw,(src->data[1])+y*src->linesize[1]);
+#endif
+			//	NSLog(@"memcpy1");
+			
+			memcpy(frameData[1]+y*cw,(pFrame->data[1])+y*pFrame->linesize[1],cw);
+			//	NSLog(@"memcpy2");
+			
+			memcpy(frameData[2]+y*cw,(pFrame->data[2])+y*pFrame->linesize[2],cw);
+		}
+	}
+	
+	
 }
 
 
@@ -160,9 +207,8 @@
 	frameData = m;
 }
 
-- (void)dealloc
+- (void)deallocFrameData
 {
-	
 	if (frameData != nil)
 	{
 		if (frameData[0] != nil)
@@ -174,7 +220,12 @@
 		
 		free(frameData);
 	}
+}	
+
+- (void)dealloc
+{
 	
+	[self deallocFrameData];
 	[super dealloc];
 }
 

@@ -3,6 +3,7 @@
 #include <yuv4mpeg.h>
 #include <mpegconsts.h>
 #include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
 #include <fcntl.h>
 
 
@@ -44,6 +45,12 @@
 - (int)write;
 - (uint8_t **)getYUVFramePointer;
 - (void)setYUVFramePointer:(uint8_t *[])m;
+- (int)getHeight;
+- (int)getWidth;
+- (int)getChromaHeight;
+- (int)getChromaWidth;
+- (void)setYUVFrameDataWithAVFrame:(AVFrame *)pFrame;
+- (void)deallocFrameData;
 - (void)dealloc;
 
 

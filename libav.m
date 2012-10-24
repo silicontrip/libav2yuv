@@ -125,8 +125,9 @@
 #endif
 }
 
-// think I might deprecate readFrame and decodeFrame before they even became production ready.
--(int)decodeNextFrameToYUV:(uint8_t **)m {
+-(int)decodeNextFrame
+{
+	//ToYUV:(uint8_t **)m {
 	
 	int bytes;
 	int frameFinished;
@@ -138,73 +139,49 @@
 		// read frame
 		do {
 			
-			bytes = av_read_frame(pFormatCtx, &packet);
-			// or end of file
-			// or outside of in and out
-			
-			while (packet.stream_index != avStream && bytes >=0 )
+			do {
 				bytes = av_read_frame(pFormatCtx, &packet);
+				if (bytes < 0) 
+					return bytes;
 			
-			if (bytes >=0) {				
-				int len;
-				
+			} while (packet.stream_index != avStream) ;
+			
+			int len;
+			// I'm not sure when avcodec_decode_video2 became available, if your version of libav doesn't
+			// recognise avcodec_decode_video2 then change the VERSION MAJOR here
+			// and email mjpeg0@silicontrip.org
+			
 #if LIBAVCODEC_VERSION_MAJOR < 52
-				len = avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
+			len = avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
 #else
-				len = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+			len = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
 #endif
-				
-				//	NSLog(@"decoded: %d finished: %d",len,frameFinished);
-			}
-		} while (!frameFinished && bytes >=0);
+			
+			if (len < 0)
+				return len;
+			//	NSLog(@"decoded: %d finished: %d",len,frameFinished);
+			
+		} while (!frameFinished);
 		
 		frameCounter ++;
 		
 	} while (frameCounter < [self getIn]);
 	
-	if (bytes>=0) {
-		[self setInterlaced:pFrame->interlaced_frame];
-		[self setInterlaceTopFieldFirst:pFrame->top_field_first];
-		
-		// copy to yuv frame
-		
-		int y;
-		int h = [self getHeight];
-		int w = [self getWidth];
-		int ch = [self getChromaHeight];
-		int cw = [self getChromaWidth];
-		for (y=0; y<h; y++) {
-			//		mjpeg_debug ("copy %d bytes to: %x from: %x",w,dst[0]+y*w,(src->data[0])+y*src->linesize[0]);
-			//	NSLog(@"memcpy0 %d %d %x %x",w,pFrame->linesize[0],m[0],pFrame->data[0]);
-			
-			
-			
-			memcpy(m[0]+y*w,(pFrame->data[0])+y*pFrame->linesize[0],w);
-			if (y<ch) {
-				
-#ifdef DEBUG
-				mjpeg_debug("copy %d bytes to: %x from: %x",cw,dst[1]+y*cw,(src->data[1])+y*src->linesize[1]);
-#endif
-				//	NSLog(@"memcpy1");
-				
-				memcpy(m[1]+y*cw,(pFrame->data[1])+y*pFrame->linesize[1],cw);
-				//	NSLog(@"memcpy2");
-				
-				memcpy(m[2]+y*cw,(pFrame->data[2])+y*pFrame->linesize[2],cw);
-			}
-		}
-		
-		
-		if (frameFinished) {
+	[self setInterlaced:pFrame->interlaced_frame];
+	[self setInterlaceTopFieldFirst:pFrame->top_field_first];
+	
 #if LIBAVCODEC_VERSION_MAJOR < 52 
-			av_freep(&packet);
+	av_freep(&packet);
 #else
-			av_free_packet(&packet);
+	av_free_packet(&packet);
 #endif
-		}
-	}
 	return bytes;
 }
+
+- (AVFrame *)getAVFrame{ return pFrame; }
+- (AVFrame *)decodeAndGetNextAVFrame{ [self decodeNextFrame]; [self getAVFrame]; }
+
+
 
 - (NSString *)getFilename {
 	return lavFileName;

@@ -38,7 +38,9 @@
 - (void)dumpFormat;
 // - (int)readFrame;
 // - (void)decodeFrame;
-// - (void)decodeNextFrame;
+- (int)decodeNextFrame;
+- (AVFrame *)getAVFrame;
+- (AVFrame *)decodeAndGetNextAVFrame;
 - (NSString *)getFilename;
 
 @end
