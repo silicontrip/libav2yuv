@@ -178,6 +178,12 @@
 		frameOut = fout;
 }
 
+- (int)TCtoFrames:(NSString*)timecode
+{
+		//determine if drop frame
+	
+}
+
 - (void)setFrameRate:(AVRational)rational {
 	if (rational.den>0 && rational.num>0)
 	{

@@ -48,6 +48,8 @@
 
 - (void)setIn:(int)fin;
 - (void)setOut:(int)fout;
+- (void)setInTimecode:(NSString *)sin;
+- (void)setOutTimecode:(NSString *)sout;
 - (void)setFrameRate:(AVRational)rational;
 - (void)setFrameRateNum:(int)num;
 - (void)setFrameRateDen:(int)den;
