@@ -1,6 +1,10 @@
 #import <Cocoa/Cocoa.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+
 #include <libavutil/rational.h>
 #include <libavutil/pixfmt.h>
+#include <libavutil/pixdesc.h>
 #include <stdint.h>
 
 @interface AVObject : NSObject {
@@ -14,6 +18,7 @@
 	
 	AVRational frameRate;
 	AVRational sampleAspect;
+	AVFrame *pFrame;
 
 	int frameChromaSampling;
 	bool isInterlaced;
@@ -23,6 +28,7 @@
 
 - (id)init;
 - (id)initWithChroma:(int)ch height:(int)h width:(int)w;
+- (void) allocFrame;
 - (AVRational)getFrameRate;
 - (int)getFrameRateNum;
 - (int)getFrameRateDen;
@@ -56,6 +62,8 @@
 
 // trying to think of the default call to get frame data
 // and behaviour when outside the set in out points.
-- (int) decodeNextFrameToYUV:(uint8_t **)m;
-
+- (int)decodeNextFrame;
+- (AVFrame *)getAVFrame;
+- (AVFrame *)decodeAndGetNextAVFrame;
+- (void)dealloc;
 @end

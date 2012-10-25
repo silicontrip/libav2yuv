@@ -6,9 +6,10 @@
 - (id)init
 {
 	self = [super init];
-
+	
 	[self setIn:0];
 	[self setOut:INT32_MAX];
+	
 	
 	return self;
 	
@@ -17,16 +18,43 @@
 - (id)initWithChroma:(int)ch height:(int)h width:(int)w
 {
 	self = [super init];
-
+	
 	[self setChromaSampling:ch];
 	[self setHeight:h];
 	[self setWidth:w];
 	
 	[self setIn:0];
 	[self setOut:INT32_MAX];
-
-
+	
+	[self allocFrame];
+	
+	if (!pFrame)
+		return nil;
+	
 	return self;
+}
+
+- (void) allocFrame 
+{
+	pFrame=avcodec_alloc_frame();
+	
+	if (pFrame)
+	{
+		int ch = [self getChromaSampling];
+		int h = [self getHeight];
+		int w = [self getWidth];
+		
+		int size = avpicture_get_size(ch, w, h);
+		//const char *fmt = av_get_pix_fmt_name(ch);
+		//NSLog(@"picture buffer  %dx%d %s size %d" ,w,h,fmt, size);
+		uint8_t *picture_buf = av_malloc(size);
+		if (picture_buf) {
+			avpicture_fill((AVPicture *)pFrame, picture_buf, ch, w, h);
+		} else {
+			av_free(pFrame);
+			pFrame = nil;
+		}
+	}
 }
 
 - (AVRational)getFrameRate
@@ -204,32 +232,61 @@
 
 - (void)setHeight:(int)hei {
 	frameHeight = hei;
+	//pFrame->height = hei;
 }
 
 - (void)setWidth:(int)wid {
 	frameWidth = wid;
+	//	pFrame->width = wid;
 }
 
-- (int)decodeNextFrameToYUV:(uint8_t **)m
+- (int)decodeNextFrame
 {
-
 	if (frameCounter < frameIn)
 		frameCounter = frameIn;
 	
 	if (frameCounter <= frameOut) {
+		
+		memset(pFrame->data[0],16,[self getHeight]*pFrame->linesize[0]);
+		memset(pFrame->data[1],128,[self getChromaHeight]*pFrame->linesize[1]);
+		memset(pFrame->data[2],128,[self getChromaHeight]*pFrame->linesize[2]);
+		frameCounter++;
+		
+		return [self getHeight]*pFrame->linesize[0] +
+		[self getHeight]*pFrame->linesize[1] +
+		[self getHeight]*pFrame->linesize[2];
+	}
+	return -1;
+	
+}
+
+- (int)decodeNextFrameToYUV:(uint8_t **)m
+{
+	
+	
+	if (frameCounter <= frameOut) {
 		int frameLength = [self getHeight] * [self getWidth];
 		int chromaLength = [self getChromaHeight] * [self getChromaWidth];
-	
+		
 		memset(m[0],16,frameLength);
 		memset(m[1],128,frameLength);
 		memset(m[2],128,frameLength);
-	
+		
 		frameCounter++;
 		return frameLength + chromaLength<<1;
 	}
 	
 	return -1;
 	
+}
+
+- (AVFrame *)getAVFrame{ return pFrame; }
+- (AVFrame *)decodeAndGetNextAVFrame{ [self decodeNextFrame]; [self getAVFrame]; }
+- (void) dealloc
+{
+	if (pFrame)
+		av_free(pFrame);
+	[super dealloc];
 }
 
 @end

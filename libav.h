@@ -22,7 +22,6 @@
 	AVInputFormat *avif;
 	AVCodecContext *pCodecCtx;
 	AVCodec *pCodec;
-	AVFrame *pFrame;
 	AVPacket packet;
 	
 	NSString *lavFileName;
@@ -38,9 +37,6 @@
 - (void)dumpFormat;
 // - (int)readFrame;
 // - (void)decodeFrame;
-- (int)decodeNextFrame;
-- (AVFrame *)getAVFrame;
-- (AVFrame *)decodeAndGetNextAVFrame;
 - (NSString *)getFilename;
 
 @end

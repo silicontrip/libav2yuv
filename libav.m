@@ -178,8 +178,6 @@
 	return bytes;
 }
 
-- (AVFrame *)getAVFrame{ return pFrame; }
-- (AVFrame *)decodeAndGetNextAVFrame{ [self decodeNextFrame]; [self getAVFrame]; }
 
 
 

@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
 	
 	
 	lav = [[libav alloc] initVideoWithFile:argv[1]];
+	[lav setIn:30]; [lav setOut:59];
 	
 	if (lav != nil) {
 		
@@ -37,46 +38,55 @@ int main(int argc, char *argv[])
 					 SampleAspectAVRational:[lav getSampleAspect]
 						FrameRateAVRational:[lav getFrameRate]
 									 Chroma:[lav getChromaSampling]];
-
-
 		
 		if (yuv != nil) {
 			
+				// need to decode the first frame to get the interlace type
+				[lav decodeNextFrame];
+				[yuv setInterlaceAndOrder:[lav getIsInterlaced] topFieldFirst:[lav getInterlaceTopFieldFirst]];
+				
+				//interlace flag is not available until the first frame is decoded.
+				//need to get the interlace flags before this. So we can use a generator.
+				[yuv writeHeader];
+				
 			AVObject *black;
 			
 			black = [[AVObject alloc] initWithChroma:[lav getChromaSampling] height:[lav getHeight] width:[lav getWidth]];
-			[black setIn:0]; [black setOut:0];
-
 			
-			// need to decode the first frame to get the interlace type
-			[lav decodeNextFrame];
-			[yuv setInterlaceAndOrder:[lav getIsInterlaced] topFieldFirst:[lav getInterlaceTopFieldFirst]];
-			
-			//interlace flag is not available until the first frame is decoded.
-			//need to get the interlace flags before this. So we can use a generator.
-			[yuv writeHeader];
-			
-			
-			while ([black decodeNextFrameToYUV:[yuv getYUVFramePointer]] >=0)
-				[yuv write];
-			 
-			[yuv setYUVFrameDataWithAVFrame:[lav getAVFrame]];
-			[yuv write];
-			
-			while (	[lav decodeNextFrame] >= 0)
-			{ 		
+			if (black != nil) {
+				[black setIn:0]; [black setOut:29];
+				
+				while ([black decodeNextFrame] >=0)
+				{
+					[yuv setYUVFrameDataWithAVFrame:[black getAVFrame]];
+					[yuv write];
+					
+				}
+				[black release];
+			}
 				[yuv setYUVFrameDataWithAVFrame:[lav getAVFrame]];
 				[yuv write];
-			}
+				
+				while (	[lav decodeNextFrame] >= 0)
+				{ 		
+					[yuv setYUVFrameDataWithAVFrame:[lav getAVFrame]];
+					[yuv write];
+				}
+				
 			
-			[black release];
 			black = [[AVObject alloc] initWithChroma:[lav getChromaSampling] height:[lav getHeight] width:[lav getWidth]];
-			[black setIn:0]; [black setOut:49];
+			
+			if (black != nil) {
+				[black setIn:0]; [black setOut:29];
 
-			
-			while ([black decodeNextFrameToYUV:[yuv getYUVFramePointer]] >=0)
-				[yuv write];
-			
+				while ([black decodeNextFrame] >=0)
+				{
+					[yuv setYUVFrameDataWithAVFrame:[black getAVFrame]];
+					[yuv write];
+					
+				}
+				[black release];
+			}
 			[yuv release];
 		}
 		[lav release];
