@@ -180,8 +180,42 @@
 
 - (int)TCtoFrames:(NSString*)timecode
 {
-		//determine if drop frame
+	//determine if drop frame
+	NSRange dropFrameRange = [timecode rangeOfString:@";"];
+	BOOL dropFrame = FALSE;
 	
+	if (dropFrameRange.location) 
+		dropFrame = TRUE;
+	
+	NSString *newTimecode = [timecode stringByReplacingOccurrencesOfString:@";" withString:@":"];
+	
+	NSArray *digits = [timecode componentsSeparatedByString:@":"];
+	
+	int frames = [[digits lastObject] intValue];
+	int seconds;
+	
+	if ([digits count] >1) {
+		
+		seconds = 0;
+		int i;
+		for (i=0 ; i<[digits count]-1; i++)
+		{
+			seconds = (seconds * 60) + 	 [[digits objectAtIndex:i] intValue];
+		}
+	}
+	
+	// need to account for drop frame.
+	return frames + seconds * [self getFrameRateNum] / [self getFrameRateDen];
+}
+
+- (void) setInTimecode:(NSString *)sin
+{
+	[self setIn:[self TCtoFrames:sin]];
+}
+
+- (void)setOutTimecode:(NSString *)sout
+{
+	[self setOut:[self TCtoFrames:sout]];
 }
 
 - (void)setFrameRate:(AVRational)rational {

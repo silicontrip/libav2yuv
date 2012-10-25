@@ -16,13 +16,22 @@ NSMutableArray *parseEdl (NSString *filename)
 	
 	for (NSString* o in lines)
 	{
-		NSLog(o);
 		
-		if (![o hasPrefix:@"#"]) {
+		NSLog(@"line: %@",o);
+		
+		if (![o hasPrefix:@"#"] && [o length]>0) {
 			NSArray *items = [o componentsSeparatedByString:@" "];
 			NSLog(@"filename: %@",[items objectAtIndex:0]);
 			NSLog(@"in: %@",[items objectAtIndex:3]);
 			NSLog(@"out: %@",[items objectAtIndex:4]);
+			
+			libav *entry = [[libav alloc] initVideoWithFile:[[items objectAtIndex:0] UTF8String]];
+			
+			[entry setInTimecode:[items objectAtIndex:3]];
+			[entry setOutTimecode:[items objectAtIndex:4]];
+
+			
+			
 		}
 	}
 	

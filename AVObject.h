@@ -1,4 +1,5 @@
 #import <Cocoa/Cocoa.h>
+#import <Foundation/NSString.h>
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 
