@@ -25,7 +25,9 @@
 - (id)init;
 - (id)initWithWidth:(int)w Height:(int)h SampleAspect:(y4m_ratio_t)sa FrameRate:(y4m_ratio_t)fr Chroma:(int)ch;
 - (id)initWithWidth:(int)w Height:(int)h SampleAspectAVRational:(AVRational)sa FrameRateAVRational:(AVRational)fr Chroma:(int)ch;
+- (id)initWithWidth:(int)w Height:(int)h SampleAspectAVRational:(AVRational)sa FrameRateAVRational:(AVRational)fr ChromaFromAV:(int)pix_fmt;
 - (id)initWithWidth:(int)w Height:(int)h Chroma:(int)ch;
+- (id)initWithWidth:(int)w Height:(int)h ChromaFromAV:(int)pix_fmt;
 
 - (void)allocFrameData;
 
@@ -41,10 +43,9 @@
 - (void)setFrameRate:(y4m_ratio_t)fr;
 - (void)setFrameRateAVRational:(AVRational)rational;
 - (void)setChromaSampling:(int)ch;
+- (void)setChromaSamplingFromAV:(int)pix_fmt;
 - (int)writeHeader;
 - (int)write;
-- (uint8_t **)getYUVFramePointer;
-- (void)setYUVFramePointer:(uint8_t *[])m;
 - (int)getHeight;
 - (int)getWidth;
 - (int)getChromaHeight;

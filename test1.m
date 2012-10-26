@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 									 Height:[lav getHeight] 
 					 SampleAspectAVRational:[lav getSampleAspect]
 						FrameRateAVRational:[lav getFrameRate]
-									 Chroma:[lav getChromaSampling]];
+									 ChromaFromAV:[lav getChromaSampling]];
 		
 		// need to decode the first frame to get the interlace type
 	//	NSLog(@"lav decodeNextFrame");
@@ -109,7 +109,8 @@ int main(int argc, char *argv[])
 		// NSLog(@"yuv setInterlaceAndOrder");
 		
 		[yuv setInterlaceAndOrder:[lav getIsInterlaced] topFieldFirst:[lav getInterlaceTopFieldFirst]];
-		
+		[yuv setFrameRateAVRational:[lav getFrameRate]];
+		[yuv setSampleAspectAVRational:[lav getSampleAspect]];
 		//interlace flag is not available until the first frame is decoded.
 		//need to get the interlace flags before this. So we can use a generator.
 		// NSLog(@"yuv writeHeader");

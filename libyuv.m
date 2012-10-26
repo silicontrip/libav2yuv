@@ -36,15 +36,25 @@
 	
 }
 
-- (id)initWithWidth:(int)w Height:(int)h  SampleAspect:(y4m_ratio_t)sa FrameRate:(y4m_ratio_t)fr Chroma:(int)ch
+- (id)initWithWidth:(int)w Height:(int)h ChromaFromAV:(int)pix_fmt
 {
 	[self init];
 	
 	[self setWidth:w];
 	[self setHeight:h];
+	[self setChromaSamplingFromAV:pix_fmt];
+	[self allocFrameData];
+	
+	return self;
+	
+}	
+
+- (id)initWithWidth:(int)w Height:(int)h  SampleAspect:(y4m_ratio_t)sa FrameRate:(y4m_ratio_t)fr Chroma:(int)ch
+{
+	[self initWithWidth:w Height:h Chroma:ch];
+	
 	[self setSampleAspect:sa];
 	[self setFrameRate:fr];
-	[self setChromaSampling:ch];
 	[self allocFrameData];
 
 	return self;
@@ -52,18 +62,30 @@
 
 - (id)initWithWidth:(int)w Height:(int)h SampleAspectAVRational:(AVRational)sa FrameRateAVRational:(AVRational)fr Chroma:(int)ch
 {
-	[self init];
+	[self initWithWidth:w Height:h Chroma:ch];
 	
-	[self setWidth:w];
-	[self setHeight:h];
 	[self setSampleAspectAVRational:sa];
 	[self setFrameRateAVRational:fr];
-	[self setChromaSampling:ch];
+
 	[self allocFrameData];
 
 	return self;
 	
 }
+
+- (id)initWithWidth:(int)w Height:(int)h SampleAspectAVRational:(AVRational)sa FrameRateAVRational:(AVRational)fr ChromaFromAV:(int)pix_fmt
+{
+	[self initWithWidth:w Height:h ChromaFromAV:pix_fmt];
+	
+	[self setSampleAspectAVRational:sa];
+	[self setFrameRateAVRational:fr];
+	
+	[self allocFrameData];
+	
+	return self;
+	
+}
+
 
 - (void)allocFrameData
 {
@@ -114,7 +136,30 @@
 }
 
 - (void)setChromaSampling:(int)ch { y4m_si_set_chroma(&yuvStreamInfo,ch); }
-- (void)setFrameRate:(y4m_ratio_t)fr { y4m_si_set_framerate(&yuvStreamInfo, fr); }
+- (void)setChromaSamplingFromAV:(int)pix_fmt
+{
+
+	switch (pix_fmt) 
+	{
+		case PIX_FMT_YUV420P: [self setChromaSampling:Y4M_CHROMA_420MPEG2]; break;
+		case PIX_FMT_YUV422P: [self setChromaSampling:Y4M_CHROMA_422]; break;
+		case PIX_FMT_YUV444P: [self setChromaSampling:Y4M_CHROMA_444]; break;
+		case PIX_FMT_YUV411P: [self setChromaSampling:Y4M_CHROMA_411]; break;
+		case PIX_FMT_YUVJ420P: [self setChromaSampling:Y4M_CHROMA_420JPEG]; break;
+		default:
+			NSLog(@"Unsupported Chroma");
+			break;	
+	}
+}
+- (void)setFrameRate:(y4m_ratio_t)fr { 
+	
+	if (fr.d==0 && fr.n==0) {
+		fr.d = 1;
+		fr.n=1;
+	}
+	
+	y4m_si_set_framerate(&yuvStreamInfo, fr); 
+}
 - (void)setFrameRateAVRational:(AVRational)rational
 {
 	y4m_ratio_t fr;
@@ -197,15 +242,6 @@
 	return write_error_code;
 }
 
-- (uint8_t **)getYUVFramePointer
-{
-	return frameData;	
-}
-
-- (void)setYUVFramePointer:(uint8_t **)m
-{
-	frameData = m;
-}
 
 - (void)deallocFrameData
 {
