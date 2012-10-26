@@ -127,7 +127,6 @@
 
 -(int)decodeNextFrame
 {
-	//ToYUV:(uint8_t **)m {
 	
 	int bytes;
 	int frameFinished;
@@ -136,15 +135,17 @@
 		return -1;
 	
 	do {
-		// read frame
 		do {
 			
 			do {
+			//	NSLog(@"read frame until match");
 				bytes = av_read_frame(pFormatCtx, &packet);
 				if (bytes < 0) 
 					return bytes;
 			
 			} while (packet.stream_index != avStream) ;
+			
+		//	NSLog (@"Decode frame until framefinished");
 			
 			int len;
 			// I'm not sure when avcodec_decode_video2 became available, if your version of libav doesn't
@@ -162,7 +163,8 @@
 			//	NSLog(@"decoded: %d finished: %d",len,frameFinished);
 			
 		} while (!frameFinished);
-		
+	//	NSLog (@"Skip until frameCounter(%d) >= in(%d) ",frameCounter,[self getIn]);
+
 		frameCounter ++;
 		
 	} while (frameCounter < [self getIn]);

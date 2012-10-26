@@ -57,6 +57,13 @@
 	}
 }
 
+- (void)dumpFormat
+{
+
+	fprintf(stderr,"Black generator AV Object: %dx%d",[self getWidth],[self getHeight]);
+	
+}
+
 - (AVRational)getFrameRate
 {
 	return frameRate;
@@ -182,16 +189,32 @@
 {
 	//determine if drop frame
 	NSRange dropFrameRange = [timecode rangeOfString:@";"];
-	BOOL dropFrame = FALSE;
+	BOOL dropFrame = TRUE;
 	
-	if (dropFrameRange.location) 
-		dropFrame = TRUE;
+	int frn = [self getFrameRateNum];
+	int frd =  [self getFrameRateDen];
+	
+	
+	if (!dropFrameRange.location) 
+	{
+		if ( 1.0 * frn / frd == 30000.0 / 1001.0) {
+			frn = 30;
+			frd = 1;
+		}
+		dropFrame = FALSE;
+	}
 	
 	NSString *newTimecode = [timecode stringByReplacingOccurrencesOfString:@";" withString:@":"];
 	
-	NSArray *digits = [timecode componentsSeparatedByString:@":"];
+//	NSLog(@"new tc %@",newTimecode);
+	
+	NSArray *digits = [newTimecode componentsSeparatedByString:@":"];
+	
+	NSLog(@"digits %@",digits);
+
 	
 	int frames = [[digits lastObject] intValue];
+	NSLog(@"Frames %d",frames);
 	int seconds;
 	
 	if ([digits count] >1) {
@@ -201,11 +224,17 @@
 		for (i=0 ; i<[digits count]-1; i++)
 		{
 			seconds = (seconds * 60) + 	 [[digits objectAtIndex:i] intValue];
+			NSLog(@"Seconds: %d",seconds);
 		}
 	}
 	
 	// need to account for drop frame.
-	return frames + seconds * [self getFrameRateNum] / [self getFrameRateDen];
+	
+	int frame = frames + seconds * frn / frd;
+	
+	NSLog(@"out: %d",frame);
+	
+	return frame;
 }
 
 - (void) setInTimecode:(NSString *)sin

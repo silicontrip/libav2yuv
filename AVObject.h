@@ -30,6 +30,7 @@
 - (id)init;
 - (id)initWithChroma:(int)ch height:(int)h width:(int)w;
 - (void) allocFrame;
+- (void)dumpFormat;
 - (AVRational)getFrameRate;
 - (int)getFrameRateNum;
 - (int)getFrameRateDen;
