@@ -210,11 +210,11 @@
 	
 	NSArray *digits = [newTimecode componentsSeparatedByString:@":"];
 	
-	NSLog(@"digits %@",digits);
+//	NSLog(@"digits %@",digits);
 
 	
 	int frames = [[digits lastObject] intValue];
-	NSLog(@"Frames %d",frames);
+//	NSLog(@"Frames %d",frames);
 	int seconds;
 	
 	if ([digits count] >1) {
@@ -224,7 +224,7 @@
 		for (i=0 ; i<[digits count]-1; i++)
 		{
 			seconds = (seconds * 60) + 	 [[digits objectAtIndex:i] intValue];
-			NSLog(@"Seconds: %d",seconds);
+//			NSLog(@"Seconds: %d",seconds);
 		}
 	}
 	
@@ -232,7 +232,7 @@
 	
 	int frame = frames + seconds * frn / frd;
 	
-	NSLog(@"out: %d",frame);
+//	NSLog(@"out: %d",frame);
 	
 	return frame;
 }

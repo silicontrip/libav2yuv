@@ -24,15 +24,32 @@ NSMutableArray *parseEdl (NSString *filename)
 		//	NSLog(@"line: %@",o);
 		
 		if (![o hasPrefix:@"#"] && [o length]>0) {
-			NSArray *items = [o componentsSeparatedByString:@" "];
-			//		NSLog(@"filename: %@",[items objectAtIndex:0]);
-			//		NSLog(@"in: %@",[items objectAtIndex:3]);
-			//		NSLog(@"out: %@",[items objectAtIndex:4]);
-			NSLog(@"parsed: %@",items);
-			libav *entry = [[libav alloc] initVideoWithFile:[[items objectAtIndex:0] UTF8String]];
 			
-			[entry setInTimecode:[items objectAtIndex:3]];
-			[entry setOutTimecode:[items objectAtIndex:4]];
+			NSString *fileName;
+			NSString *mode;
+			NSString *transition;
+			NSString *tcIn;
+			NSString *tcOut;
+			
+			NSScanner *aScanner = [NSScanner scannerWithString:o];
+			
+			[aScanner scanUpToString:@" " intoString:&fileName];
+			[aScanner scanUpToString:@" " intoString:&mode];
+			[aScanner scanUpToString:@" " intoString:&transition];
+			[aScanner scanUpToString:@" " intoString:&tcIn];
+			[aScanner scanUpToString:@" " intoString:&tcOut];
+
+
+		//	NSArray *items = [o componentsSeparatedByString:@" "];
+			//		NSLog(@"filename: (%@)",fileName);
+			//		NSLog(@"in: %@",tcIn);
+			//		NSLog(@"out: %@",tcOut);
+			
+			// I really need an NSString interface for this
+			libav *entry = [[libav alloc] initVideoWithFile:[fileName UTF8String]];
+			
+			[entry setInTimecode:tcIn];
+			[entry setOutTimecode:tcOut];
 			
 			
 			[entry retain];
@@ -83,10 +100,10 @@ int main(int argc, char *argv[])
 									 Chroma:[lav getChromaSampling]];
 		
 		// need to decode the first frame to get the interlace type
-		NSLog(@"lav decodeNextFrame");
+	//	NSLog(@"lav decodeNextFrame");
 		
 		[lav decodeNextFrame];
-		NSLog(@"yuv setYUVFrameDataWithAVFrame");
+		// NSLog(@"yuv setYUVFrameDataWithAVFrame");
 		
 		[yuv setYUVFrameDataWithAVFrame:[lav getAVFrame]];
 		// NSLog(@"yuv setInterlaceAndOrder");
