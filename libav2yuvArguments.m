@@ -218,7 +218,6 @@
 			"\t444alpha  - Y'CbCr with alpha channel (with Y' black/white point)\n"
 			);
 }
-			
 
 - (NSArray *)getArguments{ return arguments; }
 - (int)getInterlace { return interlace; }

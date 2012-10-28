@@ -31,7 +31,7 @@
 
 - (void)allocFrameData;
 
-- (void)setExtensions:(int)ext ;
+- (void)setExtensions:(int)ext;
 - (int)setOutputFilename:(NSString *)filename; // returns -1 on failure
 - (void)setOutputFd:(int)fd;
 

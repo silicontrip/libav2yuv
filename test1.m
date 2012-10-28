@@ -76,8 +76,7 @@ int main(int argc, char *argv[])
 			{
 				
 				libav *convertFile = [[libav alloc] initVideoWithFile:argument];
-				chromaFilter *chromaConverter = [[chromaFilter alloc] initWithAVObject:convertFile toChroma:[options getChroma]];
-				
+				chromaFilter *chromaConverter = [[chromaFilter alloc] initWithAVObject:convertFile toY4MChroma:[options getChroma]];
 				
 				if (chromaConverter != nil) {
 					[edlList addObject:chromaConverter];
@@ -105,7 +104,7 @@ int main(int argc, char *argv[])
 		
 		// NSLog(@"libyuv alloc");
 		yuv = [[libyuv alloc] 
-		initWithWidth:[lav getWidth] 
+			   initWithWidth:[lav getWidth] 
 			   Height:[lav getHeight] 
 			   SampleAspectAVRational:[lav getSampleAspect]
 			   FrameRateAVRational:[lav getFrameRate]
@@ -113,20 +112,20 @@ int main(int argc, char *argv[])
 		
 		if ([options getExtensions])
 		{
-		[yuv setExtensions:1];
+			[yuv setExtensions:1];
 		}
-		if ([options hasAspect]) 
-		[yuv setSampleAspect:[options getAspect]];
-		
-		if ([options hasFrameRate]) 
-		[yuv setFrameRate:[options getFrameRate]];
-		
-		if ([options hasChroma])
-		[yuv setChromaSampling:[options getChroma]];
-		
-		if ([options hasOutFile])
-		[yuv setOutputFilename:[options getOutFile]];
-		
+		if ([options hasAspect]) {
+			[yuv setSampleAspect:[options getAspect]];
+		}
+		if ([options hasFrameRate]) {
+			[yuv setFrameRate:[options getFrameRate]];
+		}
+		if ([options hasChroma]){
+			[yuv setChromaSampling:[options getChroma]];
+		}		
+		if ([options hasOutFile]){
+			[yuv setOutputFilename:[options getOutFile]];
+		}
 		// need to decode the first frame to get the interlace type
 		//	NSLog(@"lav decodeNextFrame");
 		

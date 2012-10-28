@@ -151,7 +151,7 @@
 		case PIX_FMT_YUV411P: [self setChromaSampling:Y4M_CHROMA_411]; break;
 		case PIX_FMT_YUVJ420P: [self setChromaSampling:Y4M_CHROMA_420JPEG]; break;
 		default:
-			NSLog(@"Unsupported Chroma");
+			NSLog(@"LIBYUV: Unsupported Chroma");
 			break;	
 	}
 }

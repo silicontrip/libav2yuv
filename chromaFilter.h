@@ -11,6 +11,9 @@
 	
 }
 
-- (id)initWithAVObject:(AVObject *)source toChroma:(int)convertMode;
+- (id)initWithAVObject:(AVObject *)s;
+- (id)initWithAVObject:(AVObject *)s toAVChroma:(int)convertMode;
+- (id)initWithAVObject:(AVObject *)s toY4MChroma:(int)convertMode;
+
 
 @end

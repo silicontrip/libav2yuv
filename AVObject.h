@@ -7,6 +7,8 @@
 #include <libavutil/pixfmt.h>
 #include <libavutil/pixdesc.h>
 #include <stdint.h>
+#include <yuv4mpeg.h>
+
 
 @interface AVObject : NSObject {
 
@@ -61,6 +63,8 @@
 - (void)setSampleAspectNum:(int)num;
 - (void)setSampleAspectDen:(int)den;
 - (void)setChromaSampling:(int)samp;
+- (void)setChromaSamplingFromY4M:(int)y4mChroma;
+
 - (void)setInterlaced:(bool)i;
 - (void)setInterlaceTopFieldFirst:(bool)tff;
 - (void)setHeight:(int)hei;

@@ -293,6 +293,23 @@
 	frameChromaSampling = samp;
 }
 
+- (void)setChromaSamplingFromY4M:(int)y4mChroma
+{
+
+	switch (y4mChroma) {
+		case Y4M_CHROMA_420MPEG2: [self setChromaSampling:PIX_FMT_YUV420P]; break;
+		case Y4M_CHROMA_422: [self setChromaSampling:PIX_FMT_YUV422P]; break;
+		case Y4M_CHROMA_444 : [self setChromaSampling:PIX_FMT_YUV444P]; break;
+		case Y4M_CHROMA_411: [self setChromaSampling:PIX_FMT_YUV411P]; break;
+		case Y4M_CHROMA_420JPEG: [self setChromaSampling:PIX_FMT_YUVJ420P]; break;
+			
+		default:
+			NSLog(@"AV: Unsupported Chroma");
+
+			break;
+	}
+	
+}
 - (void)setInterlaced:(bool)i
 {
 	isInterlaced = i;
