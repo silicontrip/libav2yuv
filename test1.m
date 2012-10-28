@@ -1,6 +1,7 @@
 #import <Foundation/NSArray.h>
 #import <Foundation/NSAutoreleasePool.h>
 #import <Foundation/Foundation.h>
+
 #import "libav.h"
 #import "libyuv.h"
 #import "libav2yuvArguments.h"
@@ -64,39 +65,29 @@ int main(int argc, char *argv[])
 	pool = [[NSAutoreleasePool alloc] init];
 	edlList = [NSMutableArray arrayWithCapacity:1];
 	
-	// NSUserDefaults *args = [NSUserDefaults standardUserDefaults];
-	
-	//NSLog(@"libav2yuvArguments alloc");
-	
-//	libav2yuvArguments *options = [[libav2yuvArguments alloc] initWithArguments:args];
-//	[args release];
-	
-	
 	libav2yuvArguments *options = [[libav2yuvArguments alloc]  initWithNSProcessInfoArguments:[[NSProcessInfo processInfo] arguments]];
-//	NSLog(@"This program is named %@.", [argArray objectAtIndex:0]);
-//	NSLog(@"There are %d arguments.", [argArray count] - 1);
 	
-	
-	int c;
 	for (NSString *argument in [options getArguments]) {
-	
-	//	NSString *argument = [argArray objectAtIndex:c];
-	
-		NSLog(@"argument: %@",argument);
-
+		
 		if ([argument hasSuffix:@".edl"]) {
 			[edlList addObjectsFromArray:parseEdl(argument)];
 		} else  {	
 			if ([options getConvert]) 
 			{
-				chromaFilter *chromaConverter = [[chromaFilter alloc] initwithAVObject:[[libav alloc] initVideoWithFile:argument] toChroma:[options getChroma]];
-				if (chromaConverter != nil) 
-				[edlList addObject:chromaConverter];
 				
+				libav *convertFile = [[libav alloc] initVideoWithFile:argument];
+				chromaFilter *chromaConverter = [[chromaFilter alloc] initWithAVObject:convertFile toChroma:[options getChroma]];
+				
+				
+				if (chromaConverter != nil) {
+					[edlList addObject:chromaConverter];
+				}
 			} else {
 				libav *lav = [[libav alloc] initVideoWithFile:argument];
 				if (lav != nil) 
-				[edlList addObject:lav];
+				{
+					[edlList addObject:lav];
+				}
 			}
 			
 		}	
@@ -113,12 +104,17 @@ int main(int argc, char *argv[])
 		libyuv *yuv;
 		
 		// NSLog(@"libyuv alloc");
-		yuv = [[libyuv alloc] initWithWidth:[lav getWidth] 
+		yuv = [[libyuv alloc] 
+		initWithWidth:[lav getWidth] 
 			   Height:[lav getHeight] 
 			   SampleAspectAVRational:[lav getSampleAspect]
 			   FrameRateAVRational:[lav getFrameRate]
 			   ChromaFromAV:[lav getChromaSampling]];
 		
+		if ([options getExtensions])
+		{
+		[yuv setExtensions:1];
+		}
 		if ([options hasAspect]) 
 		[yuv setSampleAspect:[options getAspect]];
 		

@@ -1,5 +1,8 @@
 #import "AVObject.h"
-#include "libswscale/swscale.h"
+#include <libswscale/swscale.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+
 
 @interface chromaFilter : AVObject {
 
@@ -8,6 +11,6 @@
 	
 }
 
-- (id)initwithAVObject:(AVObject *)source toChroma:(int)convertMode;
+- (id)initWithAVObject:(AVObject *)source toChroma:(int)convertMode;
 
 @end

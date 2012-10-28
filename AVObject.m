@@ -85,6 +85,12 @@
 - (int)getSampleAspectDen {
 	return sampleAspect.den;
 }
+
+- (NSString *)getChromaSamplingName
+{
+	return [[NSString alloc] initWithUTF8String:av_get_pix_fmt_name([self getChromaSampling])];
+}
+
 - (int)getChromaSampling {
 	return frameChromaSampling;
 }
@@ -246,7 +252,7 @@
 }
 
 - (void)setFrameRate:(AVRational)rational {
-	NSLog(@"setFrameRate: %d/%d",rational.num,rational.den);
+//	NSLog(@"setFrameRate: %d/%d",rational.num,rational.den);
 	if (rational.den>0 && rational.num>0)
 	{
 		frameRate.num = rational.num;

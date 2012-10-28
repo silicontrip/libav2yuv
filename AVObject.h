@@ -39,6 +39,7 @@
 - (int)getSampleAspectNum;
 - (int)getSampleAspectDen;
 - (int)getChromaSampling;
+- (NSString *)getChromaSamplingName;
 - (bool)getIsInterlaced;
 - (bool)getInterlaceTopFieldFirst;
 - (int)getHeight;
