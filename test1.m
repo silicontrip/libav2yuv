@@ -64,31 +64,29 @@ int main(int argc, char *argv[])
 	pool = [[NSAutoreleasePool alloc] init];
 	edlList = [NSMutableArray arrayWithCapacity:1];
 	
-	NSUserDefaults *args = [NSUserDefaults standardUserDefaults];
+	// NSUserDefaults *args = [NSUserDefaults standardUserDefaults];
 	
 	//NSLog(@"libav2yuvArguments alloc");
 	
-	libav2yuvArguments *options = [[libav2yuvArguments alloc] initWithArguments:args];
-	[args release];
+//	libav2yuvArguments *options = [[libav2yuvArguments alloc] initWithArguments:args];
+//	[args release];
 	
 	
-	NSArray *argArray = [[NSProcessInfo processInfo] arguments];
+	libav2yuvArguments *options = [[libav2yuvArguments alloc]  initWithNSProcessInfoArguments:[[NSProcessInfo processInfo] arguments]];
 //	NSLog(@"This program is named %@.", [argArray objectAtIndex:0]);
 //	NSLog(@"There are %d arguments.", [argArray count] - 1);
 	
 	
 	int c;
-	for (c =1; c < [argArray count]; c++) {
+	for (NSString *argument in [options getArguments]) {
 	
-		NSString *argument = [argArray objectAtIndex:c];
+	//	NSString *argument = [argArray objectAtIndex:c];
 	
 		NSLog(@"argument: %@",argument);
-		if ([argument hasPrefix:@"-"]) {
-			NSLog(@"Unknown option: %@",argument);
-			[options usage];
-		} else if ([argument hasSuffix:@".edl"]) {
+
+		if ([argument hasSuffix:@".edl"]) {
 			[edlList addObjectsFromArray:parseEdl(argument)];
-		} else if ([argument length] >0) {	
+		} else  {	
 			if ([options getConvert]) 
 			{
 				chromaFilter *chromaConverter = [[chromaFilter alloc] initwithAVObject:[[libav alloc] initVideoWithFile:argument] toChroma:[options getChroma]];
@@ -101,9 +99,7 @@ int main(int argc, char *argv[])
 				[edlList addObject:lav];
 			}
 			
-		} else {
-			[options usage];
-		}
+		}	
 	}
 	
 	if ([edlList count] > 0 ) 
