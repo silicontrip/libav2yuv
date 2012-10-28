@@ -3,8 +3,9 @@
 #import <Foundation/Foundation.h>
 #import "libav.h"
 #import "libyuv.h"
+#import "libav2yuvArguments.h"
 #import "AVObject.h"
-
+#import "chromaFilter.h"
 
 NSAutoreleasePool  *pool;
 
@@ -38,15 +39,9 @@ NSMutableArray *parseEdl (NSString *filename)
 			[aScanner scanUpToString:@" " intoString:&transition];
 			[aScanner scanUpToString:@" " intoString:&tcIn];
 			[aScanner scanUpToString:@" " intoString:&tcOut];
-
-
-		//	NSArray *items = [o componentsSeparatedByString:@" "];
-			//		NSLog(@"filename: (%@)",fileName);
-			//		NSLog(@"in: %@",tcIn);
-			//		NSLog(@"out: %@",tcOut);
 			
 			// I really need an NSString interface for this
-			libav *entry = [[libav alloc] initVideoWithFile:[fileName UTF8String]];
+			libav *entry = [[libav alloc] initVideoWithFile:fileName];
 			
 			[entry setInTimecode:tcIn];
 			[entry setOutTimecode:tcOut];
@@ -69,18 +64,45 @@ int main(int argc, char *argv[])
 	pool = [[NSAutoreleasePool alloc] init];
 	edlList = [NSMutableArray arrayWithCapacity:1];
 	
+	NSUserDefaults *args = [NSUserDefaults standardUserDefaults];
+	
+	//NSLog(@"libav2yuvArguments alloc");
+	
+	libav2yuvArguments *options = [[libav2yuvArguments alloc] initWithArguments:args];
+	[args release];
+	
+	
+	NSArray *argArray = [[NSProcessInfo processInfo] arguments];
+//	NSLog(@"This program is named %@.", [argArray objectAtIndex:0]);
+//	NSLog(@"There are %d arguments.", [argArray count] - 1);
+	
 	
 	int c;
-	for (c =1; c < argc; c++ ) {
-		NSString *file = [[NSString alloc] initWithUTF8String:argv[c]];
-		
-		if ([file hasSuffix:@".edl"]) {
-			[edlList addObjectsFromArray:parseEdl(file)];
-		} else {	
-			libav *lav = [[libav alloc] initVideoWithFile:argv[c]];
-			if (lav != nil) 
+	for (c =1; c < [argArray count]; c++) {
+	
+		NSString *argument = [argArray objectAtIndex:c];
+	
+		NSLog(@"argument: %@",argument);
+		if ([argument hasPrefix:@"-"]) {
+			NSLog(@"Unknown option: %@",argument);
+			[options usage];
+		} else if ([argument hasSuffix:@".edl"]) {
+			[edlList addObjectsFromArray:parseEdl(argument)];
+		} else if ([argument length] >0) {	
+			if ([options getConvert]) 
+			{
+				chromaFilter *chromaConverter = [[chromaFilter alloc] initwithAVObject:[[libav alloc] initVideoWithFile:argument] toChroma:[options getChroma]];
+				if (chromaConverter != nil) 
+				[edlList addObject:chromaConverter];
+				
+			} else {
+				libav *lav = [[libav alloc] initVideoWithFile:argument];
+				if (lav != nil) 
 				[edlList addObject:lav];
+			}
 			
+		} else {
+			[options usage];
 		}
 	}
 	
@@ -90,17 +112,31 @@ int main(int argc, char *argv[])
 		
 		[lav dumpFormat];
 		
+		NSLog(@"%dx%d by %d:%d at %d:%d",[lav getWidth],[lav getHeight],[lav getSampleAspectNum],[lav getSampleAspectDen],[lav getFrameRateNum],[lav getFrameRateDen]);
+		
 		libyuv *yuv;
 		
 		// NSLog(@"libyuv alloc");
 		yuv = [[libyuv alloc] initWithWidth:[lav getWidth] 
-									 Height:[lav getHeight] 
-					 SampleAspectAVRational:[lav getSampleAspect]
-						FrameRateAVRational:[lav getFrameRate]
-									 ChromaFromAV:[lav getChromaSampling]];
+			   Height:[lav getHeight] 
+			   SampleAspectAVRational:[lav getSampleAspect]
+			   FrameRateAVRational:[lav getFrameRate]
+			   ChromaFromAV:[lav getChromaSampling]];
+		
+		if ([options hasAspect]) 
+		[yuv setSampleAspect:[options getAspect]];
+		
+		if ([options hasFrameRate]) 
+		[yuv setFrameRate:[options getFrameRate]];
+		
+		if ([options hasChroma])
+		[yuv setChromaSampling:[options getChroma]];
+		
+		if ([options hasOutFile])
+		[yuv setOutputFilename:[options getOutFile]];
 		
 		// need to decode the first frame to get the interlace type
-	//	NSLog(@"lav decodeNextFrame");
+		//	NSLog(@"lav decodeNextFrame");
 		
 		[lav decodeNextFrame];
 		// NSLog(@"yuv setYUVFrameDataWithAVFrame");
@@ -108,9 +144,9 @@ int main(int argc, char *argv[])
 		[yuv setYUVFrameDataWithAVFrame:[lav getAVFrame]];
 		// NSLog(@"yuv setInterlaceAndOrder");
 		
+		
+		
 		[yuv setInterlaceAndOrder:[lav getIsInterlaced] topFieldFirst:[lav getInterlaceTopFieldFirst]];
-		[yuv setFrameRateAVRational:[lav getFrameRate]];
-		[yuv setSampleAspectAVRational:[lav getSampleAspect]];
 		//interlace flag is not available until the first frame is decoded.
 		//need to get the interlace flags before this. So we can use a generator.
 		// NSLog(@"yuv writeHeader");

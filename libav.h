@@ -31,9 +31,9 @@
 		
 }
 
-- (id)initWithFile:(char *)filename:(int)streamType:(int)streamNumber;
-- (id)initVideoWithFile:(char *)filename;
-- (id)initAudioWithFile:(char *)filename;
+- (id)initWithFile:(NSString *)filename streamType:(int)streamType stream:(int)streamNumber;
+- (id)initVideoWithFile:(NSString *)filename;
+- (id)initAudioWithFile:(NSString *)filename;
 - (void)dumpFormat;
 // - (int)readFrame;
 // - (void)decodeFrame;

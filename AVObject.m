@@ -47,9 +47,9 @@
 		int size = avpicture_get_size(ch, w, h);
 		//const char *fmt = av_get_pix_fmt_name(ch);
 		//NSLog(@"picture buffer  %dx%d %s size %d" ,w,h,fmt, size);
-		uint8_t *picture_buf = av_malloc(size);
-		if (picture_buf) {
-			avpicture_fill((AVPicture *)pFrame, picture_buf, ch, w, h);
+		pictureBuffer = av_malloc(size);
+		if (pictureBuffer) {
+			avpicture_fill((AVPicture *)pFrame, pictureBuffer, ch, w, h);
 		} else {
 			av_free(pFrame);
 			pFrame = nil;
@@ -59,9 +59,7 @@
 
 - (void)dumpFormat
 {
-
-	fprintf(stderr,"Black generator AV Object: %dx%d",[self getWidth],[self getHeight]);
-	
+	fprintf(stderr,"Black generator AV Object: %dx%d",[self getWidth],[self getHeight]);	
 }
 
 - (AVRational)getFrameRate
@@ -248,6 +246,7 @@
 }
 
 - (void)setFrameRate:(AVRational)rational {
+	NSLog(@"setFrameRate: %d/%d",rational.num,rational.den);
 	if (rational.den>0 && rational.num>0)
 	{
 		frameRate.num = rational.num;
@@ -355,6 +354,8 @@
 {
 	if (pFrame)
 		av_free(pFrame);
+	if (pictureBuffer)
+		av_free(pictureBuffer);
 	[super dealloc];
 }
 

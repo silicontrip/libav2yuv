@@ -95,18 +95,22 @@
 	fs = y4m_si_get_plane_length(&yuvStreamInfo,0);
 	cfs = y4m_si_get_plane_length(&yuvStreamInfo,1);
 	
-	
 	frameData[0] = (uint8_t *)malloc( fs );
 	frameData[1] = (uint8_t *)malloc( cfs);
 	frameData[2] = (uint8_t *)malloc( cfs);
 	
 }
 
+- (void)setExtensions:(int)ext
+{
+	y4m_accept_extensions(ext);	
+}
 
-- (int)setOutputFilename:(char *)filename
+
+- (int)setOutputFilename:(NSString *)filename
 {
 	
-	fdOut = open(filename,O_WRONLY|O_CREAT);
+	fdOut = open([filename UTF8String],O_WRONLY|O_CREAT);
 	return fdOut;
 	
 }
@@ -260,6 +264,9 @@
 
 - (void)dealloc
 {
+	y4m_fini_frame_info(&yuvFrameInfo);
+	y4m_fini_stream_info(&yuvStreamInfo);
+	close (fdOut);
 	
 	[self deallocFrameData];
 	[super dealloc];

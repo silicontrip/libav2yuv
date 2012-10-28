@@ -20,6 +20,7 @@
 	AVRational frameRate;
 	AVRational sampleAspect;
 	AVFrame *pFrame;
+	uint8_t *pictureBuffer;
 
 	int frameChromaSampling;
 	bool isInterlaced;

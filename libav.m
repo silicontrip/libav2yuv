@@ -10,15 +10,18 @@
 
 @implementation libav
 
-- (id)initVideoWithFile:(char *)filename {
-	return [self initWithFile:filename:AVMEDIA_TYPE_VIDEO:0];
+
+- (id)initVideoWithFile:(NSString *)filename {
+	return [self initWithFile:filename streamType:AVMEDIA_TYPE_VIDEO stream:0];
 }
 
-- (id)initAudioWithFile:(char *)filename {
-	return [self initWithFile:filename:AVMEDIA_TYPE_AUDIO:0];
+- (id)initAudioWithFile:(NSString *)filename {
+	//return [self initWithFile:[NSString stringwithUTF8String:filename] streamType:AVMEDIA_TYPE_AUDIO stream:0];
+	
+	return [self initWithFile:filename streamType:AVMEDIA_TYPE_AUDIO stream:0];
 }
 
-- (id)initWithFile:(char *)filename:(int)st:(int)streamNumber {
+- (id)initWithFile:(NSString *)filename streamType:(int)st stream:(int)streamNumber {
 	
 	self = [super init];
 	
@@ -28,18 +31,18 @@
 	avStream = -1;
 	streamType = st;
 	
-	lavFileName = [[NSString alloc] initWithUTF8String:filename];
+	lavFileName = filename;
 	
 	if (self) {
 		av_register_all();
 		
 #if LIBAVFORMAT_VERSION_MAJOR  < 53
-		if(av_open_input_file(&pFormatCtx, filename, avif, 0, NULL)!=0) 
+		if(av_open_input_file(&pFormatCtx, [filename UTF8String], avif, 0, NULL)!=0) 
 #else
-			if(avformat_open_input(&pFormatCtx, filename, avif, NULL)!=0) 
+			if(avformat_open_input(&pFormatCtx, [filename UTF8String], avif, NULL)!=0) 
 #endif
 			{
-				NSLog(@"initWithFile: avformat_open_input failed to open: %s",filename);
+				NSLog(@"initWithFile: avformat_open_input failed to open: %@",filename);
 				[self release];
 				return nil;
 			}
@@ -107,6 +110,8 @@
 			return nil;
 		}
 		
+		[self setFrameRate:pFormatCtx->streams[avStream]->r_frame_rate];
+		
 		[self setSampleAspect:pCodecCtx->sample_aspect_ratio];
 		[self setChromaSampling:pCodecCtx->pix_fmt];
 		[self setHeight:pCodecCtx->height];
@@ -134,18 +139,18 @@
 	if (frameCounter > [self getOut])
 		return -1;
 	
+	// loop until we are passed the frame in marker
 	do {
+		// loop until "frameFinished"
 		do {
-			
+			// Find our specified stream
 			do {
-			//	NSLog(@"read frame until match");
 				bytes = av_read_frame(pFormatCtx, &packet);
 				if (bytes < 0) 
 					return bytes;
-			
 			} while (packet.stream_index != avStream) ;
 			
-		//	NSLog (@"Decode frame until framefinished");
+			//	NSLog (@"Decode frame until framefinished");
 			
 			int len;
 			// I'm not sure when avcodec_decode_video2 became available, if your version of libav doesn't
@@ -163,8 +168,8 @@
 			//	NSLog(@"decoded: %d finished: %d",len,frameFinished);
 			
 		} while (!frameFinished);
-	//	NSLog (@"Skip until frameCounter(%d) >= in(%d) ",frameCounter,[self getIn]);
-
+		//	NSLog (@"Skip until frameCounter(%d) >= in(%d) ",frameCounter,[self getIn]);
+		
 		frameCounter ++;
 		
 	} while (frameCounter < [self getIn]);
@@ -179,9 +184,6 @@
 #endif
 	return bytes;
 }
-
-
-
 
 - (NSString *)getFilename {
 	return lavFileName;
