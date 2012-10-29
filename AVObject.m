@@ -177,6 +177,15 @@
 	return frameOut;
 }
 
+- (int64_t)getSamplesIn {
+	return samplesPerSecond * frameIn * [self getFrameRateNum] / [ self getFrameRateDen];
+}
+
+- (int64_t)getSamplesOut {
+	return samplesPerSecond * frameOut * [self getFrameRateNum] / [ self getFrameRateDen];
+}
+
+
 - (void)setIn:(int)fin {
 	// validate
 	if (fin >= 0)
@@ -239,6 +248,11 @@
 //	NSLog(@"out: %d",frame);
 	
 	return frame;
+}
+
+- (void) setSamplesPerSecond:(int)sps
+{
+	samplesPerSecond = sps;
 }
 
 - (void) setInTimecode:(NSString *)sin

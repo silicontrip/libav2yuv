@@ -16,6 +16,7 @@
 	int frameIn;
 	int frameOut;
 	
+	int samplesPerSecond;
 	int frameWidth;
 	int frameHeight;
 	
@@ -51,7 +52,11 @@
 - (int)getFrameCounter;
 - (int)getIn;
 - (int)getOut;
+- (int64_t)getSamplesIn;
+- (int64_t)getSamplesOut;
 
+
+- (void) setSamplesPerSecond:(int)sps;
 - (void)setIn:(int)fin;
 - (void)setOut:(int)fout;
 - (void)setInTimecode:(NSString *)sin;

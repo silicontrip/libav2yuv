@@ -29,11 +29,18 @@
 	int avStream;
 	int streamType;
 		
+	int64_t sampleCounter;
+	int16_t		*aBuffer;
 }
 
 - (id)initWithFile:(NSString *)filename streamType:(int)streamType stream:(int)streamNumber;
 - (id)initVideoWithFile:(NSString *)filename;
 - (id)initAudioWithFile:(NSString *)filename;
+- (int)openInputFile:(NSString *)filename;
+- (int)findStream:(int)streamNumber streamType:(int)streamType;
+- (int)findStreamInfo;
+- (int)openAVCodec;
+
 - (void)dumpFormat;
 // - (int)readFrame;
 // - (void)decodeFrame;
