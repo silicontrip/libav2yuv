@@ -26,12 +26,11 @@
 	[self initWithAVObject:s];
 	
 	[self setChromaSampling:convertMode];
-
 	 
 	[self allocFrame];
 	 
 	imgConvertCtx = sws_getContext([self getWidth], [self getHeight], [s getChromaSampling], 
-									 [self getWidth], [self getHeight], convertMode, SWS_BICUBIC, NULL, NULL, NULL); 
+								   [self getWidth], [self getHeight], convertMode, SWS_BICUBIC, NULL, NULL, NULL); 
 
 
 	return self;
@@ -44,7 +43,6 @@
 	[self initWithAVObject:s];
 	
 	[self setChromaSamplingFromY4M:convertMode];
-	
 	
 	[self allocFrame];
 	
@@ -65,9 +63,8 @@
 	[source decodeNextFrame];
 	
 	pFrameSource = [source getAVFrame];
-	//chromaFilter.m:38: warning: passing argument 2 of ‘sws_scale’ from incompatible pointer type
-	// what am I doing wrong here? everywhere I look it's AVFrame->data 
-	return sws_scale(imgConvertCtx,  (const uint8_t * const *)((AVPicture *)pFrameSource)->data, pFrameSource->linesize, 0, [self getHeight],pFrame->data, pFrame->linesize);
+	return sws_scale(imgConvertCtx,  (const uint8_t * const *)((AVPicture *)pFrameSource)->data,
+					 pFrameSource->linesize, 0, [self getHeight],pFrame->data, pFrame->linesize);
 	
 }
 
