@@ -35,6 +35,7 @@
 - (id)initWithChroma:(int)ch height:(int)h width:(int)w;
 - (void) allocFrame;
 - (void)dumpFormat;
+- (NSString *)getChromaSamplingName;
 - (AVRational)getFrameRate;
 - (int)getFrameRateNum;
 - (int)getFrameRateDen;
@@ -42,7 +43,6 @@
 - (int)getSampleAspectNum;
 - (int)getSampleAspectDen;
 - (int)getChromaSampling;
-- (NSString *)getChromaSamplingName;
 - (bool)getIsInterlaced;
 - (bool)getInterlaceTopFieldFirst;
 - (int)getHeight;
