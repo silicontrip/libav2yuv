@@ -25,11 +25,9 @@
 }
 
 - (id)initWithNSProcessInfoArguments:(NSArray *)a;
-- (id)initWithNSUserDefaults:(NSUserDefaults *)args;
 
 - (void)usage;
 - (void)chromaModes;
-
 
 - (NSArray *)getArguments;
 - (int)getInterlace;
