@@ -139,7 +139,12 @@
 	
 }
 
-- (void)setChromaSampling:(int)ch { y4m_si_set_chroma(&yuvStreamInfo,ch); }
+- (void)setChromaSampling:(int)ch { 
+	if (ch != Y4M_CHROMA_420MPEG2 && ch != Y4M_CHROMA_420JPEG)
+		[self setExtensions:1];
+	
+	y4m_si_set_chroma(&yuvStreamInfo,ch); 
+}
 - (void)setChromaSamplingFromAV:(int)pix_fmt
 {
 
