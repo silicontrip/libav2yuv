@@ -7,56 +7,9 @@
 #import "libav2yuvArguments.h"
 #import "AVObject.h"
 #import "chromaFilter.h"
+#import "edlListFilter.h"
 
 NSAutoreleasePool  *pool;
-
-NSMutableArray *parseEdl (NSString *filename)
-{
-	
-	NSString *fileContents = [NSString stringWithContentsOfFile:filename encoding:NSUTF8StringEncoding error:nil];
-	NSArray *lines = [fileContents componentsSeparatedByString:@"\n"];
-	
-	NSMutableArray *edl = [NSMutableArray arrayWithCapacity:1];
-	
-	[edl retain];
-	
-	for (NSString* o in lines)
-	{
-		
-		//	NSLog(@"line: %@",o);
-		
-		if (![o hasPrefix:@"#"] && [o length]>0) {
-			
-			NSString *fileName;
-			NSString *mode;
-			NSString *transition;
-			NSString *tcIn;
-			NSString *tcOut;
-			
-			NSScanner *aScanner = [NSScanner scannerWithString:o];
-			
-			[aScanner scanUpToString:@" " intoString:&fileName];
-			[aScanner scanUpToString:@" " intoString:&mode];
-			[aScanner scanUpToString:@" " intoString:&transition];
-			[aScanner scanUpToString:@" " intoString:&tcIn];
-			[aScanner scanUpToString:@" " intoString:&tcOut];
-			
-			// I really need an NSString interface for this
-			libav *entry = [[libav alloc] initVideoWithFile:fileName];
-			
-			[entry setInTimecode:tcIn];
-			[entry setOutTimecode:tcOut];
-			
-			
-			[entry retain];
-			//		NSLog(@"Time: %d - %d",[entry getIn],[entry getOut]);
-			[edl addObject:entry];
-		}
-	}
-	
-	return edl;
-	
-}
 
 int main(int argc, char *argv[])
 {
@@ -70,7 +23,11 @@ int main(int argc, char *argv[])
 	for (NSString *argument in [options getArguments]) {
 		
 		if ([argument hasSuffix:@".edl"]) {
-			[edlList addObjectsFromArray:parseEdl(argument)];
+		
+			AVObject *lav = [[edlListFilter alloc] initWithFile:argument];
+			if (lav != nil) {
+					[edlList addObject:lav];
+		}
 		} else  {	
 			if ([options getConvert]) 
 			{
@@ -127,13 +84,13 @@ int main(int argc, char *argv[])
 			[yuv setOutputFilename:[options getOutFile]];
 		}
 		// need to decode the first frame to get the interlace type
-		//	NSLog(@"lav decodeNextFrame");
+			NSLog(@"lav decodeNextFrame");
 		
 		[lav decodeNextFrame];
-		// NSLog(@"yuv setYUVFrameDataWithAVFrame");
+		NSLog(@"yuv setYUVFrameDataWithAVFrame");
 		
 		[yuv setYUVFrameDataWithAVFrame:[lav getAVFrame]];
-		// NSLog(@"yuv setInterlaceAndOrder");
+		 NSLog(@"yuv setInterlaceAndOrder");
 		
 		
 		

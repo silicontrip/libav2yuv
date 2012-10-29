@@ -8,11 +8,11 @@ MJPEGFLAGS= -lmjpegutils
 FFMPEG_FLAGS= -lswscale -lavcodec -lavformat -lavutil
 
 
-OBJ=libav.o AVObject.o libyuv.o libav2yuvArguments.o chromaFilter.o test1.o
+OBJ=libav.o AVObject.o libyuv.o libav2yuvArguments.o chromaFilter.o test1.o edlListFilter.o
 
 all: test1
 
-libav.o: libav.m libav.h AVObject.o
+libav.o: libav.m libav.h 
 
 AVObject.o: AVObject.m AVObject.h
 
@@ -21,6 +21,8 @@ libyuv.o: libyuv.m libyuv.h
 libav2yuvArguments.o: libav2yuvArguments.m libav2yuvArguments.h
 
 chromaFilter.o: chromaFilter.m chromaFilter.h
+
+edlListFilter.o: edlListFilter.m edlListFilter.h
 
 test1: $(OBJ)
 	$(CC) $(COCOAFLAGS) $(FFMPEG_FLAGS) $(MJPEGFLAGS) $(LDFLAGS) -o test1 $(OBJ)
