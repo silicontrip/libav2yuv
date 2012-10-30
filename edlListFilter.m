@@ -65,7 +65,7 @@
 	return self;
 }
 
-+ (BOOL)hasAudio:(NSString *)mode
+- (BOOL)hasAudio:(NSString *)mode
 {
 
 	NSRange enableAudio = [mode rangeOfString:@"A"];
@@ -80,7 +80,7 @@
 	return FALSE;
 }
 
-+ (BOOL)hasVideo:(NSString *)mode
+- (BOOL)hasVideo:(NSString *)mode
 {
 
 	NSRange enableVideo = [mode rangeOfString:@"V"];
