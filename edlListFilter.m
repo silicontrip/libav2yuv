@@ -8,18 +8,18 @@
 	[super init];
 	
 	entries=[NSMutableArray arrayWithCapacity:1] ;
-	
+	frameCounter = 0;
 	return self;
 }
 
-- (id)initWithFile:(NSString *)filename
+- (id)initWithFile:(NSString *)filename streamType:(int)st 
 {
-
+	
 	[self init];
 	
 	NSString *fileContents = [NSString stringWithContentsOfFile:filename encoding:NSUTF8StringEncoding error:nil];
 	NSArray *lines = [fileContents componentsSeparatedByString:@"\n"];
-		
+	
 	for (NSString* o in lines)
 	{
 		
@@ -41,11 +41,20 @@
 			[aScanner scanUpToString:@" " intoString:&tcIn];
 			[aScanner scanUpToString:@" " intoString:&tcOut];
 			
-			libav *entry = [[libav alloc] initVideoWithFile:fileName];
+			
+			libav *entry;
+			if ((st == AVMEDIA_TYPE_VIDEO) && [self hasVideo:mode])
+			{
+				entry = [[libav alloc] initWithFile:fileName streamType:AVMEDIA_TYPE_VIDEO stream:-1];
+			}
+			
+			if ((st == AVMEDIA_TYPE_AUDIO) && [self hasAudio:mode])
+			{
+				entry = [[libav alloc] initWithFile:fileName streamType:AVMEDIA_TYPE_AUDIO stream:-1];
+			}
 			
 			[entry setInTimecode:tcIn];
 			[entry setOutTimecode:tcOut];
-			
 			
 			[entry retain];
 			//		NSLog(@"Time: %d - %d",[entry getIn],[entry getOut]);
@@ -54,22 +63,54 @@
 	}
 	
 	return self;
+}
+
++ (BOOL)hasAudio:(NSString *)mode
+{
+
+	NSRange enableAudio = [mode rangeOfString:@"A"];
+	NSRange enableaudio = [mode rangeOfString:@"a"];
+	NSRange enableBoth = [mode rangeOfString:@"B"];
+	NSRange enableboth = [mode rangeOfString:@"B"];
+	
+	
+	if (enableAudio.location || enableaudio.location || enableBoth.location || enableboth.location) 
+		return TRUE;
+	
+	return FALSE;
+}
+
++ (BOOL)hasVideo:(NSString *)mode
+{
+
+	NSRange enableVideo = [mode rangeOfString:@"V"];
+	NSRange enablevideo = [mode rangeOfString:@"v"];
+	NSRange enableBoth = [mode rangeOfString:@"B"];
+	NSRange enableboth = [mode rangeOfString:@"B"];
+	
+	if (enableVideo.location || enablevideo.location || enableBoth.location || enableboth.location) 
+		return TRUE;
+	
+	return FALSE;
 	
 }
 
 - (int)decodeNextFrame
 {
-
-	// need to handle in and out set on this object
+	
+	if (frameCounter > [self getOut])
+		return -1;
 	
 	int bytes;
-	
-	while ((bytes=[[self currentAV] decodeNextFrame]) < 0) {
-	
-		[entries removeObjectAtIndex:0];
-		if ([entries count] == 0)
-			return -1;
-	}
+	do {
+		while ((bytes=[[self currentAV] decodeNextFrame]) < 0) {
+			
+			[entries removeObjectAtIndex:0];
+			if ([entries count] == 0)
+				return -1;
+		}
+		frameCounter++;
+	} while (frameCounter <= [self getIn]);
 	return bytes;
 }
 
