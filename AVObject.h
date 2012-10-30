@@ -24,6 +24,11 @@
 	AVRational sampleAspect;
 	AVFrame *pFrame;
 	uint8_t *pictureBuffer;
+	
+	uint8_t colour_y;
+	uint8_t colour_u;
+	uint8_t colour_v;
+
 
 	int frameChromaSampling;
 	bool isInterlaced;
@@ -56,7 +61,8 @@
 - (int64_t)getSamplesOut;
 
 
-- (void) setSamplesPerSecond:(int)sps;
+- (void)setColourY:(uint8_t)y U:(uint8_t)u V:(uint8_t)v;
+- (void)setSamplesPerSecond:(int)sps;
 - (void)setIn:(int)fin;
 - (void)setOut:(int)fout;
 - (void)setInTimecode:(NSString *)sin;

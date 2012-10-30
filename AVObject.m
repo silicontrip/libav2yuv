@@ -10,6 +10,7 @@
 	[self setIn:0];
 	[self setOut:INT32_MAX];
 	
+	[self setColourY:16 U:128 V:128]; // set default colour to black
 	
 	return self;
 	
@@ -45,8 +46,6 @@
 		int w = [self getWidth];
 		
 		int size = avpicture_get_size(ch, w, h);
-		//const char *fmt = av_get_pix_fmt_name(ch);
-		//NSLog(@"picture buffer  %dx%d %s size %d" ,w,h,fmt, size);
 		pictureBuffer = av_malloc(size);
 		if (pictureBuffer) {
 			avpicture_fill((AVPicture *)pFrame, pictureBuffer, ch, w, h);
@@ -178,11 +177,18 @@
 }
 
 - (int64_t)getSamplesIn {
-	return samplesPerSecond * frameIn * [self getFrameRateNum] / [ self getFrameRateDen];
+	return samplesPerSecond * frameIn * [self getFrameRateNum] / [self getFrameRateDen];
 }
 
 - (int64_t)getSamplesOut {
-	return samplesPerSecond * frameOut * [self getFrameRateNum] / [ self getFrameRateDen];
+	return samplesPerSecond * frameOut * [self getFrameRateNum] / [self getFrameRateDen];
+}
+
+- (void)setColourY:(uint8_t)y U:(uint8_t)u V:(uint8_t)v
+{
+	colour_y = y;
+	colour_u = u;
+	colour_v = v;
 }
 
 
@@ -196,6 +202,11 @@
 	// validate
 	if (fout >= 0)
 		frameOut = fout;
+}
+
+- (void) setSamplesPerSecond:(int)sps
+{
+	samplesPerSecond = sps;
 }
 
 - (int)TCtoFrames:(NSString*)timecode
@@ -218,16 +229,9 @@
 	}
 	
 	NSString *newTimecode = [timecode stringByReplacingOccurrencesOfString:@";" withString:@":"];
-	
-//	NSLog(@"new tc %@",newTimecode);
-	
 	NSArray *digits = [newTimecode componentsSeparatedByString:@":"];
 	
-//	NSLog(@"digits %@",digits);
-
-	
 	int frames = [[digits lastObject] intValue];
-//	NSLog(@"Frames %d",frames);
 	int seconds;
 	
 	if ([digits count] >1) {
@@ -237,7 +241,6 @@
 		for (i=0 ; i<[digits count]-1; i++)
 		{
 			seconds = (seconds * 60) + 	 [[digits objectAtIndex:i] intValue];
-//			NSLog(@"Seconds: %d",seconds);
 		}
 	}
 	
@@ -245,15 +248,10 @@
 	
 	int frame = frames + seconds * frn / frd;
 	
-//	NSLog(@"out: %d",frame);
 	
 	return frame;
 }
 
-- (void) setSamplesPerSecond:(int)sps
-{
-	samplesPerSecond = sps;
-}
 
 - (void) setInTimecode:(NSString *)sin
 {
@@ -266,7 +264,6 @@
 }
 
 - (void)setFrameRate:(AVRational)rational {
-//	NSLog(@"setFrameRate: %d/%d",rational.num,rational.den);
 	if (rational.den>0 && rational.num>0)
 	{
 		frameRate.num = rational.num;
@@ -337,12 +334,10 @@
 
 - (void)setHeight:(int)hei {
 	frameHeight = hei;
-	//pFrame->height = hei;
 }
 
 - (void)setWidth:(int)wid {
 	frameWidth = wid;
-	//	pFrame->width = wid;
 }
 
 - (int)decodeNextFrame
@@ -373,9 +368,9 @@
 		int frameLength = [self getHeight] * [self getWidth];
 		int chromaLength = [self getChromaHeight] * [self getChromaWidth];
 		
-		memset(m[0],16,frameLength);
-		memset(m[1],128,frameLength);
-		memset(m[2],128,frameLength);
+		memset(m[0],colour_y,frameLength);
+		memset(m[1],colour_u,frameLength);
+		memset(m[2],colour_v,frameLength);
 		
 		frameCounter++;
 		return frameLength + chromaLength<<1;
@@ -393,6 +388,8 @@
 		av_free(pFrame);
 	if (pictureBuffer)
 		av_free(pictureBuffer);
+	if (aBuffer)
+		av_free(aBuffer);
 	[super dealloc];
 }
 
