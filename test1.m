@@ -20,30 +20,24 @@ int main(int argc, char *argv[])
 	
 	libav2yuvArguments *options = [[libav2yuvArguments alloc]  initWithNSProcessInfoArguments:[[NSProcessInfo processInfo] arguments]];
 	
+	
 	for (NSString *argument in [options getArguments]) {
-		
+		AVObject *lav = nil;
 		if ([argument hasSuffix:@".edl"]) {
-		
-			AVObject *lav = [[edlListFilter alloc] initWithFile:argument];
-			if (lav != nil) {
-					[edlList addObject:lav];
-		}
+			lav = [[edlListFilter alloc] initWithFile:argument];
 		} else  {	
+			lav = [[libav alloc] initVideoWithFile:argument];
+		}
+		if (lav != nil) 
+		{
 			if ([options getConvert]) 
 			{
-				
-				libav *convertFile = [[libav alloc] initVideoWithFile:argument];
-				chromaFilter *chromaConverter = [[chromaFilter alloc] initWithAVObject:convertFile toY4MChroma:[options getChroma]];
-				
+				chromaFilter *chromaConverter = [[chromaFilter alloc] initWithAVObject:lav toY4MChroma:[options getChroma]];
 				if (chromaConverter != nil) {
 					[edlList addObject:chromaConverter];
 				}
 			} else {
-				libav *lav = [[libav alloc] initVideoWithFile:argument];
-				if (lav != nil) 
-				{
-					[edlList addObject:lav];
-				}
+				[edlList addObject:lav];
 			}
 			
 		}	
@@ -84,13 +78,13 @@ int main(int argc, char *argv[])
 			[yuv setOutputFilename:[options getOutFile]];
 		}
 		// need to decode the first frame to get the interlace type
-			NSLog(@"lav decodeNextFrame");
+		NSLog(@"lav decodeNextFrame");
 		
 		[lav decodeNextFrame];
 		NSLog(@"yuv setYUVFrameDataWithAVFrame");
 		
 		[yuv setYUVFrameDataWithAVFrame:[lav getAVFrame]];
-		 NSLog(@"yuv setInterlaceAndOrder");
+		NSLog(@"yuv setInterlaceAndOrder");
 		
 		
 		
