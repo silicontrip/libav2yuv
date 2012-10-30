@@ -60,6 +60,8 @@
 - (int)decodeNextFrame
 {
 
+	// need to handle in and out set on this object
+	
 	int bytes;
 	
 	while ((bytes=[[self currentAV] decodeNextFrame]) < 0) {
