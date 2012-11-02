@@ -16,9 +16,37 @@
 	
 }
 
+- (id)initWithSilence:(int)samples channels:(int)ch sampleFormat:(int)sf
+{
+	
+	pFrame=avcodec_alloc_frame();
+	avcodec_get_frame_defaults(pFrame);
+
+	sampleChannels = ch;
+	sampleFormat = sf;
+	
+	pictureBuffer = av_malloc(samples *
+							  av_get_bytes_per_sample(sf) *
+							  ch); 
+	
+	if (!pictureBuffer) 
+	{
+		NSLog(@"Unable to allocate buffer");
+		[self release];
+		return nil;
+	}
+	avcodec_fill_audio_frame(AVFrame, ch, sf,
+                             (uint8_t *)pictureBuffer,
+                             samples *
+                             av_get_bytes_per_sample(sf) *
+                             ch, 1);
+	
+		
+}
+
 - (id)initWithChroma:(int)ch height:(int)h width:(int)w
 {
-	self = [super init];
+	[self init];
 	
 	[self setChromaSampling:ch];
 	[self setHeight:h];
@@ -204,6 +232,17 @@
 		frameOut = fout;
 }
 
+- (void)setSampleChannels:(int)ch
+{
+	sampleChannels = ch;
+}
+
+- (void)setSampleFormat:(int)fmt
+{
+	sampleFormat = fmt;
+}
+
+
 - (void) setSamplesPerSecond:(int)sps
 {
 	samplesPerSecond = sps;
@@ -340,42 +379,42 @@
 	frameWidth = wid;
 }
 
+- (int)decodeNextAudio
+{
+	// how to handle the in and out.
+	
+	if (sampleCounter > [self getSamplesOut])
+		return -1;
+	
+	// do
+	// samples = decode frame
+	// while samples + sampleCounter < [self getSamplesIn]
+	// if sampleCounter < [self getSamplesIn] && sampleCounter + samples >=[self getSamplesIn]
+	// send partial frame
+	// if sampleCounter <=[self getSamplesOut] && sampleCounter + samples >[self getSamplesOut]
+	// send partial frame
+	// else 
+	// send entire frame.
+	// sampleCount += samples. 
+}
+
 - (int)decodeNextFrame
 {
 	if (frameCounter < frameIn)
 		frameCounter = frameIn;
 	
+	// I only need to do this once.
 	if (frameCounter <= frameOut) {
 		
-		memset(pFrame->data[0],16,[self getHeight]*pFrame->linesize[0]);
-		memset(pFrame->data[1],128,[self getChromaHeight]*pFrame->linesize[1]);
-		memset(pFrame->data[2],128,[self getChromaHeight]*pFrame->linesize[2]);
+		memset(pFrame->data[0],colour_y,[self getHeight]*pFrame->linesize[0]);
+		memset(pFrame->data[1],colour_u,[self getChromaHeight]*pFrame->linesize[1]);
+		memset(pFrame->data[2],colour_v,[self getChromaHeight]*pFrame->linesize[2]);
 		frameCounter++;
 		
 		return [self getHeight]*pFrame->linesize[0] +
 		[self getHeight]*pFrame->linesize[1] +
 		[self getHeight]*pFrame->linesize[2];
 	}
-	return -1;
-	
-}
-
-- (int)decodeNextFrameToYUV:(uint8_t **)m
-{
-	
-	
-	if (frameCounter <= frameOut) {
-		int frameLength = [self getHeight] * [self getWidth];
-		int chromaLength = [self getChromaHeight] * [self getChromaWidth];
-		
-		memset(m[0],colour_y,frameLength);
-		memset(m[1],colour_u,frameLength);
-		memset(m[2],colour_v,frameLength);
-		
-		frameCounter++;
-		return frameLength + chromaLength<<1;
-	}
-	
 	return -1;
 	
 }
@@ -388,8 +427,10 @@
 		av_free(pFrame);
 	if (pictureBuffer)
 		av_free(pictureBuffer);
+#if LIBAVFORMAT_VERSION_MAJOR  < 54
 	if (aBuffer)
 		av_free(aBuffer);
+#endif
 	[super dealloc];
 }
 

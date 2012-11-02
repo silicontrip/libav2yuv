@@ -17,6 +17,8 @@
 	int frameOut;
 	
 	int samplesPerSecond;
+	int sampleChannels;
+	int sampleFormat;
 	int frameWidth;
 	int frameHeight;
 	
@@ -29,7 +31,10 @@
 	uint8_t colour_u;
 	uint8_t colour_v;
 
-
+#if LIBAVFORMAT_VERSION_MAJOR  < 54
+	uint8_t *aBuffer;
+#endif
+	
 	int frameChromaSampling;
 	bool isInterlaced;
 	bool interlaceTopFieldFirst;
@@ -37,6 +42,7 @@
 	}
 
 - (id)init;
+- (id)initWithSilence:(int)samples channels:(int)ch sampleFormat:(int)sf;
 - (id)initWithChroma:(int)ch height:(int)h width:(int)w;
 - (void) allocFrame;
 - (void)dumpFormat;
@@ -63,6 +69,10 @@
 
 - (void)setColourY:(uint8_t)y U:(uint8_t)u V:(uint8_t)v;
 - (void)setSamplesPerSecond:(int)sps;
+- (void)setSampleChannels:(int)ch;
+- (void)setSampleFormat:(int)fmt;
+
+
 - (void)setIn:(int)fin;
 - (void)setOut:(int)fout;
 - (void)setInTimecode:(NSString *)sin;
@@ -84,6 +94,7 @@
 // trying to think of the default call to get frame data
 // and behaviour when outside the set in out points.
 - (int)decodeNextFrame;
+- (int)decodeNextAudio;
 - (AVFrame *)getAVFrame;
 - (AVFrame *)decodeAndGetNextAVFrame;
 - (void)dealloc;
