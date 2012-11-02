@@ -39,7 +39,7 @@
 		return nil;
 	}
 	avcodec_fill_audio_frame(pFrame, ch, sf,
-                             (uint8_t *)pictureBuffer,
+                             pictureBuffer,
                              samples *
                              av_get_bytes_per_sample(sf) *
                              ch, 1);
@@ -220,6 +220,8 @@
 
 - (int)getSampleSize { return av_get_bytes_per_sample(sampleFormat); }
 - (int)getSampleChannels { return sampleChannels; }
+- (int)getSampleFormat { return sampleFormat; }
+
 
 - (void)setColourY:(uint8_t)y U:(uint8_t)u V:(uint8_t)v
 {

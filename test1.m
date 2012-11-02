@@ -121,6 +121,8 @@ int main(int argc, char *argv[])
 		}	
 	}
 	
+	NSLog(@"EDL list count: %d",[edlList count]);
+	
 	if ([edlList count] > 0 ) 
 	{
 		
@@ -133,7 +135,6 @@ int main(int argc, char *argv[])
 			
 			AVObject *lav = [edlList objectAtIndex:0];
 			
-			[lav dumpFormat];
 			
 			// open out file
 			NSFileHandle *nfh;
@@ -144,21 +145,26 @@ int main(int argc, char *argv[])
 			}
 
 			for (AVObject *audio in edlList) {
+						[audio dumpFormat];
+
 				if (audio != nil) {
 					while ([audio decodeNextAudio] >=0)
 					{
-					
+						NSLog(@"decodeNextAudio loop");
 						AVFrame *pFrame = [audio getAVFrame];
 					
 						NSData *data = [NSData dataWithBytes:pFrame->data[0] length:pFrame->nb_samples];
 					
 						[nfh writeData:data];
 					}
+											NSLog(@"decodeNextAudio loop exit");
+
 					[audio release];
 				} else {
 					NSLog(@"Couldn't initialise video %s",argv[1]);
 				}
-				
+															NSLog(@"edlList loop exit");
+
 			}
 			// close file
 			[nfh closeFile];
