@@ -19,6 +19,8 @@
 	int samplesPerSecond;
 	int sampleChannels;
 	int sampleFormat;
+	int64_t sampleCounter;
+	int bufferSize;
 	int frameWidth;
 	int frameHeight;
 	
@@ -42,7 +44,7 @@
 	}
 
 - (id)init;
-- (id)initWithSilence:(int)samples channels:(int)ch sampleFormat:(int)sf;
+- (id)initWithSilence:(int)samples channels:(int)ch sampleFormat:(int)sf samplesPerSecond:(int)sps;
 - (id)initWithChroma:(int)ch height:(int)h width:(int)w;
 - (void) allocFrame;
 - (void)dumpFormat;
@@ -65,7 +67,8 @@
 - (int)getOut;
 - (int64_t)getSamplesIn;
 - (int64_t)getSamplesOut;
-
+- (int)getSampleSize;
+- (int)getSampleChannels;
 
 - (void)setColourY:(uint8_t)y U:(uint8_t)u V:(uint8_t)v;
 - (void)setSamplesPerSecond:(int)sps;

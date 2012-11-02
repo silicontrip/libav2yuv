@@ -16,14 +16,17 @@
 	
 }
 
-- (id)initWithSilence:(int)samples channels:(int)ch sampleFormat:(int)sf
+- (id)initWithSilence:(int)samples channels:(int)ch sampleFormat:(int)sf samplesPerSecond:(int)sps
 {
 	
 	pFrame=avcodec_alloc_frame();
 	avcodec_get_frame_defaults(pFrame);
 
-	sampleChannels = ch;
-	sampleFormat = sf;
+	[self setSampleChannels:ch];
+	[self setSampleFormat:sf];
+	[self setSamplesPerSecond:sps];
+	
+	bufferSize = samples;
 	
 	pictureBuffer = av_malloc(samples *
 							  av_get_bytes_per_sample(sf) *
@@ -35,13 +38,16 @@
 		[self release];
 		return nil;
 	}
-	avcodec_fill_audio_frame(AVFrame, ch, sf,
+	avcodec_fill_audio_frame(pFrame, ch, sf,
                              (uint8_t *)pictureBuffer,
                              samples *
                              av_get_bytes_per_sample(sf) *
                              ch, 1);
 	
-		
+	memset(	pictureBuffer,0,samples *
+		   av_get_bytes_per_sample(sf) *
+		   ch);
+	
 }
 
 - (id)initWithChroma:(int)ch height:(int)h width:(int)w
@@ -211,6 +217,9 @@
 - (int64_t)getSamplesOut {
 	return samplesPerSecond * frameOut * [self getFrameRateNum] / [self getFrameRateDen];
 }
+
+- (int)getSampleSize { return av_get_bytes_per_sample(sampleFormat); }
+- (int)getSampleChannels { return sampleChannels; }
 
 - (void)setColourY:(uint8_t)y U:(uint8_t)u V:(uint8_t)v
 {
@@ -387,14 +396,25 @@
 		return -1;
 	
 	// do
-	// samples = decode frame
-	// while samples + sampleCounter < [self getSamplesIn]
-	// if sampleCounter < [self getSamplesIn] && sampleCounter + samples >=[self getSamplesIn]
-	// send partial frame
-	// if sampleCounter <=[self getSamplesOut] && sampleCounter + samples >[self getSamplesOut]
-	// send partial frame
-	// else 
-	// send entire frame.
+	int samples = bufferSize / [self getSampleSize] * [self getSampleChannels];
+	if ((sampleCounter < [self getSamplesIn]) && (sampleCounter + samples >[self getSamplesOut]))
+	{
+		// send partial frame
+		// copy sampleBuffer + [self getSamplesIn] - sampleCounter to (sampleCounter + samples) - [self getSamplesOut]
+		// bytes = [self getSamplesOut] - [self getSamplesIn]
+	}
+	else if ((sampleCounter < [self getSamplesIn]) && (sampleCounter + samples >=[self getSamplesIn]))
+	{
+		// send partial frame
+	} 
+	else if ((sampleCounter <=[self getSamplesOut]) && (sampleCounter + samples >[self getSamplesOut]))
+	{
+		// send partial frame
+	}
+	else 
+	{
+		// send entire frame.
+	}
 	// sampleCount += samples. 
 }
 

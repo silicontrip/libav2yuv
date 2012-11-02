@@ -65,7 +65,7 @@
 		[self setWidth:pCodecCtx->width];
 		[self setSampleFormat:pCodecCtx->sample_fmt ];
 		[self setSampleChannels:pCodecCtx->channels];
-
+		// samples per second ???
 		
 		return self;
 	}
@@ -140,11 +140,21 @@
 	int bytes;
 	int numSamples;
 	
-	if (sampleCounter > [self getSamplesOut])
-		return -1;
+	
+	// we don't know SPS until we decode the first frame. 
+	// we cannot calculate SamplesOut without SPS.
+	// what can we do here.  Assume that once the sampleCounter is above 0 the SPS will be set.
+	if (sampleCounter > 0) 
+		if (sampleCounter > [self getSamplesOut])
+			return -1;
 		
 		// loop until we are passed the frame in marker
 		do {
+#if LIBAVFORMAT_VERSION_MAJOR  < 54
+			;
+#else
+			AVFrame *iFrame;
+#endif
 			int gotFrame = 1;
 
 			// loop until "gotFrame"
@@ -165,15 +175,16 @@
 				len = avcodec_decode_audio3(pCodecCtx, aBuffer, &numBytes, &packet);
 #else				
 				gotFrame = 0;
-				avcodec_get_frame_defaults(pFrame);
+				iFrame=avcodec_alloc_frame();
+				avcodec_get_frame_defaults(iFrame);
 
-				len = avcodec_decode_audio4(pCodecCtx, pFrame, &gotFrame, &packet);
+				len = avcodec_decode_audio4(pCodecCtx, iFrame, &gotFrame, &packet);
 					if (gotFrame) {
 				/* if a frame has been decoded, output it */
 						bytes = av_samples_get_buffer_size(NULL, pCodecCtx->channels,
-															  pFrame->nb_samples,
+															  iFrame->nb_samples,
 															  pCodecCtx->sample_fmt, 1);
-						[self setSamplesPerSecond:pFrame->sample_rate];
+						[self setSamplesPerSecond:iFrame->sample_rate];
 					}
 				
 #endif
@@ -184,9 +195,49 @@
 				
 			} while (!gotFrame);
 			
-			numSamples = bytes;
+			int bytesPerSample = ([self getSampleSize] * [self getSampleChannels]);			
+			numSamples = bytes / bytesPerSample;
 			
-		} while (sampleCounter < [self getSamplesIn]);			
+			if ((sampleCounter < [self getSamplesIn]) && (sampleCounter + numSamples >[self getSamplesOut]))
+			{
+				// send partial frame
+				pFrame->nb_samples =([self getSamplesOut] - [self getSamplesIn]) * bytesPerSample;
+				memcpy(pFrame->data[0],
+					   iFrame->data[0] + ([self getSamplesIn] - sampleCounter) * bytesPerSample,
+					   pFrame->nb_samples);
+				 
+				// copy sampleBuffer + [self getSamplesIn] - sampleCounter to (sampleCounter + samples) - [self getSamplesOut]
+				// bytes = [self getSamplesOut] - [self getSamplesIn]
+			}
+			else if ((sampleCounter < [self getSamplesIn]) && (sampleCounter + numSamples >=[self getSamplesIn]))
+			{
+			// send partial frame
+				pFrame->nb_samples =( sampleCounter + numSamples - [self getSamplesIn]) * bytesPerSample;
+				memcpy(pFrame->data[0],
+					   iFrame->data[0] + ([self getSamplesIn] - sampleCounter) * bytesPerSample,
+					   pFrame->nb_samples);
+				
+			} 
+			else if ((sampleCounter <=[self getSamplesOut]) && (sampleCounter + numSamples >[self getSamplesOut]))
+			{
+			// send partial frame
+				pFrame->nb_samples =( [self getSamplesOut] - sampleCounter) * bytesPerSample;
+				memcpy(pFrame->data[0],
+					   iFrame->data[0],
+					   pFrame->nb_samples);
+				
+			}
+			else 
+			{
+			// send entire frame.
+				pFrame->nb_samples =bytes;
+				memcpy(pFrame->data[0],
+					   iFrame->data[0],
+					   pFrame->nb_samples);
+				
+			}
+			
+		} while (sampleCounter + numSamples < [self getSamplesIn]);			
 	return bytes;
 }
 

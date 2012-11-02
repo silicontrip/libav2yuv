@@ -29,7 +29,6 @@
 	int avStream;
 	int streamType;
 		
-	int64_t sampleCounter;
 	int16_t		*aBuffer;
 }
 

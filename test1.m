@@ -129,13 +129,6 @@ int main(int argc, char *argv[])
 			processVideo(options,edlList);
 		} else {
 			
-			NSFileHandle *nfh;
-			if ([options hasOutFile]){
-				nfh = [NSFileHandle fileHandleForWritingAtPath:[options getOutFile]];
-			} else {
-				nfh = [NSFileHandle fileHandleWithStandardOutput];
-			}
-			
 			// decode audio
 			
 			AVObject *lav = [edlList objectAtIndex:0];
@@ -143,7 +136,13 @@ int main(int argc, char *argv[])
 			[lav dumpFormat];
 			
 			// open out file
-			
+			NSFileHandle *nfh;
+			if ([options hasOutFile]){
+				nfh = [NSFileHandle fileHandleForWritingAtPath:[options getOutFile]];
+			} else {
+				nfh = [NSFileHandle fileHandleWithStandardOutput];
+			}
+
 			for (AVObject *audio in edlList) {
 				if (audio != nil) {
 					while ([audio decodeNextAudio] >=0)
