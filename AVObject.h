@@ -65,11 +65,16 @@
 - (int)getFrameCounter;
 - (int)getIn;
 - (int)getOut;
+- (int) compareRange:(int)fr;
+- (int) compareSamplesRange:(int)fr;
 - (int64_t)getSamplesIn;
 - (int64_t)getSamplesOut;
 - (int)getSampleSize;
 - (int)getSampleChannels;
 - (int)getSampleFormat;
+- (int)getSamplesPerSecond;
+- (double)getSamplesPerFrame;
+
 
 
 - (void)setColourY:(uint8_t)y U:(uint8_t)u V:(uint8_t)v;

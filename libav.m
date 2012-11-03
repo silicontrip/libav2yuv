@@ -15,7 +15,7 @@
 
 - (id)initWithFile:(NSString *)filename streamType:(int)st stream:(int)streamNumber {
 	
-	if ([self init] != nil ) {
+	if ([super init] != nil ) {
 	
 	CFIndex i;
 	avStream = -1;
@@ -161,10 +161,12 @@
 		pFrame=avcodec_alloc_frame();
 		avcodec_get_frame_defaults(pFrame);
 
+		/*
 		avcodec_fill_audio_frame(pFrame, [self getSampleChannels], [self getSampleFormat],
 								 pictureBuffer,
 								 BUFFER_SIZE , 1);
 		NSLog(@"pFrame data buffer: %d", pFrame->data[0]);
+		 */
 		
 	}
 		
@@ -175,7 +177,7 @@
 	NSLog (@"sampleCounter: %d  samplesOut: %d", sampleCounter, [self getSamplesOut]);
 	
 	if (sampleCounter > 0) 
-		if (sampleCounter > [self getSamplesOut])
+		if ([self compareSamplesRange:sampleCounter] > 0)
 			return -1;
 		
 		// loop until we are passed the frame in marker
@@ -243,7 +245,7 @@
 			
 			NSLog(@"bytesPerSample: %d, numSamples: %d",bytesPerSample,numSamples);
 			
-			if ((sampleCounter < [self getSamplesIn]) && (sampleCounter + numSamples >[self getSamplesOut]))
+			if (([self compareSamplesRange:sampleCounter]<0) && ([self compareSamplesRange:sampleCounter + numSamples] >1))
 			{
 				// send partial frame
 				NSLog(@"partial case 1");
@@ -260,7 +262,7 @@
 				// copy sampleBuffer + [self getSamplesIn] - sampleCounter to (sampleCounter + samples) - [self getSamplesOut]
 				// bytes = [self getSamplesOut] - [self getSamplesIn]
 			}
-			else if ((sampleCounter < [self getSamplesIn]) && (sampleCounter + numSamples >=[self getSamplesIn]))
+			else if (([self compareSamplesRange:sampleCounter]<0) && ([self compareSamplesRange:sampleCounter + numSamples] ==0))
 			{
 			// send partial frame
 				NSLog(@"partial case 2");
@@ -273,7 +275,7 @@
 					   pFrame->nb_samples* bytesPerSample,1);
 				
 			} 
-			else if ((sampleCounter <=[self getSamplesOut]) && (sampleCounter + numSamples >[self getSamplesOut]))
+			else if (([self compareSamplesRange:sampleCounter]==0) && ([self compareSamplesRange:sampleCounter + numSamples] >0))
 			{
 			// send partial frame
 				NSLog(@"partial case 3");
@@ -303,7 +305,7 @@
 			
 			sampleCounter += pFrame->nb_samples;
 			
-		} while (sampleCounter + numSamples < [self getSamplesIn]);			
+		} while ([self compareSamplesRange:sampleCounter + numSamples] < 0);			
 	NSLog(@"< [libav decodeNextAudio]");
 
 	return bytes;
@@ -315,7 +317,7 @@
 	int bytes;
 	int frameFinished;
 	
-	if (frameCounter > [self getOut])
+	if ([self compareRange:frameCounter] > 0)
 		return -1;
 	
 	// loop until we are passed the frame in marker
@@ -351,7 +353,7 @@
 		
 		frameCounter ++;
 		
-	} while (frameCounter < [self getIn]);
+	} while ([self compareRange:frameCounter] < 0);
 	
 	[self setInterlaced:pFrame->interlaced_frame];
 	[self setInterlaceTopFieldFirst:pFrame->top_field_first];

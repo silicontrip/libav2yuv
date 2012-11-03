@@ -5,15 +5,17 @@
 
 - (id)init
 {
-	self = [super init];
+	if([super init] != nil )
+	{
 	
-	[self setIn:0];
-	[self setOut:INT32_MAX];
+	[self setIn:-1];
+	[self setOut:-1];
 	
 	[self setColourY:16 U:128 V:128]; // set default colour to black
 	
 	return self;
-	
+	}
+	return nil;
 }
 
 - (id)initWithSilence:(int)samples channels:(int)ch sampleFormat:(int)sf samplesPerSecond:(int)sps
@@ -210,17 +212,48 @@
 	return frameOut;
 }
 
+- (int) compareRange:(int)fr
+{
+	
+	if (fr < frameIn && frameIn != -1) 
+		return -1;
+	if (fr > frameOut && frameOut != -1)
+		return 1;
+	// there should be no other conditions.
+
+//	if (((fr >= frameIn) || (frameIn == -1)) && ((fr <= frameOut) || (frameOut == -1)))
+		return 0;
+	
+}
+
+- (int) compareSamplesRange:(int)fr
+{
+
+	NSLog(@"Compare samples Range: %d",fr);
+	
+	if (fr <  (frameIn * [self getSamplesPerFrame]) && frameIn != -1) 
+		return -1;
+	if (fr > (frameOut * [self getSamplesPerFrame]) && frameOut != -1)
+		return 1;
+	
+	return 0;
+	
+}
+
 - (int64_t)getSamplesIn {
-	return samplesPerSecond * frameIn * [self getFrameRateNum] / [self getFrameRateDen];
+	return frameIn * [self getSamplesPerFrame];
 }
 
 - (int64_t)getSamplesOut {
-	return samplesPerSecond * frameOut * [self getFrameRateNum] / [self getFrameRateDen];
+	return frameOut * [self getSamplesPerFrame];
 }
 
 - (int)getSampleSize { return av_get_bytes_per_sample(sampleFormat); }
 - (int)getSampleChannels { return sampleChannels; }
 - (int)getSampleFormat { return sampleFormat; }
+- (int)getSamplesPerSecond {return samplesPerSecond; }
+
+- (double)getSamplesPerFrame { return 1.0 * samplesPerSecond * [self getFrameRateDen] / [self getFrameRateNum]; }
 
 
 - (void)setColourY:(uint8_t)y U:(uint8_t)u V:(uint8_t)v
@@ -228,17 +261,23 @@
 	colour_y = y;
 	colour_u = u;
 	colour_v = v;
+	
+	// create picture buffer here...
 }
 
 
 - (void)setIn:(int)fin {
 	// validate
+	NSLog(@"> [AVObject setIn]: %d",fin);
+
 	if (fin >= 0)
 		frameIn = fin;
 }
 
 - (void)setOut:(int)fout {
 	// validate
+	NSLog(@"> [AVObject setOut]: %d",fout);
+	
 	if (fout >= 0)
 		frameOut = fout;
 }
@@ -422,11 +461,11 @@
 
 - (int)decodeNextFrame
 {
-	if (frameCounter < frameIn)
+	if ([self compareRange:frameCounter] < 0)
 		frameCounter = frameIn;
 	
 	// I only need to do this once.
-	if (frameCounter <= frameOut) {
+	if ([self compareRange:frameCounter] == 0) {
 		
 		memset(pFrame->data[0],colour_y,[self getHeight]*pFrame->linesize[0]);
 		memset(pFrame->data[1],colour_u,[self getChromaHeight]*pFrame->linesize[1]);
