@@ -150,20 +150,17 @@ int main(int argc, char *argv[])
 				if (audio != nil) {
 					while ([audio decodeNextAudio] >=0)
 					{
-						NSLog(@"decodeNextAudio loop");
 						AVFrame *pFrame = [audio getAVFrame];
 					
 						NSData *data = [NSData dataWithBytes:pFrame->data[0] length:pFrame->nb_samples];
 					
 						[nfh writeData:data];
 					}
-											NSLog(@"decodeNextAudio loop exit");
 
 					[audio release];
 				} else {
-					NSLog(@"Couldn't initialise video %s",argv[1]);
+					NSLog(@"Couldn't initialise audio %s",argv[1]);
 				}
-															NSLog(@"edlList loop exit");
 
 			}
 			// close file

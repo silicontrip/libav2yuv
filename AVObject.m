@@ -7,13 +7,13 @@
 {
 	if([super init] != nil )
 	{
-	
-	[self setIn:-1];
-	[self setOut:-1];
-	
-	[self setColourY:16 U:128 V:128]; // set default colour to black
-	
-	return self;
+		
+		[self setIn:-1];
+		[self setOut:-1];
+		
+		[self setColourY:16 U:128 V:128]; // set default colour to black
+		
+		return self;
 	}
 	return nil;
 }
@@ -23,7 +23,7 @@
 	
 	pFrame=avcodec_alloc_frame();
 	avcodec_get_frame_defaults(pFrame);
-
+	
 	[self setSampleChannels:ch];
 	[self setSampleFormat:sf];
 	[self setSamplesPerSecond:sps];
@@ -60,8 +60,8 @@
 	[self setHeight:h];
 	[self setWidth:w];
 	
-	[self setIn:0];
-	[self setOut:INT32_MAX];
+	[self setIn:-1];
+	[self setOut:-1];
 	
 	[self allocFrame];
 	
@@ -215,22 +215,26 @@
 - (int) compareRange:(int)fr
 {
 	
+	if (frameIn == -1 && frameOut == -1) 
+		return 0;
+	
 	if (fr < frameIn && frameIn != -1) 
 		return -1;
 	if (fr > frameOut && frameOut != -1)
 		return 1;
 	// there should be no other conditions.
-
-//	if (((fr >= frameIn) || (frameIn == -1)) && ((fr <= frameOut) || (frameOut == -1)))
-		return 0;
+	
+	//	if (((fr >= frameIn) || (frameIn == -1)) && ((fr <= frameOut) || (frameOut == -1)))
+	return 0;
 	
 }
 
 - (int) compareSamplesRange:(int)fr
 {
-
-	NSLog(@"Compare samples Range: %d",fr);
 	
+//	NSLog(@"Compare samples Range: %d (%d - %d)",fr,frameIn,frameOut);
+	if (frameIn == -1 && frameOut == -1) 
+		return 0;
 	if (fr <  (frameIn * [self getSamplesPerFrame]) && frameIn != -1) 
 		return -1;
 	if (fr > (frameOut * [self getSamplesPerFrame]) && frameOut != -1)
@@ -268,17 +272,15 @@
 
 - (void)setIn:(int)fin {
 	// validate
-	NSLog(@"> [AVObject setIn]: %d",fin);
-
-	if (fin >= 0)
+	
+	// if (fin >= 0)
 		frameIn = fin;
 }
 
 - (void)setOut:(int)fout {
 	// validate
-	NSLog(@"> [AVObject setOut]: %d",fout);
 	
-	if (fout >= 0)
+	//if (fout >= 0)
 		frameOut = fout;
 }
 
@@ -395,7 +397,7 @@
 
 - (void)setChromaSamplingFromY4M:(int)y4mChroma
 {
-
+	
 	switch (y4mChroma) {
 		case Y4M_CHROMA_420MPEG2: [self setChromaSampling:PIX_FMT_YUV420P]; break;
 		case Y4M_CHROMA_422: [self setChromaSampling:PIX_FMT_YUV422P]; break;
@@ -405,7 +407,7 @@
 			
 		default:
 			NSLog(@"AV: Unsupported Chroma");
-
+			
 			break;
 	}
 	

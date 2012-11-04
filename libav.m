@@ -15,8 +15,12 @@
 
 - (id)initWithFile:(NSString *)filename streamType:(int)st stream:(int)streamNumber {
 	
-	if ([super init] != nil ) {
+	if ([self init] != nil ) {
 	
+		[self setIn:-1];
+		[self setOut:-1];
+
+		
 	CFIndex i;
 	avStream = -1;
 	streamType = st;
@@ -144,12 +148,13 @@
 	int bytesPerSample = ([self getSampleSize] * [self getSampleChannels]);			
 
 	
-	NSLog(@"> [libav decodeNextAudio]");
+	//NSLog(@"> [libav decodeNextAudio]");
 	
 	// there must be another way to initialise the audio decoder.
+	// than this.
 	if (sampleCounter == 0)
 	{
-		NSLog(@"> [libav decodeNextAudio] allocating audio buffer");
+		// NSLog(@"> [libav decodeNextAudio] allocating audio buffer");
 		 pictureBuffer = av_malloc(BUFFER_SIZE );
 		
 		if (!pictureBuffer) 
@@ -160,13 +165,6 @@
 		}
 		pFrame=avcodec_alloc_frame();
 		avcodec_get_frame_defaults(pFrame);
-
-		/*
-		avcodec_fill_audio_frame(pFrame, [self getSampleChannels], [self getSampleFormat],
-								 pictureBuffer,
-								 BUFFER_SIZE , 1);
-		NSLog(@"pFrame data buffer: %d", pFrame->data[0]);
-		 */
 		
 	}
 		
@@ -174,7 +172,7 @@
 	// we cannot calculate SamplesOut without SPS.
 	// what can we do here.  Assume that once the sampleCounter is above 0 the SPS will be set.
 	
-	NSLog (@"sampleCounter: %d  samplesOut: %d", sampleCounter, [self getSamplesOut]);
+//	NSLog (@"sampleCounter: %d  samplesOut: %d", sampleCounter, [self getSamplesOut]);
 	
 	if (sampleCounter > 0) 
 		if ([self compareSamplesRange:sampleCounter] > 0)
@@ -204,7 +202,6 @@
 						return bytes;
 				} while (packet.stream_index != avStream) ;
 				
-				
 				int len;
 				
 #if LIBAVFORMAT_VERSION_MAJOR  < 50
@@ -217,7 +214,7 @@
 				avcodec_get_frame_defaults(iFrame);
 
 				len = avcodec_decode_audio4(pCodecCtx, iFrame, &gotFrame, &packet);
-				NSLog (@"avcodec_decode_audio4 len: %d gotFrame: %d",len,gotFrame);
+	//			NSLog (@"avcodec_decode_audio4 len: %d gotFrame: %d",len,gotFrame);
 				
 					if (gotFrame) {
 				/* if a frame has been decoded, output it */
@@ -225,8 +222,8 @@
 															  iFrame->nb_samples,
 															  pCodecCtx->sample_fmt, 1);
 						
-						NSLog (@"decode Audio sps: %d",iFrame->sample_rate);
-						NSLog (@"audio samples decoded: %d",iFrame->nb_samples);
+				//		NSLog (@"decode Audio sps: %d",iFrame->sample_rate);
+				//		NSLog (@"audio samples decoded: %d",iFrame->nb_samples);
 						
 						[self setSamplesPerSecond:iFrame->sample_rate];
 					}
@@ -243,32 +240,24 @@
 			int bytesPerSample = ([self getSampleSize] * [self getSampleChannels]);			
 			numSamples = bytes / bytesPerSample;
 			
-			NSLog(@"bytesPerSample: %d, numSamples: %d",bytesPerSample,numSamples);
+		//	NSLog(@"bytesPerSample: %d, numSamples: %d",bytesPerSample,numSamples);
 			
 			if (([self compareSamplesRange:sampleCounter]<0) && ([self compareSamplesRange:sampleCounter + numSamples] >1))
 			{
 				// send partial frame
-				NSLog(@"partial case 1");
+		//		NSLog(@"partial case 1");
 
 				pFrame->nb_samples =([self getSamplesOut] - [self getSamplesIn]) ;
 				avcodec_fill_audio_frame(pFrame, [self getSampleChannels], [self getSampleFormat],
 										 iFrame->data[0] + ([self getSamplesIn] - sampleCounter) * bytesPerSample,
 										 pFrame->nb_samples* bytesPerSample , 1);
-				/*
-				memcpy(pFrame->data[0],
-					   iFrame->data[0] + ([self getSamplesIn] - sampleCounter) * bytesPerSample,
-					   pFrame->nb_samples* bytesPerSample);
-				 */
-				// copy sampleBuffer + [self getSamplesIn] - sampleCounter to (sampleCounter + samples) - [self getSamplesOut]
-				// bytes = [self getSamplesOut] - [self getSamplesIn]
 			}
 			else if (([self compareSamplesRange:sampleCounter]<0) && ([self compareSamplesRange:sampleCounter + numSamples] ==0))
 			{
 			// send partial frame
-				NSLog(@"partial case 2");
+// NSLog(@"partial case 2");
 
 				pFrame->nb_samples =( sampleCounter + numSamples - [self getSamplesIn]) ;
-				// memcpy(pFrame->data[0],
 					   avcodec_fill_audio_frame(pFrame, [self getSampleChannels], [self getSampleFormat],
 
 					   iFrame->data[0] + ([self getSamplesIn] - sampleCounter) * bytesPerSample,
@@ -278,10 +267,9 @@
 			else if (([self compareSamplesRange:sampleCounter]==0) && ([self compareSamplesRange:sampleCounter + numSamples] >0))
 			{
 			// send partial frame
-				NSLog(@"partial case 3");
+			//	NSLog(@"partial case 3");
 
 				pFrame->nb_samples =( [self getSamplesOut] - sampleCounter);
-//				memcpy(pFrame->data[0],
 					   avcodec_fill_audio_frame(pFrame, [self getSampleChannels], [self getSampleFormat],
 
 					   iFrame->data[0],
@@ -291,12 +279,11 @@
 			else 
 			{
 			// send entire frame.
-				NSLog(@"full case: %d",numSamples);
+			//	NSLog(@"full case: %d",numSamples);
 
-				NSLog(@"pic buffer: %x pframe->data[0]: %x",pictureBuffer,pFrame->data[0]);
+			//	NSLog(@"pic buffer: %x pframe->data[0]: %x",pictureBuffer,pFrame->data[0]);
 				
 				pFrame->nb_samples =numSamples;
-				// memcpy(pFrame->data[0],
 
 				avcodec_fill_audio_frame(pFrame, [self getSampleChannels], [self getSampleFormat],
 										 iFrame->data[0],bytes,1);
@@ -306,7 +293,7 @@
 			sampleCounter += pFrame->nb_samples;
 			
 		} while ([self compareSamplesRange:sampleCounter + numSamples] < 0);			
-	NSLog(@"< [libav decodeNextAudio]");
+//	NSLog(@"< [libav decodeNextAudio]");
 
 	return bytes;
 }
