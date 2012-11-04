@@ -75,8 +75,6 @@
 - (int)getSamplesPerSecond;
 - (double)getSamplesPerFrame;
 
-
-
 - (void)setColourY:(uint8_t)y U:(uint8_t)u V:(uint8_t)v;
 - (void)setSamplesPerSecond:(int)sps;
 - (void)setSampleChannels:(int)ch;
@@ -107,5 +105,6 @@
 - (int)decodeNextAudio;
 - (AVFrame *)getAVFrame;
 - (AVFrame *)decodeAndGetNextAVFrame;
+- (void) freeAVFrame;
 - (void)dealloc;
 @end

@@ -232,12 +232,20 @@
 - (int) compareSamplesRange:(int)fr
 {
 	
-//	NSLog(@"Compare samples Range: %d (%d - %d)",fr,frameIn,frameOut);
 	if (frameIn == -1 && frameOut == -1) 
 		return 0;
-	if (fr <  (frameIn * [self getSamplesPerFrame]) && frameIn != -1) 
+	
+	double spf = [self getSamplesPerFrame];
+	
+	int samplesIn= frameIn * spf;
+	int samplesOut= frameOut * spf;
+
+//	NSLog(@"Compare samples Range: %d (%d - %d) ",fr,samplesIn,samplesOut);
+	
+	
+	if (fr <  samplesIn && frameIn != -1) 
 		return -1;
-	if (fr > (frameOut * [self getSamplesPerFrame]) && frameOut != -1)
+	if (fr >= samplesOut && frameOut != -1)
 		return 1;
 	
 	return 0;
@@ -484,6 +492,7 @@
 
 - (AVFrame *)getAVFrame{ return pFrame; }
 - (AVFrame *)decodeAndGetNextAVFrame{ [self decodeNextFrame]; [self getAVFrame]; }
+- (void) freeAVFrame { av_free(pFrame); }
 - (void) dealloc
 {
 	if (pFrame)

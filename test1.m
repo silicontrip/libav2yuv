@@ -11,6 +11,55 @@
 
 NSAutoreleasePool  *pool;
 
+void processAudio (libav2yuvArguments *options, NSArray *edlList)
+{
+
+			AVObject *lav = [edlList objectAtIndex:0];
+			
+			
+			// open out file
+			NSFileHandle *nfh;
+			if ([options hasOutFile]){
+				nfh = [NSFileHandle fileHandleForWritingAtPath:[options getOutFile]];
+			} else {
+				nfh = [NSFileHandle fileHandleWithStandardOutput];
+			}
+
+			for (AVObject *audio in edlList) {
+				[audio dumpFormat];
+
+				if (audio != nil) {
+					int sampleSize = [audio getSampleSize] * [audio getSampleChannels];
+					
+				//	NSLog(@"sample size: %dx%d = %d",[audio getSampleSize],[audio getSampleChannels],sampleSize);
+					
+					while ([audio decodeNextAudio] >=0)
+					{
+						//NSLog(@"write Audio frame");
+						AVFrame *pFrame = [audio getAVFrame];
+					
+						//NSLog(@"write Audio frame: %d",pFrame->nb_samples);
+
+						NSData *data = [NSData dataWithBytes:pFrame->data[0] length:pFrame->nb_samples * sampleSize] ;
+					
+						[nfh writeData:data];
+						//[data release];
+						[audio freeAVFrame];
+					}
+
+					[audio release];
+				} else {
+					NSLog(@"Couldn't initialise audio");
+				}
+
+			}
+			// close file
+			[nfh closeFile];
+
+
+}
+
+
 void processVideo (libav2yuvArguments *options, NSArray *edlList)
 {
 	
@@ -121,52 +170,15 @@ int main(int argc, char *argv[])
 		}	
 	}
 	
-	NSLog(@"EDL list count: %d",[edlList count]);
+// 	NSLog(@"EDL list count: %d",[edlList count]);
 	
 	if ([edlList count] > 0 ) 
 	{
-		
-		
 		if (streamMode == AVMEDIA_TYPE_VIDEO) {
 			processVideo(options,edlList);
 		} else {
-			
 			// decode audio
-			
-			AVObject *lav = [edlList objectAtIndex:0];
-			
-			
-			// open out file
-			NSFileHandle *nfh;
-			if ([options hasOutFile]){
-				nfh = [NSFileHandle fileHandleForWritingAtPath:[options getOutFile]];
-			} else {
-				nfh = [NSFileHandle fileHandleWithStandardOutput];
-			}
-
-			for (AVObject *audio in edlList) {
-						[audio dumpFormat];
-
-				if (audio != nil) {
-					int sampleSize = [audio getSampleSize] * [audio getSampleChannels];
-					while ([audio decodeNextAudio] >=0)
-					{
-						AVFrame *pFrame = [audio getAVFrame];
-					
-						NSData *data = [NSData dataWithBytes:pFrame->data[0] length:pFrame->nb_samples * sampleSize] ;
-					
-						[nfh writeData:data];
-					}
-
-					[audio release];
-				} else {
-					NSLog(@"Couldn't initialise audio %s",argv[1]);
-				}
-
-			}
-			// close file
-			[nfh closeFile];
-			
+			processAudio(options,edlList);
 		}
 	}
 	[pool release];

@@ -15,7 +15,7 @@
 - (id)initWithFile:(NSString *)filename streamType:(int)st 
 {
 	
-	[self init];
+	if ([self init]!=nil) {
 	
 	NSString *fileContents = [NSString stringWithContentsOfFile:filename encoding:NSUTF8StringEncoding error:nil];
 	NSArray *lines = [fileContents componentsSeparatedByString:@"\n"];
@@ -45,11 +45,14 @@
 			libav *entry;
 			if ((st == AVMEDIA_TYPE_VIDEO) && [self hasVideo:mode])
 			{
+				NSLog(@"Adding Video entry: %@",fileName);
 				entry = [[libav alloc] initWithFile:fileName streamType:AVMEDIA_TYPE_VIDEO stream:-1];
 			}
 			
 			if ((st == AVMEDIA_TYPE_AUDIO) && [self hasAudio:mode])
 			{
+				NSLog(@"Adding Audio entry: %@",fileName);
+
 				entry = [[libav alloc] initWithFile:fileName streamType:AVMEDIA_TYPE_AUDIO stream:-1];
 			}
 			
@@ -57,12 +60,14 @@
 			[entry setOutTimecode:tcOut];
 			
 			[entry retain];
-			//		NSLog(@"Time: %d - %d",[entry getIn],[entry getOut]);
+			NSLog(@"Time: %d - %d",[entry getIn],[entry getOut]);
 			[entries addObject:entry];
 		}
 	}
 	
 	return self;
+	}
+	return nil;
 }
 
 - (BOOL)hasAudio:(NSString *)mode
@@ -114,6 +119,27 @@
 	return bytes;
 }
 
+- (int)decodeNextAudio
+{
+	
+	if ([self compareSamplesRange:sampleCounter] > 0)
+		return -1;
+	
+	int samples;
+	do {
+		while ((samples=[[self currentAV] decodeNextAudio]) < 0) {
+			
+			[entries removeObjectAtIndex:0];
+			if ([entries count] == 0)
+				return -1;
+		}
+		sampleCounter +=samples; 
+	
+	} while ([self compareSamplesRange:sampleCounter] < 0);
+	return samples;
+}
+
+
 - (void) dumpFormat
 {
 	NSLog(@"EDL List AVObject");
@@ -137,6 +163,12 @@
 - (int)getChromaHeight{ return [[self currentAV] getChromaHeight]; };
 - (int)getChromaWidth{ return [[self currentAV] getChromaWidth]; };
 - (AVFrame *)getAVFrame{ return [[self currentAV] getAVFrame]; }
+- (int)getSampleSize{ return [[self currentAV] getSampleSize]; }
+- (int)getSampleChannels{ return [[self currentAV] getSampleChannels]; }
+- (int)getSampleFormat{ return [[self currentAV] getSampleFormat]; }
+- (int)getSamplesPerSecond{ return [[self currentAV] getSamplesPerSecond]; }
+- (double)getSamplesPerFrame{ return [[self currentAV] getSamplesPerFrame]; }
+
 
 
 @end
