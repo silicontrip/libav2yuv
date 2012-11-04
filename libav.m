@@ -233,16 +233,17 @@
 				if (len < 0)
 					return len;
 				 */
-				//	NSLog(@"decoded: %d finished: %d",len,frameFinished);
+				//	NSLog(@"decoded: %d finished: %d",len,gotFrame);
 				
 			} while (!gotFrame);
 			
 			int bytesPerSample = ([self getSampleSize] * [self getSampleChannels]);			
 			numSamples = bytes / bytesPerSample;
+			int endCounter = sampleCounter + numSamples;
 			
 		//	NSLog(@"bytesPerSample: %d, numSamples: %d",bytesPerSample,numSamples);
 			
-			if (([self compareSamplesRange:sampleCounter]<0) && ([self compareSamplesRange:sampleCounter + numSamples] >1))
+			if (([self compareSamplesRange:sampleCounter]<0) && ([self compareSamplesRange:endCounter] >1))
 			{
 				// send partial frame
 		//		NSLog(@"partial case 1");
@@ -252,7 +253,7 @@
 										 iFrame->data[0] + ([self getSamplesIn] - sampleCounter) * bytesPerSample,
 										 pFrame->nb_samples* bytesPerSample , 1);
 			}
-			else if (([self compareSamplesRange:sampleCounter]<0) && ([self compareSamplesRange:sampleCounter + numSamples] ==0))
+			else if (([self compareSamplesRange:sampleCounter]<0) && ([self compareSamplesRange:endCounter] ==0))
 			{
 			// send partial frame
 // NSLog(@"partial case 2");
@@ -264,7 +265,7 @@
 					   pFrame->nb_samples* bytesPerSample,1);
 				
 			} 
-			else if (([self compareSamplesRange:sampleCounter]==0) && ([self compareSamplesRange:sampleCounter + numSamples] >0))
+			else if (([self compareSamplesRange:sampleCounter]==0) && ([self compareSamplesRange:endCounter] >0))
 			{
 			// send partial frame
 			//	NSLog(@"partial case 3");
@@ -292,7 +293,7 @@
 			
 			sampleCounter += pFrame->nb_samples;
 			
-		} while ([self compareSamplesRange:sampleCounter + numSamples] < 0);			
+		} while ([self compareSamplesRange:sampleCounter] < 0);			
 //	NSLog(@"< [libav decodeNextAudio]");
 
 	return bytes;

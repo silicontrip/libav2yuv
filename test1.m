@@ -148,11 +148,12 @@ int main(int argc, char *argv[])
 						[audio dumpFormat];
 
 				if (audio != nil) {
+					int sampleSize = [audio getSampleSize] * [audio getSampleChannels];
 					while ([audio decodeNextAudio] >=0)
 					{
 						AVFrame *pFrame = [audio getAVFrame];
 					
-						NSData *data = [NSData dataWithBytes:pFrame->data[0] length:pFrame->nb_samples];
+						NSData *data = [NSData dataWithBytes:pFrame->data[0] length:pFrame->nb_samples * sampleSize] ;
 					
 						[nfh writeData:data];
 					}
