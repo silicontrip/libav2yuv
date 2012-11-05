@@ -67,11 +67,11 @@ void processVideo (libav2yuvArguments *options, NSArray *edlList)
 	
 	[lav dumpFormat];
 	
-	NSLog(@"%dx%d by %d:%d at %d:%d",[lav getWidth],[lav getHeight],[lav getSampleAspectNum],[lav getSampleAspectDen],[lav getFrameRateNum],[lav getFrameRateDen]);
+//	NSLog(@"%dx%d by %d:%d at %d:%d",[lav getWidth],[lav getHeight],[lav getSampleAspectNum],[lav getSampleAspectDen],[lav getFrameRateNum],[lav getFrameRateDen]);
 	
 	libyuv *yuv;
 	
-	// NSLog(@"libyuv alloc");
+//	 NSLog(@"libyuv alloc");
 	yuv = [[libyuv alloc] 
 		   initWithWidth:[lav getWidth] 
 		   Height:[lav getHeight] 
@@ -96,18 +96,18 @@ void processVideo (libav2yuvArguments *options, NSArray *edlList)
 		[yuv setOutputFilename:[options getOutFile]];
 	}
 	// need to decode the first frame to get the interlace type
-	// NSLog(@"lav decodeNextFrame");
+// NSLog(@"lav decodeNextFrame");
 	
 	[lav decodeNextFrame];
-	// NSLog(@"yuv setYUVFrameDataWithAVFrame");
+//	 NSLog(@"yuv setYUVFrameDataWithAVFrame");
 	
 	[yuv setYUVFrameDataWithAVFrame:[lav getAVFrame]];
-	// NSLog(@"yuv setInterlaceAndOrder");
+//	NSLog(@"yuv setInterlaceAndOrder");
 	
 	[yuv setInterlaceAndOrder:[lav getIsInterlaced] topFieldFirst:[lav getInterlaceTopFieldFirst]];
 	//interlace flag is not available until the first frame is decoded.
 	//need to get the interlace flags before this. So we can use a generator.
-	// NSLog(@"yuv writeHeader");
+//	 NSLog(@"yuv writeHeader");
 	
 	[yuv writeHeader];
 	[yuv write];

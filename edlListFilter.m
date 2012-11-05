@@ -103,7 +103,7 @@
 - (int)decodeNextFrame
 {
 	
-	if (frameCounter > [self getOut])
+	if ([self compareRange:frameCounter]>0)
 		return -1;
 	
 	int bytes;
@@ -115,7 +115,7 @@
 				return -1;
 		}
 		frameCounter++;
-	} while (frameCounter <= [self getIn]);
+	} while ([self compareRange:frameCounter]<0);
 	return bytes;
 }
 
