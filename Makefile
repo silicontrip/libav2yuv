@@ -24,8 +24,8 @@ chromaFilter.o: chromaFilter.m chromaFilter.h
 
 edlListFilter.o: edlListFilter.m edlListFilter.h
 
-test1: $(OBJ)
-	$(CC) $(COCOAFLAGS) $(FFMPEG_FLAGS) $(MJPEGFLAGS) $(LDFLAGS) -o test1 $(OBJ)
+libav2yuv: $(OBJ)
+	$(CC) $(COCOAFLAGS) $(FFMPEG_FLAGS) $(MJPEGFLAGS) $(LDFLAGS) -o libav2yuv $(OBJ)
 
 clean:
 	rm $(OBJ) 
