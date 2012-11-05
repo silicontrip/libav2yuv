@@ -35,8 +35,6 @@
 	while ([args count] > 0) {
 		NSString *argument = [args objectAtIndex:0];
 		
-//	NSLog (@"libav2yuvArguments argument: %@",argument);
-		
 		if ([argument compare:@"-extensions"]==0 || [argument compare:@"-E"]==0) {
 			extensions = 1;
 		} else if ([argument compare:@"-audio"]==0 || [argument compare:@"-w"]==0) {
@@ -90,14 +88,14 @@
 			}
 		} else if ([argument compare:@"-format"]==0 || [argument compare:@"-f"]==0) {
 			[args removeObjectAtIndex:0];
-			NSString *format =  [NSString stringWithString:[args objectAtIndex:0]];
+			format =  [NSString stringWithString:[args objectAtIndex:0]];
 		} else if ([argument compare:@"-out"]==0 || [argument compare:@"-o"]==0) {
 			//NSLog(@"process outfile");
 			[args removeObjectAtIndex:0];
 			outFile =  [NSString stringWithString:[args objectAtIndex:0]];
 		} else if ([argument compare:@"-range"]==0 || [argument compare:@"-r"]==0) {
 			[args removeObjectAtIndex:0];
-			NSString *range =  [NSString stringWithString:[args objectAtIndex:0]];
+			range =  [NSString stringWithString:[args objectAtIndex:0]];
 		} else if ([argument compare:@"-stream"]==0 || [argument compare:@"-s"]==0) {
 			[args removeObjectAtIndex:0];
 			NSString *optarg = [args objectAtIndex:0];
