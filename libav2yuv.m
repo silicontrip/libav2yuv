@@ -8,10 +8,73 @@
 #import "AVObject.h"
 #import "chromaFilter.h"
 #import "edlListFilter.h"
+#import "libavWaveWriter.h"
 
 NSAutoreleasePool  *pool;
 
+// wave writer
 void processAudio (libav2yuvArguments *options, NSArray *edlList)
+{
+	
+	AVObject *lav = [edlList objectAtIndex:0];
+
+	//libavWaveWriter *nfh=[[libavWaveWriter alloc] init];
+	
+	//NSLog(@"libavWaveWriter initWithFormat");
+	
+	libavWaveWriter *nfh = [[libavWaveWriter alloc] initWithFormat:[lav getSampleFormat] 
+														  channels:[lav getSampleChannels] 
+												  samplesPerSecond:[lav getSamplesPerSecond]];
+	
+	if ([options hasOutFile]){
+		[nfh setOutputFilename:[options getOutFile]];
+	} 
+	
+	
+	// need to decode the first frame to get the Samples per second.
+	
+	if ([lav decodeNextAudio] >= 0) {
+	
+		[nfh setSamplesPerSecond:[lav getSamplesPerSecond]];
+	
+		[nfh writeHeader];
+		[nfh writeFrameData:[lav getAVFrame]];
+	
+	for (AVObject *audio in edlList) {
+		[audio dumpFormat];
+		
+		if (audio != nil) {
+			
+			
+			int sampleSize = [audio getSampleSize] * [audio getSampleChannels];
+			
+				NSLog(@"sample size: %dx%d = %d",[audio getSampleSize],[audio getSampleChannels],sampleSize);
+			
+			while ([audio decodeNextAudio] >=0)
+			{
+				[nfh writeFrameData:[audio getAVFrame]];
+
+			//	[audio freeAVFrame];
+			}
+			//NSLog(@"audio release");
+
+			[audio release];
+		} else {
+			NSLog(@"Couldn't initialise audio");
+		}
+		
+	}
+	}
+	//NSLog(@"nfh release");
+
+	// close file
+	[nfh release];
+	
+	
+}
+
+
+void processAudioNSData (libav2yuvArguments *options, NSArray *edlList)
 {
 
 			AVObject *lav = [edlList objectAtIndex:0];

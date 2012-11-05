@@ -92,8 +92,9 @@
 			[args removeObjectAtIndex:0];
 			NSString *format =  [NSString stringWithString:[args objectAtIndex:0]];
 		} else if ([argument compare:@"-out"]==0 || [argument compare:@"-o"]==0) {
+			//NSLog(@"process outfile");
 			[args removeObjectAtIndex:0];
-			NSString *outFile =  [NSString stringWithString:[args objectAtIndex:0]];
+			outFile =  [NSString stringWithString:[args objectAtIndex:0]];
 		} else if ([argument compare:@"-range"]==0 || [argument compare:@"-r"]==0) {
 			[args removeObjectAtIndex:0];
 			NSString *range =  [NSString stringWithString:[args objectAtIndex:0]];
