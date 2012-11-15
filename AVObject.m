@@ -240,7 +240,7 @@
 	int samplesIn= frameIn * spf;
 	int samplesOut= frameOut * spf;
 
-//	NSLog(@"Compare samples Range: %d (%d - %d) ",fr,samplesIn,samplesOut);
+	//NSLog(@"Compare samples Range: %d (%d - %d) ",fr,samplesIn,samplesOut);
 	
 	
 	if (fr <  samplesIn && frameIn != -1) 

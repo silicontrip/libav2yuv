@@ -122,6 +122,8 @@
 - (int)decodeNextAudio
 {
 	
+	// NSLog(@"edlListFilter decodeNextAudio sampleCounter %d entriesCount %d",sampleCounter,[entries count]);
+	
 	if ([self compareSamplesRange:sampleCounter] > 0)
 		return -1;
 	
