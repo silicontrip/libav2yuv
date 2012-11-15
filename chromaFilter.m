@@ -23,17 +23,20 @@
 - (id)initWithAVObject:(AVObject *)s toAVChroma:(int)convertMode
 {
 
-	[self initWithAVObject:s];
+	if ([self initWithAVObject:s] != nil) 
+	{
 	
-	[self setChromaSampling:convertMode];
+		[self setChromaSampling:convertMode];
 	 
-	[self allocFrame];
+		[self allocFrame];
 	 
-	imgConvertCtx = sws_getContext([self getWidth], [self getHeight], [s getChromaSampling], 
-								   [self getWidth], [self getHeight], convertMode, SWS_BICUBIC, NULL, NULL, NULL); 
+		imgConvertCtx = sws_getContext([self getWidth], [self getHeight], [s getChromaSampling], 
+									   [self getWidth], [self getHeight], convertMode, SWS_BICUBIC, NULL, NULL, NULL); 
 
 
-	return self;
+		return self;
+	}
+	return nil;
 }
 
 - (id)initWithAVObject:(AVObject *)s toY4MChroma:(int)convertMode
