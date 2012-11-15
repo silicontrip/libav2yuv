@@ -73,7 +73,7 @@ void processAudio (libav2yuvArguments *options, NSArray *edlList)
 	
 }
 
-
+/*
 void processAudioNSData (libav2yuvArguments *options, NSArray *edlList)
 {
 
@@ -121,7 +121,7 @@ void processAudioNSData (libav2yuvArguments *options, NSArray *edlList)
 
 
 }
-
+*/
 
 void processVideo (libav2yuvArguments *options, NSArray *edlList)
 {
