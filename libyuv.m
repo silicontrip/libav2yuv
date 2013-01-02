@@ -151,12 +151,14 @@
 	switch (pix_fmt) 
 	{
 		case PIX_FMT_YUV420P: [self setChromaSampling:Y4M_CHROMA_420MPEG2]; break;
+		case PIX_FMT_YUVJ422P:
 		case PIX_FMT_YUV422P: [self setChromaSampling:Y4M_CHROMA_422]; break;
+		case PIX_FMT_YUVJ444P:
 		case PIX_FMT_YUV444P: [self setChromaSampling:Y4M_CHROMA_444]; break;
 		case PIX_FMT_YUV411P: [self setChromaSampling:Y4M_CHROMA_411]; break;
 		case PIX_FMT_YUVJ420P: [self setChromaSampling:Y4M_CHROMA_420JPEG]; break;
 		default:
-			NSLog(@"LIBYUV: Unsupported Chroma");
+			NSLog(@"LIBYUV: Unsupported Chroma: %d",pix_fmt);
 			break;	
 	}
 }
