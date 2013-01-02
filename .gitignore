@@ -1,4 +1,5 @@
 *.o
-test1
-
-
+libav2yuv
+test.*
+*.edl
+Design/
