@@ -47,9 +47,9 @@ void processAudio (Libav2yuvArguments options, std::vector<AVObject> edlList)
 			audio->dumpFormat();
 		
 		
-		int sampleSize = audio->getSampleSize() * audio->getSampleChannels();
+		int sampleSize = audio->getSampleSize() * (*audio).getSampleChannels();
 		
-		std::cerr<<"sample size: " <<audio->getSampleSize() <<"x"<< audio->getSampleChannels() << " = " << sampleSize << "\n";
+		std::cerr<<"sample size: " <<(*audio).getSampleSize() <<"x"<< (*audio).getSampleChannels() << " = " << sampleSize << "\n";
 		
 		while (audio->decodeNextAudio() >=0)
 		{
@@ -133,7 +133,7 @@ void processVideo (Libav2yuvArguments options, std::vector<AVObject> edlList)
 			yuv.setYUVFrameDataWithAVFrame(video->getAVFrame());
 			yuv.write();
 		}
-		// delete video;
+		delete &video;
 	}
 	
 	// delete yuv;	
@@ -144,6 +144,7 @@ int main(int argc, char *argv[])
 {
 	
 	std::vector<AVObject> edlList;
+	
 	//pool = [[NSAutoreleasePool alloc] init];
 	//edlList = [NSMutableArray arrayWithCapacity:1];
 	int streamMode = AVMEDIA_TYPE_VIDEO;
@@ -151,37 +152,43 @@ int main(int argc, char *argv[])
 	Libav2yuvArguments options(argc,argv);
 	
 	if (options.getAudio()) {
+		std::cerr << "setting to audio\n";
 		streamMode = AVMEDIA_TYPE_AUDIO;
 	}	
 	// std::cerr<<"scan arguments\n";
 	
-	if (options.getArguments().size() > 0) {
-		std::cerr<<"argument size " << options.getArguments().size() << "\n";
-		std::vector<std::string>::iterator argument;
+	std::vector<std::string> args = options.getArguments();
+	
+	if (args.size() > 0) {
+		//std::cerr<<"argument size " << options.getArguments().size() << "\n";
+		std::vector<std::string>::iterator argument = args.begin();
 		
-		for (argument=options.getArguments().begin(); argument != options.getArguments().end(); ++argument)
+		for (; argument != args.end(); ++argument)
 		{	
 			
 			std::cerr<<  "argument name: " << *argument << "\n";
 			
+			std::string name (*argument);
+			
 			// for (NSString *argument in [options getArguments]) {
-			AVObject lav;
-			if (argument->substr(argument->size()-4,4) == ".edl") {
-				lav = EdlListFilter(*argument, streamMode);
+			AVObject *lav;
+			//std::cerr << "extension: " << argument->substr(argument->size()-4,4) << "\n";
+			if (name.substr(name.size()-4,4) == ".edl") {
+				lav = new EdlListFilter(name, streamMode);
 			} else  {	
-				lav = Libav(*argument,streamMode,-1);
+				lav = new Libav(name,streamMode,-1);
 			}
 			//if (lav != nil) 
 			//	{
 			if (options.getConvert()) 
 			{
-				ChromaFilter chromaConverter(lav,options.getChroma());
+				ChromaFilter chromaConverter(*lav,options.getChroma());
 				//	if (chromaConverter != nil) {
 				//[edlList addObject:chromaConverter];
 				edlList.push_back(chromaConverter);
 				//	}
 			} else {
-				edlList.push_back(lav);
+				edlList.push_back(*lav);
 			}
 			
 		}	

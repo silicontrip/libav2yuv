@@ -3,13 +3,15 @@
 Libav::Libav(std::string filename, int st, int streamNumber)
 {
 
+	std::cerr << "filename: " << filename << "\n";
+	
 	this->setIn(-1);
 	this->setOut(-1);
 
 	avStream = -1;
 	streamType = st;
 	
-	lavFileName = filename;
+	lavFileName =std::string(filename);
 	
 	av_register_all();
 
@@ -29,6 +31,8 @@ Libav::Libav(std::string filename, int st, int streamNumber)
 		// constructor error blah blah
 	}
 
+	std::cerr << "Chosen stream: " << avStream << "\n";
+	
 	pCodecCtx = pFormatCtx->streams[avStream]->codec;
 	pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
 	
@@ -43,6 +47,9 @@ Libav::Libav(std::string filename, int st, int streamNumber)
 	
 	this->setFrameRate(pFormatCtx->streams[avStream]->r_frame_rate);
 	this->setSampleAspect(pCodecCtx->sample_aspect_ratio);
+	
+	std::cerr<<"chroma: " << pCodecCtx->pix_fmt << "\n";
+	
 	this->setChromaSampling(pCodecCtx->pix_fmt);
 	this->setHeight(pCodecCtx->height);
 	this->setWidth(pCodecCtx->width);

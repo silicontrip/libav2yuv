@@ -21,10 +21,21 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv)
 		
 	};
 	
+	
+	
 	int c=0;
 	int option_index = 0;
 	
 	// std::cerr<<"argc: " << argc <<"\n";
+	
+	audio = false;
+	extensions = false;
+	convert = false;
+	interlace = -1;
+	frameRate.d = 0;
+	aspect.d = 0;
+	chroma = -1;
+	stream = -1;
 	
 	
 	while (c != -1) {
@@ -115,9 +126,10 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv)
 	argc -= optind;
 	argv += optind;
 	
-	for (c=1; c<argc;c++)
+	for (c=1; c<argc;c++) {
+		std::cerr << "argument: " << argv[c] << "\n";
 		arguments.push_back(std::string(argv[c]));
-	
+	}
 	
 	
 }

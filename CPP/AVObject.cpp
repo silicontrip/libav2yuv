@@ -447,6 +447,8 @@ void AVObject::setChromaSampling(PixelFormat samp)
 void AVObject::setChromaSamplingFromY4M(int y4mChroma)
 {
 	
+	
+	
 	switch (y4mChroma) {
 		case Y4M_CHROMA_420MPEG2: this->setChromaSampling(PIX_FMT_YUV420P); break;
 		case Y4M_CHROMA_422: this->setChromaSampling(PIX_FMT_YUV422P); break;
@@ -455,7 +457,7 @@ void AVObject::setChromaSamplingFromY4M(int y4mChroma)
 		case Y4M_CHROMA_420JPEG: this->setChromaSampling(PIX_FMT_YUVJ420P); break;
 			
 		default:
-			std::cerr << "AV: Unsupported Chroma\n";
+			std::cerr << "AV: Unsupported Chroma: " << y4mChroma << "\n";
 			
 			break;
 	}
@@ -552,11 +554,11 @@ void AVObject::freeAVFrame(void)
 AVObject::~AVObject() {
 	if (pFrame)
 		av_free(pFrame);
-		if (pictureBuffer)
-			av_free(pictureBuffer);
+	if (pictureBuffer)
+		av_free(pictureBuffer);
 #if LIBAVFORMAT_VERSION_MAJOR  < 54
-			if (aBuffer)
-				av_free(aBuffer);
+	if (aBuffer)
+		av_free(aBuffer);
 #endif
 }
 
