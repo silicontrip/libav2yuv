@@ -77,10 +77,6 @@ void AVObject::allocFrame(void)
 	}
 }
 
-void AVObject::dumpFormat(void)
-{
-	std::cerr<<"Black generator AV Object: " << this->getWidth() <<"x" << this->getHeight() << "\n";	
-}
 
 AVRational AVObject::getFrameRate(void)
 {
@@ -447,8 +443,6 @@ void AVObject::setChromaSampling(PixelFormat samp)
 void AVObject::setChromaSamplingFromY4M(int y4mChroma)
 {
 	
-	
-	
 	switch (y4mChroma) {
 		case Y4M_CHROMA_420MPEG2: this->setChromaSampling(PIX_FMT_YUV420P); break;
 		case Y4M_CHROMA_422: this->setChromaSampling(PIX_FMT_YUV422P); break;
@@ -485,56 +479,6 @@ void AVObject::setWidth(int wid)
 	frameWidth = wid;
 }
 
-int AVObject::decodeNextAudio(void)
-{
-	// how to handle the in and out.
-	
-	if (sampleCounter > this->getSamplesOut())
-		return -1;
-	
-	// do
-	int samples = bufferSize / this->getSampleSize() * this->getSampleChannels();
-	if ((sampleCounter < this->getSamplesIn()) && (sampleCounter + samples > this->getSamplesOut()))
-	{
-		// send partial frame
-		// copy sampleBuffer + [self getSamplesIn] - sampleCounter to (sampleCounter + samples) - [self getSamplesOut]
-		// bytes = [self getSamplesOut] - [self getSamplesIn]
-	}
-	else if ((sampleCounter < this->getSamplesIn()) && (sampleCounter + samples >=this->getSamplesIn()))
-	{
-		// send partial frame
-	} 
-	else if ((sampleCounter <= this->getSamplesOut()) && (sampleCounter + samples > this->getSamplesOut()))
-	{
-		// send partial frame
-	}
-	else 
-	{
-		// send entire frame.
-	}
-	// sampleCount += samples. 
-}
-
-int AVObject::decodeNextFrame(void)
-{
-	if (this->compareRange(frameCounter) < 0)
-		frameCounter = frameIn;
-		
-		// I only need to do this once.
-		if (this->compareRange(frameCounter) == 0) {
-			
-			memset(pFrame->data[0],colour_y,this->getHeight()*pFrame->linesize[0]);
-			memset(pFrame->data[1],colour_u,this->getChromaHeight()*pFrame->linesize[1]);
-			memset(pFrame->data[2],colour_v,this->getChromaHeight()*pFrame->linesize[2]);
-			frameCounter++;
-			
-			return this->getHeight()*pFrame->linesize[0] +
-			this->getHeight()*pFrame->linesize[1] +
-			this->getHeight()*pFrame->linesize[2];
-		}
-	return -1;
-	
-}
 
 AVFrame * AVObject::getAVFrame(void)
 { 

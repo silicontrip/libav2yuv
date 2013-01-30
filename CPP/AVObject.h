@@ -58,7 +58,6 @@ public:
 	~AVObject();
 
 	
-	void dumpFormat(void);
 
 
 	AVRational getFrameRate(void);
@@ -117,11 +116,70 @@ public:
 
 	void setHeight(int);
 	void setWidth(int);
-	
-	int decodeNextAudio(void);
-	int decodeNextFrame(void);
+
+	/*
+	virtual	void dumpFormat(void);
+	virtual	int decodeNextAudio(void);
+	virtual	int decodeNextFrame(void);
+	*/
 	AVFrame * getAVFrame(void);
 	AVFrame * decodeAndGetNextAVFrame(void);
 
+	virtual void dumpFormat(void)
+	{
+		std::cerr<<"Black generator AV Object: " << this->getWidth() <<"x" << this->getHeight() << "\n";	
+	}
+	
+	virtual int decodeNextAudio(void)
+	{
+		// how to handle the in and out.
+		
+		if (sampleCounter > this->getSamplesOut())
+			return -1;
+		
+		// do
+		int samples = bufferSize / this->getSampleSize() * this->getSampleChannels();
+		if ((sampleCounter < this->getSamplesIn()) && (sampleCounter + samples > this->getSamplesOut()))
+		{
+			// send partial frame
+			// copy sampleBuffer + [self getSamplesIn] - sampleCounter to (sampleCounter + samples) - [self getSamplesOut]
+			// bytes = [self getSamplesOut] - [self getSamplesIn]
+		}
+		else if ((sampleCounter < this->getSamplesIn()) && (sampleCounter + samples >=this->getSamplesIn()))
+		{
+			// send partial frame
+		} 
+		else if ((sampleCounter <= this->getSamplesOut()) && (sampleCounter + samples > this->getSamplesOut()))
+		{
+			// send partial frame
+		}
+		else 
+		{
+			// send entire frame.
+		}
+		// sampleCount += samples. 
+	}
+	
+	virtual int decodeNextFrame(void)
+	{
+		if (this->compareRange(frameCounter) < 0)
+			frameCounter = frameIn;
+		
+		// I only need to do this once.
+		if (this->compareRange(frameCounter) == 0) {
+			
+			memset(pFrame->data[0],colour_y,this->getHeight()*pFrame->linesize[0]);
+			memset(pFrame->data[1],colour_u,this->getChromaHeight()*pFrame->linesize[1]);
+			memset(pFrame->data[2],colour_v,this->getChromaHeight()*pFrame->linesize[2]);
+			frameCounter++;
+			
+			return this->getHeight()*pFrame->linesize[0] +
+			this->getHeight()*pFrame->linesize[1] +
+			this->getHeight()*pFrame->linesize[2];
+		}
+		return -1;
+		
+	}
+	
 
 };

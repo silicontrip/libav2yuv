@@ -127,7 +127,7 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv)
 	argv += optind;
 	
 	for (c=1; c<argc;c++) {
-		std::cerr << "argument: " << argv[c] << "\n";
+	//	std::cerr << "argument: " << argv[c] << "\n";
 		arguments.push_back(std::string(argv[c]));
 	}
 	

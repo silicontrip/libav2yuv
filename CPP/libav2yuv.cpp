@@ -9,20 +9,20 @@
 
 
 // wave writer
-void processAudio (Libav2yuvArguments options, std::vector<AVObject> edlList)
+void processAudio (Libav2yuvArguments options, std::vector<AVObject *> edlList)
 {
 	
-	AVObject lav = edlList.front();
+	AVObject *lav = edlList.front();
 	
 	//libavWaveWriter *nfh=[[libavWaveWriter alloc] init];
 	
 	//NSLog(@"libavWaveWriter initWithFormat");
 	
 	LibavWaveWriter nfh;
-	nfh.setSampleFormat(lav.getSampleFormat());
-	nfh.setSampleChannels(lav.getSampleChannels());
+	nfh.setSampleFormat(lav->getSampleFormat());
+	nfh.setSampleChannels(lav->getSampleChannels());
 	
-	nfh.setSamplesPerSecond(lav.getSamplesPerSecond());
+	nfh.setSamplesPerSecond(lav->getSamplesPerSecond());
 	
 	if (options.hasOutFile()){
 		nfh.setOutputFilename(options.getOutFile());
@@ -31,35 +31,36 @@ void processAudio (Libav2yuvArguments options, std::vector<AVObject> edlList)
 	
 	// need to decode the first frame to get the Samples per second.
 	
-	if (lav.decodeNextAudio() >= 0) {
+	if (lav->decodeNextAudio() >= 0) {
 		
-		nfh.setSamplesPerSecond(lav.getSamplesPerSecond());
+		nfh.setSamplesPerSecond(lav->getSamplesPerSecond());
 		
 		nfh.writeHeader();
-		nfh.writeFrameData(lav.getAVFrame());
+		nfh.writeFrameData(lav->getAVFrame());
 		
-		std::vector<AVObject>::iterator audio;
+		std::vector<AVObject *>::iterator audio;
 		for (audio=edlList.begin(); audio != edlList.end(); ++audio)
 			
+			lav = *audio;
 			//for (AVObject *audio in edlList) {
 			
 			//	if (audio != nil) {
-			audio->dumpFormat();
+			lav->dumpFormat();
 		
 		
-		int sampleSize = audio->getSampleSize() * (*audio).getSampleChannels();
+		int sampleSize = lav->getSampleSize() * lav->getSampleChannels();
 		
-		std::cerr<<"sample size: " <<(*audio).getSampleSize() <<"x"<< (*audio).getSampleChannels() << " = " << sampleSize << "\n";
+	// 	std::cerr<<"sample size: " << lav->getSampleSize() <<"x"<< lav->getSampleChannels() << " = " << sampleSize << "\n";
 		
-		while (audio->decodeNextAudio() >=0)
+		while (lav->decodeNextAudio() >=0)
 		{
-			nfh.writeFrameData(audio->getAVFrame());
+			nfh.writeFrameData(lav->getAVFrame());
 			
 			//	[audio freeAVFrame];
 		}
 		//NSLog(@"audio release");
 		
-		delete &audio;
+		delete lav;
 	} else {
 		std::cerr<< "Couldn't initialise audio\n";
 	}
@@ -71,23 +72,25 @@ void processAudio (Libav2yuvArguments options, std::vector<AVObject> edlList)
 	
 }
 
-void processVideo (Libav2yuvArguments options, std::vector<AVObject> edlList)
+void processVideo (Libav2yuvArguments options, std::vector<AVObject *> edlList)
 {
 	
-	AVObject lav = edlList.front();
+	AVObject *lav = edlList.front();
 	
-	lav.dumpFormat();
+	lav->dumpFormat();
 	
 	//	NSLog(@"%dx%d by %d:%d at %d:%d",[lav getWidth],[lav getHeight],[lav getSampleAspectNum],[lav getSampleAspectDen],[lav getFrameRateNum],[lav getFrameRateDen]);
 	
 	Libyuv yuv;
 	
 	//	 NSLog(@"libyuv alloc");
-	yuv.setWidth(lav.getWidth()); 
-	yuv.setHeight(lav.getHeight()); 
-	yuv.setSampleAspectAVRational(lav.getSampleAspect());
-	yuv.setFrameRateAVRational(lav.getFrameRate());
-	yuv.setChromaSamplingFromAV(lav.getChromaSampling());
+	yuv.setWidth(lav->getWidth()); 
+	yuv.setHeight(lav->getHeight()); 
+	yuv.setSampleAspectAVRational(lav->getSampleAspect());
+	yuv.setFrameRateAVRational(lav->getFrameRate());
+	yuv.setChromaSamplingFromAV(lav->getChromaSampling());
+	
+	yuv.allocFrameData();
 	
 	if (options.getExtensions())
 	{
@@ -108,13 +111,13 @@ void processVideo (Libav2yuvArguments options, std::vector<AVObject> edlList)
 	// need to decode the first frame to get the interlace type
 	// NSLog(@"lav decodeNextFrame");
 	
-	lav.decodeNextFrame();
+	lav->decodeNextFrame();
 	//	 NSLog(@"yuv setYUVFrameDataWithAVFrame");
 	
-	yuv.setYUVFrameDataWithAVFrame(lav.getAVFrame());
+	yuv.setYUVFrameDataWithAVFrame(lav->getAVFrame());
 	//	NSLog(@"yuv setInterlaceAndOrder");
 	
-	yuv.setInterlaceAndOrder(lav.getIsInterlaced(), lav.getInterlaceTopFieldFirst());
+	yuv.setInterlaceAndOrder(lav->getIsInterlaced(), lav->getInterlaceTopFieldFirst());
 	//interlace flag is not available until the first frame is decoded.
 	//need to get the interlace flags before this. So we can use a generator.
 	//	 NSLog(@"yuv writeHeader");
@@ -123,17 +126,20 @@ void processVideo (Libav2yuvArguments options, std::vector<AVObject> edlList)
 	yuv.write();
 	// [lav release];
 	
-	for (std::vector<AVObject>::iterator video=edlList.begin(); video != edlList.end(); ++video)
+	for (std::vector<AVObject *>::iterator video=edlList.begin(); video != edlList.end(); ++video)
 	{
+		
+		lav = *video;
+		
 		//for (AVObject *video in edlList) {
 		//	if (video != nil) {
 		
-		while (video->decodeNextFrame() >=0)
+		while (lav->decodeNextFrame() >=0)
 		{
-			yuv.setYUVFrameDataWithAVFrame(video->getAVFrame());
+			yuv.setYUVFrameDataWithAVFrame(lav->getAVFrame());
 			yuv.write();
 		}
-		delete &video;
+		delete lav;
 	}
 	
 	// delete yuv;	
@@ -143,7 +149,7 @@ void processVideo (Libav2yuvArguments options, std::vector<AVObject> edlList)
 int main(int argc, char *argv[])
 {
 	
-	std::vector<AVObject> edlList;
+	std::vector<AVObject *> edlList;
 	
 	//pool = [[NSAutoreleasePool alloc] init];
 	//edlList = [NSMutableArray arrayWithCapacity:1];
@@ -152,7 +158,7 @@ int main(int argc, char *argv[])
 	Libav2yuvArguments options(argc,argv);
 	
 	if (options.getAudio()) {
-		std::cerr << "setting to audio\n";
+		// std::cerr << "setting to audio\n";
 		streamMode = AVMEDIA_TYPE_AUDIO;
 	}	
 	// std::cerr<<"scan arguments\n";
@@ -166,7 +172,7 @@ int main(int argc, char *argv[])
 		for (; argument != args.end(); ++argument)
 		{	
 			
-			std::cerr<<  "argument name: " << *argument << "\n";
+			// std::cerr<<  "argument name: " << *argument << "\n";
 			
 			std::string name (*argument);
 			
@@ -182,13 +188,13 @@ int main(int argc, char *argv[])
 			//	{
 			if (options.getConvert()) 
 			{
-				ChromaFilter chromaConverter(*lav,options.getChroma());
+				ChromaFilter * chromaConverter = new ChromaFilter(*lav,options.getChroma());
 				//	if (chromaConverter != nil) {
 				//[edlList addObject:chromaConverter];
 				edlList.push_back(chromaConverter);
 				//	}
 			} else {
-				edlList.push_back(*lav);
+				edlList.push_back(lav);
 			}
 			
 		}	

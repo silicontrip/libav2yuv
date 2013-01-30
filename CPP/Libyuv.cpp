@@ -170,9 +170,14 @@ void Libyuv::setYUVFrameDataWithAVFrame(AVFrame *pFrame)
 	int w = this->getWidth();
 	int ch = this->getChromaHeight();
 	int cw = this->getChromaWidth();
+
+	//fprintf(stderr, " memcpy0 %d %d %x %x\n",w,pFrame->linesize[0],frameData[0],pFrame->data[0]);
+	//std::cerr<<"memcpy0 " << w << " " << pFrame->linesize[0] << " " <<  frameData[0] << " " << std::hex  << pFrame->data[0] << "\n";
+
 	for (y=0; y<h; y++) {
 		//		mjpeg_debug ("copy %d bytes to: %x from: %x",w,dst[0]+y*w,(src->data[0])+y*src->linesize[0]);
 		//	NSLog(@"memcpy0 %d %d %x %x",w,pFrame->linesize[0],m[0],pFrame->data[0]);
+		
 		
 		memcpy(frameData[0]+y*w,(pFrame->data[0])+y*pFrame->linesize[0],w);
 		if (y<ch) {
