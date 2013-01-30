@@ -323,13 +323,13 @@ int AVObject::TCtoFrames(std::string timecode)
 {
 	//determine if drop frame
 	// NSRange dropFrameRange = [timecode rangeOfString:@";"];
-	unsigned drop = timecode.find(";");
-	
+	bool drop = timecode.find(";") != -1;
 	bool dropFrame = true;
 	
 	int frn = this->getFrameRateNum();
 	int frd =  this->getFrameRateDen();
 	
+	// std::cerr <<  "drop find: " << drop << "\n";
 	
 	if (!drop) 
 	{
@@ -358,6 +358,8 @@ int AVObject::TCtoFrames(std::string timecode)
 	std::string s;
 	
 	while (getline(ss, s, ':')) {
+		
+	//	std::cerr << "digit: " << s << "\n";
 		digits.push_back(s);
 	}
 	
@@ -376,7 +378,7 @@ int AVObject::TCtoFrames(std::string timecode)
 		}
 	}
 	
-	// need to account for drop frame.
+	// need to account for drop frame. properly
 	
 	int frame = frames + seconds * frn / frd;
 	
