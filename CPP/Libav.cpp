@@ -31,7 +31,7 @@ Libav::Libav(std::string filename, int st, int streamNumber)
 		// constructor error blah blah
 	}
 
-	std::cerr << "Chosen stream: " << avStream << "\n";
+	// std::cerr << "Chosen stream: " << avStream << "\n";
 	
 	pCodecCtx = pFormatCtx->streams[avStream]->codec;
 	pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
@@ -48,7 +48,7 @@ Libav::Libav(std::string filename, int st, int streamNumber)
 	this->setFrameRate(pFormatCtx->streams[avStream]->r_frame_rate);
 	this->setSampleAspect(pCodecCtx->sample_aspect_ratio);
 	
-	std::cerr<<"chroma: " << pCodecCtx->pix_fmt << "\n";
+//	std::cerr<<"chroma: " << pCodecCtx->pix_fmt << "\n";
 	
 	this->setChromaSampling(pCodecCtx->pix_fmt);
 	this->setHeight(pCodecCtx->height);
