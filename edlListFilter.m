@@ -76,7 +76,7 @@
 	NSRange enableAudio = [mode rangeOfString:@"A"];
 	NSRange enableaudio = [mode rangeOfString:@"a"];
 	NSRange enableBoth = [mode rangeOfString:@"B"];
-	NSRange enableboth = [mode rangeOfString:@"B"];
+	NSRange enableboth = [mode rangeOfString:@"b"];
 	
 	
 	if (enableAudio.location || enableaudio.location || enableBoth.location || enableboth.location) 
@@ -91,7 +91,7 @@
 	NSRange enableVideo = [mode rangeOfString:@"V"];
 	NSRange enablevideo = [mode rangeOfString:@"v"];
 	NSRange enableBoth = [mode rangeOfString:@"B"];
-	NSRange enableboth = [mode rangeOfString:@"B"];
+	NSRange enableboth = [mode rangeOfString:@"b"];
 	
 	if (enableVideo.location || enablevideo.location || enableBoth.location || enableboth.location) 
 		return TRUE;

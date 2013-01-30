@@ -42,6 +42,9 @@
 - (id)initWithAVObject:(AVObject *)s toY4MChroma:(int)convertMode
 {
 
+	// need a chroma conversion function
+	//	[self initWithAVObject:s toAVChroma: setChromaSamplingFromY4M:convertMode];
+	
 	// there should be a better way than this code duplication
 	[self initWithAVObject:s];
 	
@@ -50,7 +53,7 @@
 	[self allocFrame];
 	
 	imgConvertCtx = sws_getContext([self getWidth], [self getHeight], [s getChromaSampling], 
-								   [self getWidth], [self getHeight], convertMode, SWS_BICUBIC, NULL, NULL, NULL); 
+								   [self getWidth], [self getHeight], [self getChromaSampling], SWS_BICUBIC, NULL, NULL, NULL); 
 	
 	
 	return self;
