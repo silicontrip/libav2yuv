@@ -57,129 +57,71 @@ public:
 	
 	~AVObject();
 
-	
+	virtual AVRational getFrameRate(void);
+	virtual int getFrameRateNum(void);
+	virtual int getFrameRateDen(void);
+	virtual AVRational getSampleAspect(void);
+	virtual int getSampleAspectNum(void);
+	virtual int getSampleAspectDen(void);
+	virtual const char * getChromaSamplingName(void);
+	virtual PixelFormat getChromaSampling(void);
+	virtual bool getIsInterlaced(void);
+	virtual bool getInterlaceTopFieldFirst(void);
+	virtual int getHeight(void);
+	virtual int getWidth(void);
+	virtual int getChromaHeight(void);
+	virtual int getChromaWidth(void);
 
-
-	AVRational getFrameRate(void);
-	int getFrameRateNum(void);
-	int getFrameRateDen(void);
-	AVRational getSampleAspect(void);
-	int getSampleAspectNum(void);
-	int getSampleAspectDen(void);
-	const char * getChromaSamplingName(void);
-	PixelFormat getChromaSampling(void);
-	bool getIsInterlaced(void);
-	bool getInterlaceTopFieldFirst(void);
-	int getHeight(void);
-	int getWidth(void);
-	int getChromaHeight(void);
-	int getChromaWidth(void);
-
-	int getFrameCounter(void);
-	int getIn(void);
-	int getOut(void);
-	int compareRange(int);
-	int compareSamplesRange(int);
-	int64_t getSamplesIn(void);
-	int64_t getSamplesOut(void);
-	int getSampleSize(void);
-	int getSampleChannels(void);
-	AVSampleFormat getSampleFormat(void);
-	int getSamplesPerSecond(void);
-	double getSamplesPerFrame(void);
+	virtual int getFrameCounter(void);
+	virtual int getIn(void);
+	virtual int getOut(void);
+	virtual int compareRange(int);
+	virtual int compareSamplesRange(int);
+	virtual int64_t getSamplesIn(void);
+	virtual int64_t getSamplesOut(void);
+	virtual int getSampleSize(void);
+	virtual int getSampleChannels(void);
+	virtual AVSampleFormat getSampleFormat(void);
+	virtual int getSamplesPerSecond(void);
+	virtual double getSamplesPerFrame(void);
 	void setColour(uint8_t, uint8_t, uint8_t);
 
-	void setIn(int);
-	void setOut(int);
-	void setSampleChannels(int);
-	void setSampleFormat(AVSampleFormat);
+	virtual void setIn(int);
+	virtual void setOut(int);
+	virtual void setSampleChannels(int);
+	virtual void setSampleFormat(AVSampleFormat);
 
-	void setSamplesPerSecond(int);
+	virtual void setSamplesPerSecond(int);
 
 	int TCtoFrames(std::string);
-	void setInTimecode(std::string);
-	void setOutTimecode(std::string);
+	virtual void setInTimecode(std::string);
+	virtual void setOutTimecode(std::string);
 
-	void setFrameRate(AVRational);
-	void setFrameRateNum(int);
-	void setFrameRateDen(int);
+	virtual void setFrameRate(AVRational);
+	virtual void setFrameRateNum(int);
+	virtual void setFrameRateDen(int);
 
-	void setSampleAspect(AVRational);
-	void setSampleAspectNum(int);
-	void setSampleAspectDen(int);
+	virtual void setSampleAspect(AVRational);
+	virtual void setSampleAspectNum(int);
+	virtual void setSampleAspectDen(int);
 
-	void setChromaSampling(PixelFormat);
-	void setChromaSamplingFromY4M(int);
+	virtual void setChromaSampling(PixelFormat);
+	virtual void setChromaSamplingFromY4M(int);
 
-	void setInterlaced(bool);
-	void setInterlaceTopFieldFirst(bool);
+	virtual void setInterlaced(bool);
+	virtual void setInterlaceTopFieldFirst(bool);
 
-	void setHeight(int);
-	void setWidth(int);
+	virtual void setHeight(int);
+	virtual void setWidth(int);
 
-	/*
+	
 	virtual	void dumpFormat(void);
 	virtual	int decodeNextAudio(void);
 	virtual	int decodeNextFrame(void);
-	*/
-	AVFrame * getAVFrame(void);
-	AVFrame * decodeAndGetNextAVFrame(void);
+	
+	virtual AVFrame * getAVFrame(void);
+	virtual AVFrame * decodeAndGetNextAVFrame(void);
 
-	virtual void dumpFormat(void)
-	{
-		std::cerr<<"Black generator AV Object: " << this->getWidth() <<"x" << this->getHeight() << "\n";	
-	}
-	
-	virtual int decodeNextAudio(void)
-	{
-		// how to handle the in and out.
-		
-		if (sampleCounter > this->getSamplesOut())
-			return -1;
-		
-		// do
-		int samples = bufferSize / this->getSampleSize() * this->getSampleChannels();
-		if ((sampleCounter < this->getSamplesIn()) && (sampleCounter + samples > this->getSamplesOut()))
-		{
-			// send partial frame
-			// copy sampleBuffer + [self getSamplesIn] - sampleCounter to (sampleCounter + samples) - [self getSamplesOut]
-			// bytes = [self getSamplesOut] - [self getSamplesIn]
-		}
-		else if ((sampleCounter < this->getSamplesIn()) && (sampleCounter + samples >=this->getSamplesIn()))
-		{
-			// send partial frame
-		} 
-		else if ((sampleCounter <= this->getSamplesOut()) && (sampleCounter + samples > this->getSamplesOut()))
-		{
-			// send partial frame
-		}
-		else 
-		{
-			// send entire frame.
-		}
-		// sampleCount += samples. 
-	}
-	
-	virtual int decodeNextFrame(void)
-	{
-		if (this->compareRange(frameCounter) < 0)
-			frameCounter = frameIn;
-		
-		// I only need to do this once.
-		if (this->compareRange(frameCounter) == 0) {
-			
-			memset(pFrame->data[0],colour_y,this->getHeight()*pFrame->linesize[0]);
-			memset(pFrame->data[1],colour_u,this->getChromaHeight()*pFrame->linesize[1]);
-			memset(pFrame->data[2],colour_v,this->getChromaHeight()*pFrame->linesize[2]);
-			frameCounter++;
-			
-			return this->getHeight()*pFrame->linesize[0] +
-			this->getHeight()*pFrame->linesize[1] +
-			this->getHeight()*pFrame->linesize[2];
-		}
-		return -1;
-		
-	}
 	
 
 };

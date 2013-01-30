@@ -1,10 +1,8 @@
 
 #include "Libyuv.h"
 
-Libyuv::Libyuv()
+void Libyuv::init(void)
 {
-	
-	// NSLog(@"> libyuv init");
 	y4m_init_stream_info (&yuvStreamInfo);
 	y4m_init_frame_info(&yuvFrameInfo);
 	
@@ -15,7 +13,29 @@ Libyuv::Libyuv()
 	frameData[2]=NULL;
 	
 	this->setOutputFd(1); // STDOUT
+	
+}
+
+Libyuv::Libyuv()
+{
+	this->init();
+	// NSLog(@"> libyuv init");
 	//NSLog(@"< libyuv init");
+	
+}
+
+Libyuv::Libyuv(int w, int h, AVRational sa, AVRational fr, PixelFormat pf)
+{
+
+	this->init();
+	this->setWidth(w); 
+	this->setHeight(h); 
+	this->setSampleAspectAVRational(sa);
+	this->setFrameRateAVRational(fr);
+	this->setChromaSamplingFromAV(pf);
+	
+	this->allocFrameData();
+	
 	
 }
 

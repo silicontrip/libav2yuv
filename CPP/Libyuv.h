@@ -18,11 +18,15 @@ protected:
 	int fdOut;
 	bool fileHeaderWritten;
 
+	void init(void);
+	
 public:
 	
 	Libyuv();
 	~Libyuv();
+	Libyuv(int,int,AVRational,AVRational,PixelFormat);
 
+	
 	void allocFrameData(void);
 	void setExtensions(int);
 	int setOutputFilename(std::string);

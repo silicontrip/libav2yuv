@@ -323,7 +323,7 @@ int AVObject::TCtoFrames(std::string timecode)
 {
 	//determine if drop frame
 	// NSRange dropFrameRange = [timecode rangeOfString:@";"];
-	bool drop = timecode.find(";") != -1;
+	bool drop = timecode.find(";") != std::string::npos;
 	bool dropFrame = true;
 	
 	int frn = this->getFrameRateNum();
@@ -491,6 +491,63 @@ AVFrame * AVObject::decodeAndGetNextAVFrame(void)
 	this->decodeNextFrame(); 
 	this->getAVFrame(); 
 }
+
+void AVObject::dumpFormat(void)
+{
+	std::cerr<<"Black generator AV Object: " << this->getWidth() <<"x" << this->getHeight() << "\n";	
+}
+
+int AVObject::decodeNextAudio(void)
+{
+	// how to handle the in and out.
+	
+	if (sampleCounter > this->getSamplesOut())
+		return -1;
+	
+	// do
+	int samples = bufferSize / this->getSampleSize() * this->getSampleChannels();
+	if ((sampleCounter < this->getSamplesIn()) && (sampleCounter + samples > this->getSamplesOut()))
+	{
+		// send partial frame
+		// copy sampleBuffer + [self getSamplesIn] - sampleCounter to (sampleCounter + samples) - [self getSamplesOut]
+		// bytes = [self getSamplesOut] - [self getSamplesIn]
+	}
+	else if ((sampleCounter < this->getSamplesIn()) && (sampleCounter + samples >=this->getSamplesIn()))
+	{
+		// send partial frame
+	} 
+	else if ((sampleCounter <= this->getSamplesOut()) && (sampleCounter + samples > this->getSamplesOut()))
+	{
+		// send partial frame
+	}
+	else 
+	{
+		// send entire frame.
+	}
+	// sampleCount += samples. 
+}
+
+int AVObject::decodeNextFrame(void)
+{
+	if (this->compareRange(frameCounter) < 0)
+		frameCounter = frameIn;
+	
+	// I only need to do this once.
+	if (this->compareRange(frameCounter) == 0) {
+		
+		memset(pFrame->data[0],colour_y,this->getHeight()*pFrame->linesize[0]);
+		memset(pFrame->data[1],colour_u,this->getChromaHeight()*pFrame->linesize[1]);
+		memset(pFrame->data[2],colour_v,this->getChromaHeight()*pFrame->linesize[2]);
+		frameCounter++;
+		
+		return this->getHeight()*pFrame->linesize[0] +
+		this->getHeight()*pFrame->linesize[1] +
+		this->getHeight()*pFrame->linesize[2];
+	}
+	return -1;
+	
+}
+
 
 void AVObject::freeAVFrame(void)
 { 

@@ -10,11 +10,11 @@
 class EdlListFilter: public AVObject {
 
 protected:
-	std::list<Libav> entries;
+	std::list<Libav *> entries;
 	
 	bool hasAudio(std::string); 
 	bool hasVideo(std::string); 
-	AVObject currentAV(void);
+	AVObject * currentAV(void);
 
 	
 public:
@@ -35,7 +35,7 @@ public:
 	AVRational getSampleAspect(void);
 	int getSampleAspectNum(void);
 	int getSampleAspectDen(void);
-	int getChromaSampling(void);
+	PixelFormat getChromaSampling(void);
 	bool getIsInterlaced(void);
 	bool getInterlaceTopFieldFirst(void);
 	int getHeight(void); 
@@ -45,7 +45,7 @@ public:
 	AVFrame * getAVFrame(void);
 	int getSampleSize(void);
 	int getSampleChannels(void);
-	int getSampleFormat(void);
+	AVSampleFormat getSampleFormat(void);
 	int getSamplesPerSecond(void);
 	double getSamplesPerFrame(void);
 

@@ -3,7 +3,6 @@
 Libav::Libav(std::string filename, int st, int streamNumber)
 {
 
-	std::cerr << "filename: " << filename << "\n";
 	
 	this->setIn(-1);
 	this->setOut(-1);

@@ -81,17 +81,12 @@ void processVideo (Libav2yuvArguments options, std::vector<AVObject *> edlList)
 	
 	//	NSLog(@"%dx%d by %d:%d at %d:%d",[lav getWidth],[lav getHeight],[lav getSampleAspectNum],[lav getSampleAspectDen],[lav getFrameRateNum],[lav getFrameRateDen]);
 	
-	Libyuv yuv;
-	
-	//	 NSLog(@"libyuv alloc");
-	yuv.setWidth(lav->getWidth()); 
-	yuv.setHeight(lav->getHeight()); 
-	yuv.setSampleAspectAVRational(lav->getSampleAspect());
-	yuv.setFrameRateAVRational(lav->getFrameRate());
-	yuv.setChromaSamplingFromAV(lav->getChromaSampling());
-	
-	yuv.allocFrameData();
-	
+	Libyuv yuv(lav->getWidth(),
+			   lav->getHeight(),
+			   lav->getSampleAspect(),
+			   lav->getFrameRate(),
+			   lav->getChromaSampling());
+		
 	if (options.getExtensions())
 	{
 		yuv.setExtensions(1);
