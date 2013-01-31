@@ -39,11 +39,11 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv)
 	
 	
 	while (c != -1) {
-		c = getopt_long (argc, argv, "wI:f:F:A:s:cS:o:r:Eh",
+		c = getopt_long (argc, argv, "wEcI:f:F:A:s:S:o:r:h",
 						 legal_flags, &option_index);
 		
 		switch(c) {
-			case 'a':
+			case 'w':
 				audio=true;
 				break;
 			case 'E':
@@ -52,7 +52,7 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv)
 			case 'c':
 				convert=true;
 				break;
-			case 'i':
+			case 'I':
 				switch (optarg[0]) {
 					case 'P':
 					case 'p':  interlace = Y4M_ILACE_NONE;  break;
@@ -83,7 +83,7 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv)
 					} else if (!strcmp(optarg,NTSC_WIDE)) {
 						y4m_parse_ratio(&aspect, "5760:4739");
 					} 
-					}
+				}
 				break;
 			case 'S':
 				chroma = y4m_chroma_parse_keyword(optarg);
