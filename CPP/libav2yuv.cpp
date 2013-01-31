@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
 			//	{
 			if (options.getConvert()) 
 			{
-				ChromaFilter * chromaConverter = new ChromaFilter(*lav,options.getChroma());
+				ChromaFilter * chromaConverter = new ChromaFilter(lav,options.getChroma());
 				//	if (chromaConverter != nil) {
 				//[edlList addObject:chromaConverter];
 				edlList.push_back(chromaConverter);

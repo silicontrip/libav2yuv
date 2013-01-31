@@ -10,17 +10,17 @@ extern "C" {
 class ChromaFilter: public AVObject {
 
 private:
-	AVObject source;
+	AVObject * source;
 	struct SwsContext *imgConvertCtx;
 
 	public:
 
-	ChromaFilter(AVObject);
-	ChromaFilter(AVObject, int);
+	ChromaFilter(AVObject*);
+	ChromaFilter(AVObject*, int);
 
-	void setAVSource (AVObject);
+	void setAVSource (AVObject*);
 
-	
+	// why aren't I overriding the AVObject methods setChromaSampling and setChromaSamplingFromY4M?
 	void setAVChroma(PixelFormat);
 	void setY4MChroma(int);
 
