@@ -3,3 +3,5 @@ libav2yuv
 test.*
 *.edl
 Design/
+build
+*.xcodeproj
