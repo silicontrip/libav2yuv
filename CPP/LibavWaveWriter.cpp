@@ -75,14 +75,14 @@ int LibavWaveWriter::writeHeader(void) {
 void LibavWaveWriter::setSampleFormat(AVSampleFormat fmt)
 { 
 	
-	std::cerr <<"Setting format to: "<<av_get_sample_fmt_name(fmt) << "\n";
+	// std::cerr <<"Setting format to: "<<av_get_sample_fmt_name(fmt) << "\n";
 	
 	audio_st->codec->sample_fmt = fmt; 
 }
 
 void LibavWaveWriter::setSampleChannels(int ch)
 { 
-	std::cerr<<"Channels: "<<ch<<"\n";
+	// std::cerr<<"Channels: "<<ch<<"\n";
 	
 	audio_st->codec->channels = ch; 
 }
