@@ -397,6 +397,19 @@ void AVObject::setOutTimecode(std::string sout)
 	this->setOut(this->TCtoFrames(sout));
 }
 
+void AVObject::setInOutTimecode(std::string tc)
+{
+
+	std::stringstream ss(tc);
+	std::string s;
+	
+	getline(ss, s, '-');
+	this->setIn(this->TCtoFrames(s));
+	getline(ss, s, '-');
+	this->setOut(this->TCtoFrames(s));
+	
+}
+
 void AVObject::setFrameRate(AVRational rational)
 {	
 	this->setFrameRateNum(rational.num);

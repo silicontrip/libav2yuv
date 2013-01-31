@@ -179,6 +179,12 @@ int main(int argc, char *argv[])
 			} else  {	
 				lav = new Libav(name,streamMode,-1);
 			}
+			
+			// if range
+			if (options.hasRange()) {
+				lav->setInOutTimecode(options.getRange());
+			}
+			
 			//if (lav != nil) 
 			//	{
 			if (options.getConvert()) 

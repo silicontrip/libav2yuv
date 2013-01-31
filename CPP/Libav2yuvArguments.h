@@ -45,6 +45,8 @@ public:
 	y4m_ratio_t getFrameRate(void) { return frameRate; }
 	y4m_ratio_t getAspect(void) { return aspect; }
 	std::string getFormat(void) { return format; }
+	std::string getRange(void) { return range; }
+
 	std::string getOutFile(void) { return outFile; }
 	bool getExtensions(void) { return extensions; }
 	bool getAudio(void) { return audio; }

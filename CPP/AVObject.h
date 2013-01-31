@@ -94,8 +94,9 @@ public:
 	virtual void setSamplesPerSecond(int);
 
 	int TCtoFrames(std::string);
-	virtual void setInTimecode(std::string);
-	virtual void setOutTimecode(std::string);
+	void setInTimecode(std::string);
+	void setOutTimecode(std::string);
+	void setInOutTimecode(std::string tc);
 
 	virtual void setFrameRate(AVRational);
 	virtual void setFrameRateNum(int);
