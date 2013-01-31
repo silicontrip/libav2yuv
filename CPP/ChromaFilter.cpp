@@ -8,7 +8,7 @@ ChromaFilter::ChromaFilter(AVObject *s)
 ChromaFilter::ChromaFilter(AVObject *s, int convertMode) 
 {
 	this->setAVSource (s);
-	this->setChromaSamplingFromY4M(convertMode);
+	this->setY4MChroma(convertMode);
 }
 
 void ChromaFilter::setAVSource (AVObject *s)
@@ -45,7 +45,9 @@ int ChromaFilter::decodeNextFrame(void)
 
 	AVFrame *pFrameSource;
 	
-	source->decodeNextFrame();
+	int ret = source->decodeNextFrame();
+	if (ret<0)
+		return ret;
 	pFrameSource = source->getAVFrame();
 	
 	return sws_scale(imgConvertCtx,  (const uint8_t * const *)((AVPicture *)pFrameSource)->data,
