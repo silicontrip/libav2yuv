@@ -3,10 +3,15 @@
 Libav::Libav(std::string filename, int st, int streamNumber)
 {
 
-	
 	this->setIn(-1);
 	this->setOut(-1);
-
+	
+	// default sane values
+	this->setFrameRateNum(1);
+	this->setFrameRateDen(1);
+	this->setSampleAspectNum(1);
+	this->setSampleAspectDen(1);
+	
 	avStream = -1;
 	streamType = st;
 	
@@ -44,6 +49,9 @@ Libav::Libav(std::string filename, int st, int streamNumber)
 	
 	pFrame=avcodec_alloc_frame();
 	
+//	std::cerr<<"framerate: " << pFormatCtx->streams[avStream]->r_frame_rate.num <<":" <<pFormatCtx->streams[avStream]->r_frame_rate.den << "\n";
+//	std::cerr<<"dar: " << pCodecCtx->sample_aspect_ratio.num <<":" <<pCodecCtx->sample_aspect_ratio.den << "\n";
+
 	this->setFrameRate(pFormatCtx->streams[avStream]->r_frame_rate);
 	this->setSampleAspect(pCodecCtx->sample_aspect_ratio);
 	
