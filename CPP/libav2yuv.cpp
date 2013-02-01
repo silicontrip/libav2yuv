@@ -114,6 +114,8 @@ void processVideo (Libav2yuvArguments options, std::vector<AVObject *> edlList)
 	yuv.setYUVFrameDataWithAVFrame(lav->getAVFrame());
 	//	NSLog(@"yuv setInterlaceAndOrder");
 	
+	//std::cerr << "interlace: " << lav->getIsInterlaced() << " order tff: " << lav->getInterlaceTopFieldFirst() << "\n";
+	
 	yuv.setInterlaceAndOrder(lav->getIsInterlaced(), lav->getInterlaceTopFieldFirst());
 	//interlace flag is not available until the first frame is decoded.
 	//need to get the interlace flags before this. So we can use a generator.

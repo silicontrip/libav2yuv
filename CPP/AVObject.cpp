@@ -6,6 +6,10 @@ AVObject::AVObject()
 	
 	this->setIn(-1);
 	this->setOut(-1);
+	pictureBuffer = NULL;
+
+	this->setInterlaced(false);
+	
 	
 	this->setColour(16,128,128);
 	
@@ -52,6 +56,7 @@ AVObject::AVObject(PixelFormat ch, int h, int w)
 	this->setIn(-1);
 	this->setOut(-1);
 	
+	pictureBuffer = NULL;
 	this->allocFrame();
 	
 }
@@ -128,7 +133,10 @@ bool AVObject::getIsInterlaced(void)
 
 bool AVObject::getInterlaceTopFieldFirst(void)
 {
-	return interlaceTopFieldFirst;
+	// this field only makes sense if interlace is set
+	if (this->getIsInterlaced()) 
+		return interlaceTopFieldFirst;
+	return 0;
 }
 
 int AVObject::getHeight(void)
@@ -476,7 +484,7 @@ void AVObject::setChromaSamplingFromY4M(int y4mChroma)
 }
 
 void AVObject::setInterlaced(bool i)
-{
+{	
 	isInterlaced = i;
 }
 

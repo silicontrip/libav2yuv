@@ -34,8 +34,13 @@ void ChromaFilter::setAVSource (AVObject *s)
 	this->setSampleAspect(s->getSampleAspect());
 	this->setHeight(s->getHeight());
 	this->setWidth(s->getWidth());
+	
+	// we don't get interlace information until the first frame is decoded.
+	
+	/*
 	this->setInterlaced(s->getIsInterlaced());
 	this->setInterlaceTopFieldFirst(s->getInterlaceTopFieldFirst());
+	*/
 }	
 
 void ChromaFilter::setAVChroma(PixelFormat convertMode)
