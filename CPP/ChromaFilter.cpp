@@ -17,9 +17,10 @@ ChromaFilter::~ChromaFilter()
 {
 	if (imgConvertCtx)
 		sws_freeContext(imgConvertCtx);
+	
 	delete source;
 	
-	delete pictureBuffer;
+	// delete pictureBuffer;
 	
 	// does this call the superclass's destructor?
 }

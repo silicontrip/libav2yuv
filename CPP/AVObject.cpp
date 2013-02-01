@@ -67,6 +67,9 @@ void AVObject::allocFrame(void)
 		int w = this->getWidth();
 		
 		int size = avpicture_get_size(ch, w, h);
+		if (pictureBuffer)
+			av_free(pictureBuffer);
+		
 		pictureBuffer = (uint8_t *)av_malloc(size);
 		if (pictureBuffer) {
 			avpicture_fill((AVPicture *)pFrame, pictureBuffer, ch, w, h);
@@ -467,7 +470,6 @@ void AVObject::setChromaSamplingFromY4M(int y4mChroma)
 			
 		default:
 			std::cerr << "AV: Unsupported Chroma: " << y4mChroma << "\n";
-			
 			break;
 	}
 	

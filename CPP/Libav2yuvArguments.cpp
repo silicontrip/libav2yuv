@@ -150,7 +150,7 @@ void Libav2yuvArguments::usage(void)
 	"-F|--frameRate <n:d>\tForce framerate. This is not\n" <<
 	"-f|--format <fmt>\tForce format type (if incorrectly detected)\n" <<
 	"-A|--aspect (<n:d>|PAL|PAL_WIDE|NTSC|NTSC_WIDE) Force aspect ratio\n" <<
-	"-s|--chroma <chroma>\tForce chroma subsampling mode. Only use this if you know what you are doing, or using -convert\n" <<
+	"-S|--chroma <chroma>\tForce chroma subsampling mode. Only use this if you know what you are doing, or using -convert\n" <<
 	"\t\t\tif the mode in the stream is unsupported will upsample to YUV444\n" <<
 	"-c|--convert\t\tForce conversion to chroma mode (requires a chroma mode)\n" <<
 	"-s|--stream\t\tselect stream other than stream 0\n" <<
