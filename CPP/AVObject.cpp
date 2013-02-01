@@ -568,6 +568,9 @@ void AVObject::freeAVFrame(void)
 }
 
 AVObject::~AVObject() {
+	
+	// std::cerr << ">> AVObject destructor\n";
+	
 	if (pFrame)
 		av_free(pFrame);
 	if (pictureBuffer)

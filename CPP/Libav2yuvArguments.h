@@ -35,7 +35,8 @@ private:
 public:
 	Libav2yuvArguments();
 	Libav2yuvArguments(int, char**);
-
+	~Libav2yuvArguments();
+	
 	void usage(void);
 	void chromaModes(void);
 	

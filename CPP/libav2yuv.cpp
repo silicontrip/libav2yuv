@@ -39,28 +39,30 @@ void processAudio (Libav2yuvArguments options, std::vector<AVObject *> edlList)
 		nfh.writeFrameData(lav->getAVFrame());
 		
 		std::vector<AVObject *>::iterator audio;
-		for (audio=edlList.begin(); audio != edlList.end(); ++audio)
+		for (audio=edlList.begin(); audio != edlList.end(); ++audio) 
+		{
 			
 			lav = *audio;
 			//for (AVObject *audio in edlList) {
 			
 			//	if (audio != nil) {
 			lav->dumpFormat();
-		
-		
-		int sampleSize = lav->getSampleSize() * lav->getSampleChannels();
-		
-	// 	std::cerr<<"sample size: " << lav->getSampleSize() <<"x"<< lav->getSampleChannels() << " = " << sampleSize << "\n";
-		
-		while (lav->decodeNextAudio() >=0)
-		{
-			nfh.writeFrameData(lav->getAVFrame());
 			
-			//	[audio freeAVFrame];
+			
+			int sampleSize = lav->getSampleSize() * lav->getSampleChannels();
+			
+			// 	std::cerr<<"sample size: " << lav->getSampleSize() <<"x"<< lav->getSampleChannels() << " = " << sampleSize << "\n";
+			
+			while (lav->decodeNextAudio() >=0)
+			{
+				nfh.writeFrameData(lav->getAVFrame());
+				
+				//	[audio freeAVFrame];
+			}
+			//NSLog(@"audio release");
+			
+			delete lav;
 		}
-		//NSLog(@"audio release");
-		
-		delete lav;
 	} else {
 		std::cerr<< "Couldn't initialise audio\n";
 	}
@@ -86,7 +88,7 @@ void processVideo (Libav2yuvArguments options, std::vector<AVObject *> edlList)
 			   lav->getSampleAspect(),
 			   lav->getFrameRate(),
 			   lav->getChromaSampling());
-		
+	
 	if (options.getExtensions())
 	{
 		yuv.setExtensions(1);
@@ -134,7 +136,7 @@ void processVideo (Libav2yuvArguments options, std::vector<AVObject *> edlList)
 			yuv.setYUVFrameDataWithAVFrame(lav->getAVFrame());
 			yuv.write();
 		}
-		delete lav;
+		delete *video;
 	}
 	
 	// delete yuv;	

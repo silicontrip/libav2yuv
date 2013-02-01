@@ -21,7 +21,6 @@ Libyuv::Libyuv()
 	this->init();
 	// NSLog(@"> libyuv init");
 	//NSLog(@"< libyuv init");
-	
 }
 
 Libyuv::Libyuv(int w, int h, AVRational sa, AVRational fr, PixelFormat pf)
@@ -38,6 +37,16 @@ Libyuv::Libyuv(int w, int h, AVRational sa, AVRational fr, PixelFormat pf)
 	
 	
 }
+
+Libyuv::~Libyuv()
+{
+	y4m_fini_frame_info(&yuvFrameInfo);
+	y4m_fini_stream_info(&yuvStreamInfo);
+	close (fdOut);
+	
+	this->deallocFrameData();
+}
+
 
 void Libyuv::allocFrameData(void)
 {
@@ -250,12 +259,4 @@ void Libyuv::deallocFrameData(void)
 	}
 }	
 
-Libyuv::~Libyuv()
-{
-	y4m_fini_frame_info(&yuvFrameInfo);
-	y4m_fini_stream_info(&yuvStreamInfo);
-	close (fdOut);
-	
-	this->deallocFrameData();
-}
 

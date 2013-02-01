@@ -1,5 +1,5 @@
 
-OPTFLAGS=-O3
+OPTFLAGS=-g
 CFLAGS=$(OPTFLAGS) -I/usr/local/include -I/usr/local/include/mjpegtools
 CC=g++
 LDFLAGS=-L/usr/X11/lib  -L/usr/local/lib 

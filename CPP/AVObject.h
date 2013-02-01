@@ -55,7 +55,7 @@ public:
 	AVObject(int, int, AVSampleFormat, int);
 	AVObject(PixelFormat, int, int);
 	
-	~AVObject();
+	virtual ~AVObject();
 
 	virtual AVRational getFrameRate(void);
 	virtual int getFrameRateNum(void);

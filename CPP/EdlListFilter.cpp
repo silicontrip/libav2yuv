@@ -92,20 +92,17 @@ int EdlListFilter::decodeNextFrame()
 	if (this->compareRange(frameCounter) > 0) 
 		return -1;
 	
-//	std::cerr << "EDL decodeNextFrame before range\n";
-
 	int bytes;
 	do {
 
 		while ((bytes=this->currentAV()->decodeNextFrame()) < 0) {
+			delete (this->currentAV());
+
 			entries.pop_front();
-//			std::cerr << "EDL decodeNextFrame remove entry\n";
 			if (entries.empty())
 				return -1;
-//			std::cerr << "EDL decodeNextFrame more entries available\n";
 		}
 		frameCounter++;
-//		std::cerr << "EDL decodeNextFrame decode frameCount " << frameCounter << "\n";
 
 	} while (this->compareRange(frameCounter)<0);
 //	std::cerr << "<<EDL decodeNextFrame\n";
@@ -124,7 +121,7 @@ int EdlListFilter::decodeNextAudio(void)
 	int samples;
 	do {
 		while ((samples=this->currentAV()->decodeNextAudio()) < 0) {
-			
+			delete (this->currentAV());
 			entries.pop_front();
 			if (entries.empty())
 				return -1;
@@ -138,9 +135,10 @@ int EdlListFilter::decodeNextAudio(void)
 
 void EdlListFilter::dumpFormat(void)
 {
-	std::cerr<<"EDL List AVObject\n";
 	for (std::list<Libav *>::iterator o=entries.begin(); o != entries.end(); ++o)
 		(*o)->dumpFormat();
+	std::cerr<<"EDL List AVObject\n";
+
 }
 
 AVObject * EdlListFilter::currentAV(void)

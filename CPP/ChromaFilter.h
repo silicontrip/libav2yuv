@@ -18,6 +18,8 @@ private:
 	ChromaFilter(AVObject*);
 	ChromaFilter(AVObject*, int);
 
+	~ChromaFilter();
+
 	void setAVSource (AVObject*);
 
 	// why aren't I overriding the AVObject methods setChromaSampling and setChromaSamplingFromY4M?

@@ -3,6 +3,8 @@
 Libav::Libav(std::string filename, int st, int streamNumber)
 {
 
+	pictureBuffer = NULL;
+	
 	this->setIn(-1);
 	this->setOut(-1);
 	
@@ -11,6 +13,8 @@ Libav::Libav(std::string filename, int st, int streamNumber)
 	this->setFrameRateDen(1);
 	this->setSampleAspectNum(1);
 	this->setSampleAspectDen(1);
+	
+	pFormatCtx = NULL;
 	
 	avStream = -1;
 	streamType = st;
@@ -64,6 +68,20 @@ Libav::Libav(std::string filename, int st, int streamNumber)
 	this->setSampleChannels(pCodecCtx->channels);
 }
 
+Libav::~Libav()
+{
+	//std::cerr << ">> Libav Destructor\n";
+	avcodec_free_frame(&pFrame);
+	avcodec_close(pCodecCtx);
+	if (pFormatCtx)
+#if LIBAVFORMAT_VERSION_MAJOR  < 53
+		av_close_input_file(pFormatCtx);
+#else
+		avformat_close_input(&pFormatCtx);
+#endif
+
+}
+
 int Libav::findStream(int streamNumber, int st)
 {
 	
@@ -96,6 +114,7 @@ int Libav::openInputFile(std::string filename)
 {
 	
 	pFormatCtx = NULL;
+	// this is supposed to be passed in by command line options.
 	avif = NULL;
 	
 #if LIBAVFORMAT_VERSION_MAJOR  < 53

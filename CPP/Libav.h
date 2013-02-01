@@ -35,6 +35,8 @@ protected:
 	
 public:
 	Libav(std::string,int,int);
+	~Libav();
+
 	
 	void dumpFormat(void);
 	std::string getFilename(void);

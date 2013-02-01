@@ -2,14 +2,28 @@
 
 ChromaFilter::ChromaFilter(AVObject *s) 
 {
-	setAVSource (s);
+	imgConvertCtx = NULL;
+	this->setAVSource (s);
 }
+
 
 ChromaFilter::ChromaFilter(AVObject *s, int convertMode) 
 {
 	this->setAVSource (s);
 	this->setY4MChroma(convertMode);
 }
+
+ChromaFilter::~ChromaFilter()
+{
+	if (imgConvertCtx)
+		sws_freeContext(imgConvertCtx);
+	delete source;
+	
+	delete pictureBuffer;
+	
+	// does this call the superclass's destructor?
+}
+
 
 void ChromaFilter::setAVSource (AVObject *s)
 {

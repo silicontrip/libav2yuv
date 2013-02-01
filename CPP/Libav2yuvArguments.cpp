@@ -1,5 +1,10 @@
 #include "Libav2yuvArguments.h"
 
+Libav2yuvArguments::~Libav2yuvArguments()
+{
+	arguments.clear();
+}
+
 Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv)
 {
 	
