@@ -42,6 +42,7 @@ AVObject * EdlListFilter::parseEDLEntry (std::string line, int st) throw (AVExce
 	std::string transition;
 	std::string tcIn;
 	std::string tcOut;
+	std::string duration;
 	
 	// grumble... it's delimited on a single space
 	
@@ -49,6 +50,12 @@ AVObject * EdlListFilter::parseEDLEntry (std::string line, int st) throw (AVExce
 	std::getline(items, fileName,' ');
 	std::getline(items, mode,' ');
 	std::getline(items, transition,' ');
+	
+	// cut transition does not have a duration.
+	if (transition.compare("C")) {
+		std::getline(items, duration,' ');
+	}
+	
 	std::getline(items, tcIn,' ');
 	std::getline(items, tcOut,' ');
 	
