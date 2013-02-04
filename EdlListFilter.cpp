@@ -85,40 +85,48 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 			
 			AVObject *videoEntry;
 			
-			videoEntry = new Libav(entry.name, AVMEDIA_TYPE_VIDEO, -1);
-			
-			videoEntry->setInTimecode(entry.sourceIn);
-			
+				
 			if (!entry.transition.compare("C")) {
+				videoEntry = new Libav(entry.name, AVMEDIA_TYPE_VIDEO, -1);
+				
+				videoEntry->setInTimecode(entry.sourceIn);
+				
 				videoEntry->setOutTimecode(entry.sourceOut);
 				entries.push_back(videoEntry);
 			}
 			if (!entry.transition.compare("D")) {
 				
+				videoEntry = new Libav(entry.name, AVMEDIA_TYPE_VIDEO, -1);
+				
+				videoEntry->setInTimecode(entry.sourceIn);
+				
 				
 				int dur = atoi(entry.duration.c_str());
 
+				int source1out = videoEntry->TCtoFrames(entry.sourceOut);
+				int source2in = videoEntry->TCtoFrames(entry2.sourceIn);
+				
 				std::cerr << "dissolve from: " << entry.name << " to: " << entry2.name << " for " << dur << " frames.\n";
 
 				
-				videoEntry->setOut(videoEntry->TCtoFrames(entry.sourceOut) - dur);
+				videoEntry->setOut(source1out - dur - 1);
 				entries.push_back(videoEntry);
 				
 				
 				Libav *video1 = new Libav (entry.name, AVMEDIA_TYPE_VIDEO, -1);
-				video1->setIn(video1->TCtoFrames(entry.sourceOut) - dur);
-				video1->setOut(video1->TCtoFrames(entry.sourceOut));
+				video1->setIn(source1out - dur + 1);
+				video1->setOut(source1out);
 				
 				Libav *video2 = new Libav (entry2.name, AVMEDIA_TYPE_VIDEO, -1);
-				video2->setIn(video2->TCtoFrames(entry2.sourceIn) );
-				video2->setOut(video2->TCtoFrames(entry2.sourceIn) + dur );
+				video2->setIn(source2in );
+				video2->setOut(source2in + dur );
 
 				videoEntry = new DissolveTransition(video1,video2,dur);
 				entries.push_back(videoEntry);
 
 				videoEntry = new Libav(entry2.name, AVMEDIA_TYPE_VIDEO, -1);
 								  
-				videoEntry->setIn((videoEntry->TCtoFrames(entry2.sourceIn) + dur ));
+				videoEntry->setIn( source2in + dur + 1 );
 				videoEntry->setOutTimecode(entry2.sourceOut);
   
 				entries.push_back(videoEntry);
