@@ -5,6 +5,7 @@ extern "C" {
 }
 #include <iostream>
 
+#include "AVException.h"
 #include "AVObject.h"
 
 class ChromaFilter: public AVObject {
@@ -16,15 +17,15 @@ private:
 	public:
 
 	ChromaFilter(AVObject*);
-	ChromaFilter(AVObject*, int);
+	ChromaFilter(AVObject*, int) throw (AVException*);
 
 	~ChromaFilter();
 
 	void setAVSource (AVObject*);
 
 	// why aren't I overriding the AVObject methods setChromaSampling and setChromaSamplingFromY4M?
-	void setAVChroma(PixelFormat);
-	void setY4MChroma(int);
+	void setAVChroma(PixelFormat) throw (AVException*);
+	void setY4MChroma(int) throw (AVException*);
 
 	int decodeNextFrame(void);
 	void dumpFormat(void);

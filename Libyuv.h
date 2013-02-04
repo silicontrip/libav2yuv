@@ -8,6 +8,7 @@ extern "C" {
 
 #include <string>
 #include <iostream>
+#include "AVException.h"
 
 class Libyuv {
 
@@ -18,25 +19,25 @@ protected:
 	int fdOut;
 	bool fileHeaderWritten;
 
-	void init(void);
+	void init(void) throw (AVException*);
 	
 public:
 	
-	Libyuv();
+	Libyuv() throw (AVException*);
 	~Libyuv();
-	Libyuv(int,int,AVRational,AVRational,PixelFormat);
+	Libyuv(int,int,AVRational,AVRational,PixelFormat) throw (AVException*);
 
 	
-	void allocFrameData(void);
+	void allocFrameData(void) throw (AVException*);
 	void setExtensions(int);
-	int setOutputFilename(std::string);
+	int setOutputFilename(std::string) throw (AVException*);
 	void setOutputFd(int); 
 	void setWidth(int);
 	void setHeight(int); 
 	void setInterlacing(int);
 	void setInterlaceAndOrder(int, int);
 	void setChromaSampling (int );
-	void setChromaSamplingFromAV(PixelFormat);
+	void setChromaSamplingFromAV(PixelFormat) throw (AVException*);
 	void setFrameRate(y4m_ratio_t);
 	void setFrameRateAVRational(AVRational);
 	void setSampleAspect(y4m_ratio_t );
@@ -46,8 +47,8 @@ public:
 	int getChromaHeight(void);
 	int getChromaWidth(void); 
 	void setYUVFrameDataWithAVFrame(AVFrame *);
-	int writeHeader(void);
-	int write(void);
+	int writeHeader(void) throw (AVException*);
+	int write(void) throw (AVException*);
 	void deallocFrameData(void);
 
 };

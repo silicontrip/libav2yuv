@@ -5,7 +5,7 @@ Libav2yuvArguments::~Libav2yuvArguments()
 	arguments.clear();
 }
 
-Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv)
+Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv) throw (AVException*)
 {
 	
 	const static struct option legal_flags[] = 
@@ -66,14 +66,14 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv)
 					case 'B':
 					case 'b':  interlace = Y4M_ILACE_BOTTOM_FIRST;  break;
 					default:
-						// argument error
+						throw new AVException("Invalid Interlace Mode: " + optind,INVALID_ARGUMENT);
 						break;
 				}
 				break;
 			case 'F':
 				if( Y4M_OK != y4m_parse_ratio(&frameRate, optarg))
 				{
-					// argument error
+					throw new AVException("Invalid Frame Rate: " + optind,INVALID_ARGUMENT);
 				}
 				break;
 			case 'A':
@@ -87,14 +87,18 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv)
 						y4m_parse_ratio(&aspect, "4320:4739");
 					} else if (!strcmp(optarg,NTSC_WIDE)) {
 						y4m_parse_ratio(&aspect, "5760:4739");
-					} 
+					} else {
+						throw new AVException("Invalid Aspect Ratio: " + optind,INVALID_ARGUMENT);
+
+					}
 				}
 				break;
 			case 'S':
 				chroma = y4m_chroma_parse_keyword(optarg);
 				if (chroma == Y4M_UNKNOWN) {
-					std::cerr<< "Unknown Chroma Mode: " << optind << "\n";
+					// std::cerr<< "Unknown Chroma Mode: " << optind << "\n";
 					this->chromaModes();
+					throw new AVException("Unknown Chroma Mode: " + optind,INVALID_ARGUMENT);
 				}
 				break;
 			case 'f':
@@ -117,8 +121,9 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv)
 			case -1:
 				break;
 			default:
-				std::cerr<< "Unknown option: " << c << "\n";
+			//	std::cerr<< "Unknown option: " << c << "\n";
 				this->usage();
+				throw new AVException("Unknown option: " + c, INVALID_ARGUMENT);
 				break;
 				
 		}

@@ -6,6 +6,7 @@ extern "C" {
 }
 #include <string>
 
+#include "AVException.h"
 #include "AVObject.h"
 
 #define BUFFER_SIZE 16384
@@ -34,12 +35,12 @@ protected:
 
 	
 public:
-	Libav(std::string,int,int);
+	Libav(std::string,int,int) throw (AVException*);
 	~Libav();
 
 	
 	void dumpFormat(void);
 	std::string getFilename(void);
-	int decodeNextAudio(void);
-	int decodeNextFrame(void);
+	int decodeNextAudio(void) throw (AVException*);
+	int decodeNextFrame(void) throw (AVException*);
 };

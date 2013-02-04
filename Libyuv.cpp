@@ -1,13 +1,16 @@
 
 #include "Libyuv.h"
 
-void Libyuv::init(void)
+void Libyuv::init(void) throw (AVException*)
 {
 	y4m_init_stream_info (&yuvStreamInfo);
 	y4m_init_frame_info(&yuvFrameInfo);
 	
 	fileHeaderWritten = false;
+	frameData = NULL;
 	frameData = (uint8_t **)malloc(sizeof (uint8_t *) * 3);
+	if (!frameData)
+		throw new AVException("unable to allocate yuv buffer",MEMORY_ALLOCATION_ERROR);
 	frameData[0]=NULL;
 	frameData[1]=NULL;
 	frameData[2]=NULL;
@@ -16,14 +19,14 @@ void Libyuv::init(void)
 	
 }
 
-Libyuv::Libyuv()
+Libyuv::Libyuv() throw (AVException*)
 {
 	this->init();
 	// NSLog(@"> libyuv init");
 	//NSLog(@"< libyuv init");
 }
 
-Libyuv::Libyuv(int w, int h, AVRational sa, AVRational fr, PixelFormat pf)
+Libyuv::Libyuv(int w, int h, AVRational sa, AVRational fr, PixelFormat pf) throw (AVException*)
 {
 
 	this->init();
@@ -48,7 +51,7 @@ Libyuv::~Libyuv()
 }
 
 
-void Libyuv::allocFrameData(void)
+void Libyuv::allocFrameData(void) throw (AVException*)
 {
 	
 	int fs,cfs;
@@ -57,8 +60,20 @@ void Libyuv::allocFrameData(void)
 	cfs = y4m_si_get_plane_length(&yuvStreamInfo,1);
 	
 	frameData[0] = (uint8_t *)malloc( fs );
+	if (!frameData[0])
+		throw new AVException("unable to allocate yuv buffer data",MEMORY_ALLOCATION_ERROR);
+
 	frameData[1] = (uint8_t *)malloc( cfs);
+	if (!frameData[1]){
+		free (frameData[0]);
+		throw new AVException("unable to allocate yuv buffer data",MEMORY_ALLOCATION_ERROR);
+	}
 	frameData[2] = (uint8_t *)malloc( cfs);
+	if (!frameData[2]){
+		free (frameData[0]);
+		free (frameData[1]);
+		throw new AVException("unable to allocate yuv buffer data",MEMORY_ALLOCATION_ERROR);
+	}
 	
 }
 
@@ -67,10 +82,12 @@ void Libyuv::setExtensions(int ext)
 	y4m_accept_extensions(ext);	
 }
 
-int Libyuv::setOutputFilename(std::string filename)
+int Libyuv::setOutputFilename(std::string filename) throw (AVException*)
 {
 	
 	fdOut = open(filename.c_str(),O_WRONLY|O_CREAT);
+	if (fdOut <0) 
+		throw new AVException("Unable to open output file",IO_ERROR);
 	return fdOut;
 	
 }
@@ -116,7 +133,7 @@ void Libyuv::setChromaSampling (int ch)
 	y4m_si_set_chroma(&yuvStreamInfo,ch); 
 }
 
-void Libyuv::setChromaSamplingFromAV(PixelFormat pix_fmt)
+void Libyuv::setChromaSamplingFromAV(PixelFormat pix_fmt) throw (AVException*)
 {
 	switch (pix_fmt) 
 	{
@@ -128,7 +145,8 @@ void Libyuv::setChromaSamplingFromAV(PixelFormat pix_fmt)
 		case PIX_FMT_YUV411P: this->setChromaSampling(Y4M_CHROMA_411); break;
 		case PIX_FMT_YUVJ420P: this->setChromaSampling(Y4M_CHROMA_420JPEG); break;
 		default:
-			std::cerr<<"LIBYUV: Unsupported Chroma: " << pix_fmt << "\n";
+			throw new AVException("unsupported y4m chroma",UNSUPPORTED_CHROMA);
+	//		std::cerr<<"LIBYUV: Unsupported Chroma: " << pix_fmt << "\n";
 			break;	
 	}
 }
@@ -226,21 +244,26 @@ void Libyuv::setYUVFrameDataWithAVFrame(AVFrame *pFrame)
 	
 }
 
-int Libyuv::writeHeader(void)
+int Libyuv::writeHeader(void) throw (AVException*)
 {
 	
 	int write_error_code = y4m_write_stream_header(fdOut, &yuvStreamInfo);
 	if (write_error_code == Y4M_OK)
 		fileHeaderWritten = true;
-		return write_error_code;
+	else 
+		throw new AVException ("unable to write Y4M header",IO_ERROR);
+	
+	return write_error_code;
 }
 
-int Libyuv::write(void)
+int Libyuv::write(void) throw (AVException*)
 {
 	int write_error_code;
 	
 	write_error_code = y4m_write_frame(fdOut, &yuvStreamInfo, &yuvFrameInfo, frameData); 
-	
+	if (write_error_code != Y4M_OK)
+		throw new AVException ("unable to write Y4M data",IO_ERROR);
+
 	return write_error_code;
 }
 

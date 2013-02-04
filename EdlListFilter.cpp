@@ -11,7 +11,7 @@ EdlListFilter::EdlListFilter()
 	
 }
 
-EdlListFilter::EdlListFilter(std::string filename, int st) 
+EdlListFilter::EdlListFilter(std::string filename, int st)  throw (AVException*)
 {
 	frameCounter = 0;
 	
@@ -21,55 +21,57 @@ EdlListFilter::EdlListFilter(std::string filename, int st)
 	
 }
 
-void EdlListFilter::setFile(std::string filename, int st)
+void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 {
 	
 	std::ifstream fileContents(filename.c_str());
 	std::vector<std::string> lines;
 	std::string s;
+
 	
+	while (std::getline(fileContents, s)) { 
+		entries.push_back(this->parseEDLEntry(s,st));
+	}
+}
+
+
+AVObject * EdlListFilter::parseEDLEntry (std::string line, int st) throw (AVException*)
+{
 	std::string fileName;
 	std::string mode;
 	std::string transition;
 	std::string tcIn;
 	std::string tcOut;
 	
+	// grumble... it's delimited on a single space
 	
-	while (std::getline(fileContents, s)) { 
-		
-		// grumble... it's delimited on a single space
-		
-		std::stringstream items(s);
-		std::getline(items, fileName,' ');
-		std::getline(items, mode,' ');
-		std::getline(items, transition,' ');
-		std::getline(items, tcIn,' ');
-		std::getline(items, tcOut,' ');
-		
+	std::stringstream items(line);
+	std::getline(items, fileName,' ');
+	std::getline(items, mode,' ');
+	std::getline(items, transition,' ');
+	std::getline(items, tcIn,' ');
+	std::getline(items, tcOut,' ');
+	
 	//	std::cerr << "fn:" << fileName << " m:" << mode << " t:" << transition << " in:" << tcIn << " out:" << tcOut << "\n";
-		
-		
-		
-		// more TODO
-		Libav *entry;
-		if ((st == AVMEDIA_TYPE_VIDEO) && this->hasVideo(mode))
-		{
-			std::cerr << "EDL Adding Video entry: " << fileName << "\n";
-			entry = new Libav(fileName, AVMEDIA_TYPE_VIDEO, -1);
-		}
-		if ((st == AVMEDIA_TYPE_AUDIO) && this->hasAudio(mode))
-		{
-			std::cerr << "EDL Adding Audio entry: " << fileName << "\n";
-			entry = new Libav(fileName, AVMEDIA_TYPE_AUDIO, -1);
-		}
-		entry->setInTimecode(tcIn);
-		entry->setOutTimecode(tcOut);
-		
-		// NSLog(@"Time: %d - %d",[entry getIn],[entry getOut]);
-		
-		
-		entries.push_back(entry);
+	
+	
+	// more TODO
+	Libav *entry;
+	if ((st == AVMEDIA_TYPE_VIDEO) && this->hasVideo(mode))
+	{
+		std::cerr << "EDL Adding Video entry: " << fileName << "\n";
+		entry = new Libav(fileName, AVMEDIA_TYPE_VIDEO, -1);
 	}
+	
+	if ((st == AVMEDIA_TYPE_AUDIO) && this->hasAudio(mode))
+	{
+		std::cerr << "EDL Adding Audio entry: " << fileName << "\n";
+		entry = new Libav(fileName, AVMEDIA_TYPE_AUDIO, -1);
+	}
+	entry->setInTimecode(tcIn);
+	entry->setOutTimecode(tcOut);
+
+	return entry;
 }
 
 bool EdlListFilter::hasAudio(std::string mode) 
@@ -86,7 +88,7 @@ bool EdlListFilter::hasVideo(std::string mode)
 
 int EdlListFilter::decodeNextFrame()
 {
-	
+
 //	std::cerr << ">>EDL decodeNextFrame\n";
 	
 	if (this->compareRange(frameCounter) > 0) 
@@ -135,7 +137,7 @@ int EdlListFilter::decodeNextAudio(void)
 
 void EdlListFilter::dumpFormat(void)
 {
-	for (std::list<Libav *>::iterator o=entries.begin(); o != entries.end(); ++o)
+	for (std::list<AVObject *>::iterator o=entries.begin(); o != entries.end(); ++o)
 		(*o)->dumpFormat();
 	std::cerr<<"EDL List AVObject\n";
 

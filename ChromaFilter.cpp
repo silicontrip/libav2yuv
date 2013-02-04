@@ -7,7 +7,7 @@ ChromaFilter::ChromaFilter(AVObject *s)
 }
 
 
-ChromaFilter::ChromaFilter(AVObject *s, int convertMode) 
+ChromaFilter::ChromaFilter(AVObject *s, int convertMode) throw (AVException*)
 {
 	this->setAVSource (s);
 	this->setY4MChroma(convertMode);
@@ -23,6 +23,7 @@ ChromaFilter::~ChromaFilter()
 	// delete pictureBuffer;
 	
 	// does this call the superclass's destructor?
+	// yes 
 }
 
 
@@ -43,7 +44,7 @@ void ChromaFilter::setAVSource (AVObject *s)
 	*/
 }	
 
-void ChromaFilter::setAVChroma(PixelFormat convertMode)
+void ChromaFilter::setAVChroma(PixelFormat convertMode) throw (AVException*)
 {
 
 	this->setChromaSampling(convertMode);
@@ -54,7 +55,7 @@ void ChromaFilter::setAVChroma(PixelFormat convertMode)
 
 }
 
-void ChromaFilter::setY4MChroma(int convertMode)
+void ChromaFilter::setY4MChroma(int convertMode) throw (AVException*)
 {
 	this->setChromaSamplingFromY4M(convertMode);
 	this->setAVChroma(this->getChromaSampling());	
@@ -77,6 +78,6 @@ int ChromaFilter::decodeNextFrame(void)
 
 void ChromaFilter::dumpFormat(void)
 {
-	std::cerr << "chroma conversion filter: " << this->getChromaSamplingName() << "\n";
 	source->dumpFormat();
+	std::cerr << "chroma conversion filter: " << this->getChromaSamplingName() << "\n";
 }

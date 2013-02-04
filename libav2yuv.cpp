@@ -8,8 +8,9 @@
 #import "LibavWaveWriter.h"
 
 
+
 // wave writer
-void processAudio (Libav2yuvArguments options, std::vector<AVObject *> edlList)
+void processAudio (Libav2yuvArguments options, std::vector<AVObject *> edlList) throw (AVException)
 {
 	
 	AVObject *lav = edlList.front();
@@ -74,7 +75,7 @@ void processAudio (Libav2yuvArguments options, std::vector<AVObject *> edlList)
 	
 }
 
-void processVideo (Libav2yuvArguments options, std::vector<AVObject *> edlList)
+void processVideo (Libav2yuvArguments options, std::vector<AVObject *> edlList) throw (AVException)
 {
 	
 	AVObject *lav = edlList.front();
@@ -154,66 +155,71 @@ int main(int argc, char *argv[])
 	//edlList = [NSMutableArray arrayWithCapacity:1];
 	int streamMode = AVMEDIA_TYPE_VIDEO;
 	
-	Libav2yuvArguments options(argc,argv);
-	
-	if (options.getAudio()) {
-		// std::cerr << "setting to audio\n";
-		streamMode = AVMEDIA_TYPE_AUDIO;
-	}	
-	// std::cerr<<"scan arguments\n";
-	
-	std::vector<std::string> args = options.getArguments();
-	
-	if (args.size() > 0) {
-		//std::cerr<<"argument size " << options.getArguments().size() << "\n";
-		std::vector<std::string>::iterator argument = args.begin();
+	try {
 		
-		for (; argument != args.end(); ++argument)
-		{	
-			
-			// std::cerr<<  "argument name: " << *argument << "\n";
-			
-			std::string name (*argument);
-			
-			// for (NSString *argument in [options getArguments]) {
-			AVObject *lav;
-			//std::cerr << "extension: " << argument->substr(argument->size()-4,4) << "\n";
-			if (name.substr(name.size()-4,4) == ".edl") {
-				lav = new EdlListFilter(name, streamMode);
-			} else  {	
-				lav = new Libav(name,streamMode,-1);
-			}
-			
-			// if range
-			if (options.hasRange()) {
-				lav->setInOutTimecode(options.getRange());
-			}
-			
-			//if (lav != nil) 
-			//	{
-			if (options.getConvert()) 
-			{
-				ChromaFilter * chromaConverter = new ChromaFilter(lav,options.getChroma());
-				//	if (chromaConverter != nil) {
-				//[edlList addObject:chromaConverter];
-				edlList.push_back(chromaConverter);
-				//	}
-			} else {
-				edlList.push_back(lav);
-			}
-			
+		Libav2yuvArguments options(argc,argv);
+		
+		if (options.getAudio()) {
+			// std::cerr << "setting to audio\n";
+			streamMode = AVMEDIA_TYPE_AUDIO;
 		}	
-	}
-	// 	NSLog(@"EDL list count: %d",[edlList count]);
-	
-	if (edlList.size() > 0 ) 
-	{
-		if (streamMode == AVMEDIA_TYPE_VIDEO) {
-			processVideo(options,edlList);
-		} else {
-			// decode audio
-			processAudio(options,edlList);
+		// std::cerr<<"scan arguments\n";
+		
+		std::vector<std::string> args = options.getArguments();
+		
+		if (args.size() > 0) {
+			//std::cerr<<"argument size " << options.getArguments().size() << "\n";
+			std::vector<std::string>::iterator argument = args.begin();
+			
+			for (; argument != args.end(); ++argument)
+			{	
+				
+				// std::cerr<<  "argument name: " << *argument << "\n";
+				
+				std::string name (*argument);
+				
+				// for (NSString *argument in [options getArguments]) {
+				AVObject *lav;
+				//std::cerr << "extension: " << argument->substr(argument->size()-4,4) << "\n";
+				if (name.substr(name.size()-4,4) == ".edl") {
+					lav = new EdlListFilter(name, streamMode);
+				} else  {	
+					lav = new Libav(name,streamMode,-1);
+				}
+				
+				// if range
+				if (options.hasRange()) {
+					lav->setInOutTimecode(options.getRange());
+				}
+				
+				//if (lav != nil) 
+				//	{
+				if (options.getConvert()) 
+				{
+					ChromaFilter * chromaConverter = new ChromaFilter(lav,options.getChroma());
+					//	if (chromaConverter != nil) {
+					//[edlList addObject:chromaConverter];
+					edlList.push_back(chromaConverter);
+					//	}
+				} else {
+					edlList.push_back(lav);
+				}
+				
+			}	
 		}
+		// 	NSLog(@"EDL list count: %d",[edlList count]);
+		
+		if (edlList.size() > 0 ) 
+		{
+			if (streamMode == AVMEDIA_TYPE_VIDEO) {
+				processVideo(options,edlList);
+			} else {
+				// decode audio
+				processAudio(options,edlList);
+			}
+		}
+	} catch (AVException *e) {
+		std::cerr << "ERROR occurred: " << e->getMessage() << "\n";
 	}
 	
 	

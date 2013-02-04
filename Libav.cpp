@@ -1,6 +1,6 @@
 #include "Libav.h"
 
-Libav::Libav(std::string filename, int st, int streamNumber)
+Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*)
 {
 
 	pictureBuffer = NULL;
@@ -25,17 +25,22 @@ Libav::Libav(std::string filename, int st, int streamNumber)
 
 	if (this->openInputFile(filename) < 0)
 	{
-		std::cerr<<"initWithFile: avformat_open_input failed to open: "<<filename << "\n";
+		throw new AVException("Failed to open file: " + filename, IO_ERROR);
+		// std::cerr<<"initWithFile: avformat_open_input failed to open: "<<filename << "\n";
 		// how do I deal with constructor errors.
 	}
 
 	if(this->findStreamInfo()<0)
 	{
-		std::cerr<<"initWithFile: avformat_find_stream_info failed\n";
+		throw new AVException("Failed to find stream info", FILE_ERROR);
+
+		//std::cerr<<"initWithFile: avformat_find_stream_info failed\n";
 		// another constructor error.
 	}
 	if ((avStream = this->findStream(streamNumber,streamType)) == -1) {
-		std::cerr<<"initWithFile: couldn't find requested AV stream\n";
+		throw new AVException("couldn't find requested AV stream: " + streamNumber, FILE_ERROR);
+
+		//std::cerr<<"initWithFile: couldn't find requested AV stream\n";
 		// constructor error blah blah
 	}
 
@@ -47,7 +52,9 @@ Libav::Libav(std::string filename, int st, int streamNumber)
 	// open codec context
 	if (this->openAVCodec() < 0)
 	{
-		std::cerr<<"initWithFile: could not find or open codec\n";
+		throw new AVException("Could not find or open codec", FILE_ERROR);
+
+		//std::cerr<<"initWithFile: could not find or open codec\n";
 	 // Could not open codec
 	}
 	
@@ -146,7 +153,7 @@ void Libav::dumpFormat(void)
 #endif
 }
 
-int Libav::decodeNextAudio(void)
+int Libav::decodeNextAudio(void) throw (AVException*)
 {
 	
 	int bytes;
@@ -161,6 +168,8 @@ int Libav::decodeNextAudio(void)
 	if (sampleCounter == 0)
 	{
 		pFrame=avcodec_alloc_frame();
+		if (!pFrame)
+			throw new AVException ("Unable to allocate AUDIO buffer",MEMORY_ALLOCATION_ERROR);
 		avcodec_get_frame_defaults(pFrame);		
 	}
 	
@@ -298,7 +307,7 @@ int Libav::decodeNextAudio(void)
 	return pFrame->nb_samples;
 }
 
-int Libav::decodeNextFrame(void)
+int Libav::decodeNextFrame(void) throw (AVException*)
 {
 	
 	int bytes;
@@ -314,8 +323,10 @@ int Libav::decodeNextFrame(void)
 			// Find our specified stream
 			do {
 				bytes = av_read_frame(pFormatCtx, &packet);
-				if (bytes < 0) 
-					return bytes;
+				if (bytes < 0) {
+					throw new AVException ("unable to read frame",IO_ERROR);
+				//	return bytes;
+				}
 			} while (packet.stream_index != avStream) ;
 			
 			//	NSLog (@"Decode frame until framefinished");
@@ -331,8 +342,10 @@ int Libav::decodeNextFrame(void)
 			len = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
 #endif
 			
-			if (len < 0)
-				return len;
+			if (len < 0) {
+				throw new AVException ("unable to decode frame",FILE_ERROR);
+			//	return len;
+			}
 			//	NSLog(@"decoded: %d finished: %d",len,frameFinished);
 			
 		} while (!frameFinished);

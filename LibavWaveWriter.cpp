@@ -1,14 +1,15 @@
 #include "LibavWaveWriter.h"
 
 
-LibavWaveWriter::LibavWaveWriter() 
+LibavWaveWriter::LibavWaveWriter() throw (AVException*)
 {
 	av_register_all();
 	oc = avformat_alloc_context();
 	libavfmt = av_guess_format("wav", NULL, NULL);
 
 	if (libavfmt == NULL) {
-		std::cerr << "internal codec name not supported\n";
+		throw new AVException("Internal codec name not supported",FILE_ERROR);
+	//	std::cerr << "internal codec name not supported\n";
 		;
 	}
 
@@ -16,13 +17,17 @@ LibavWaveWriter::LibavWaveWriter()
 
 	AVCodec *codec = avcodec_find_encoder(libavfmt->audio_codec);
 	if (!codec) {
-		std::cerr << "codec not found\n";
+		throw new AVException("Codec not supported",FILE_ERROR);
+
+//		std::cerr << "codec not found\n";
 	}
 	
 	audio_st = avformat_new_stream(oc, codec);
 
 	if (!audio_st) {
-		std::cerr << "Could not alloc stream\n";
+		throw new AVException("Could not alloc stream",FILE_ERROR);
+
+	//	std::cerr << "Could not alloc stream\n";
 	}
 	
 	audio_st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -40,14 +45,15 @@ LibavWaveWriter::~LibavWaveWriter()
     av_free(oc);
 }	
 
-int LibavWaveWriter::setOutputFilename(std::string filename)
+int LibavWaveWriter::setOutputFilename(std::string filename) throw (AVException*)
 {
 
 	snprintf(oc->filename, sizeof(oc->filename), "%s", filename.c_str());
 
 	if (avio_open(&oc->pb, filename.c_str(), AVIO_FLAG_WRITE) < 0) {
-		std::cerr << "Could not open "<<  filename << "\n";
-		return -1;
+		throw new AVException("Could not open " + filename,IO_ERROR);
+		// std::cerr << "Could not open "<<  filename << "\n";
+		// return -1;
 	}
 	
 	return 0;
@@ -55,12 +61,14 @@ int LibavWaveWriter::setOutputFilename(std::string filename)
 }
 
 
-int LibavWaveWriter::writeHeader(void) {
+int LibavWaveWriter::writeHeader(void) throw (AVException *)
+{
 	
 	AVCodecContext *c = audio_st->codec;
 	
 	//	NSLog(@"avcodec_open2");
 	if (avcodec_open2(c, NULL, NULL) < 0) {
+		throw new AVException("Codec not supported",FILE_ERROR);
 		std::cerr << "could not open codec\n";
 		return -1;
 	}
@@ -95,7 +103,7 @@ void LibavWaveWriter::setSamplesPerSecond(int sps) {
 	audio_st->codec->sample_rate = sps; 
 }
 
-int LibavWaveWriter::writeFrameData(AVFrame *pFrame)
+int LibavWaveWriter::writeFrameData(AVFrame *pFrame) throw (AVException*)
 {
 	AVCodecContext *c = audio_st->codec;
 	AVPacket pkt = { 0 }; // data and size must be 0;
@@ -117,15 +125,19 @@ int LibavWaveWriter::writeFrameData(AVFrame *pFrame)
 	//	NSLog(@"encode audio 2");
 	
 	avcodec_encode_audio2(c, &pkt, frame, &got_packet);
-    if (!got_packet)
-        return -1;
-	
+    if (!got_packet) {
+		throw new AVException ("Unable to get packet",IO_ERROR);
+      //  return -1;
+	}
+		
 	pkt.stream_index = audio_st->index;
 	//	NSLog(@"av_interleaved_write_frame");
 	
     if ((status=av_interleaved_write_frame(oc, &pkt)) != 0) {
-		std::cerr<<"Error while writing audio frame\n";
-		return status;
+		throw new AVException ("Error while writing audio frame",IO_ERROR);
+
+	//	std::cerr<<"Error while writing audio frame\n";
+	//	return status;
     }
 	//	NSLog(@"avcodec free frame");
 	

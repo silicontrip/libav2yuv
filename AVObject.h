@@ -13,6 +13,8 @@ extern "C" {
 #include <vector>
 #include <sstream>
 
+#include "AVException.h"
+
 class AVObject {
 
 protected:
@@ -45,15 +47,15 @@ protected:
 	bool isInterlaced;
 	bool interlaceTopFieldFirst;
 	
-	void allocFrame(void);
+	void allocFrame(void) throw (AVException*);
 	void freeAVFrame(void);
 
 	
 public:
 	
 	AVObject();
-	AVObject(int, int, AVSampleFormat, int);
-	AVObject(PixelFormat, int, int);
+	AVObject(int, int, AVSampleFormat, int) throw (AVException*);
+	AVObject(PixelFormat, int, int) throw (AVException*);
 	
 	virtual ~AVObject();
 
@@ -93,21 +95,21 @@ public:
 
 	virtual void setSamplesPerSecond(int);
 
-	int TCtoFrames(std::string);
-	void setInTimecode(std::string);
-	void setOutTimecode(std::string);
-	void setInOutTimecode(std::string tc);
+	int TCtoFrames(std::string) throw (AVException*);
+	void setInTimecode(std::string) throw (AVException*);
+	void setOutTimecode(std::string) throw (AVException*);
+	void setInOutTimecode(std::string tc) throw (AVException*);
 
-	virtual void setFrameRate(AVRational);
-	virtual void setFrameRateNum(int);
-	virtual void setFrameRateDen(int);
+	virtual void setFrameRate(AVRational) throw (AVException*);
+	virtual void setFrameRateNum(int) throw (AVException*);
+	virtual void setFrameRateDen(int) throw (AVException*);
 
-	virtual void setSampleAspect(AVRational);
-	virtual void setSampleAspectNum(int);
-	virtual void setSampleAspectDen(int);
+	virtual void setSampleAspect(AVRational) throw (AVException*);
+	virtual void setSampleAspectNum(int) throw (AVException*);
+	virtual void setSampleAspectDen(int) throw (AVException*);
 
 	virtual void setChromaSampling(PixelFormat);
-	virtual void setChromaSamplingFromY4M(int);
+	virtual void setChromaSamplingFromY4M(int) throw (AVException*);
 
 	virtual void setInterlaced(bool);
 	virtual void setInterlaceTopFieldFirst(bool);
@@ -122,7 +124,5 @@ public:
 	
 	virtual AVFrame * getAVFrame(void);
 	virtual AVFrame * decodeAndGetNextAVFrame(void);
-
-	
 
 };

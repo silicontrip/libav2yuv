@@ -7,16 +7,16 @@ AVObject::AVObject()
 	this->setIn(-1);
 	this->setOut(-1);
 	pictureBuffer = NULL;
-
 	this->setInterlaced(false);
-	
 	
 	this->setColour(16,128,128);
 	
 }
 
-AVObject::AVObject(int samples, int ch, AVSampleFormat sf, int sps)
+AVObject::AVObject(int samples, int ch, AVSampleFormat sf, int sps) throw (AVException*)
 {
+	
+	// AUDIO
 	
 	pFrame=avcodec_alloc_frame();
 	avcodec_get_frame_defaults(pFrame);
@@ -32,10 +32,8 @@ AVObject::AVObject(int samples, int ch, AVSampleFormat sf, int sps)
 							  ch); 
 	
 	if (!pictureBuffer) 
-	{
-		// what to do here
-	}
-	
+		throw new AVException("Unable to allocate Audio buffer",MEMORY_ALLOCATION_ERROR);
+		
 	avcodec_fill_audio_frame(pFrame, ch, sf,
 							 pictureBuffer,
 							 samples * av_get_bytes_per_sample(sf) * ch,
@@ -47,7 +45,7 @@ AVObject::AVObject(int samples, int ch, AVSampleFormat sf, int sps)
 	
 }
 
-AVObject::AVObject(PixelFormat ch, int h, int w)
+AVObject::AVObject(PixelFormat ch, int h, int w) throw (AVException*)
 {
 	this->setChromaSampling(ch);
 	this->setHeight(h);
@@ -61,7 +59,7 @@ AVObject::AVObject(PixelFormat ch, int h, int w)
 	
 }
 
-void AVObject::allocFrame(void)
+void AVObject::allocFrame(void) throw (AVException*)
 {
 	pFrame=avcodec_alloc_frame();
 	
@@ -81,6 +79,7 @@ void AVObject::allocFrame(void)
 		} else {
 			av_free(pFrame);
 			pFrame = NULL;
+			throw new AVException("Unable to allocate picture buffer",MEMORY_ALLOCATION_ERROR);
 		}
 	}
 }
@@ -330,7 +329,7 @@ void AVObject::setSamplesPerSecond(int sps)
 	samplesPerSecond = sps;
 }
 
-int AVObject::TCtoFrames(std::string timecode)
+int AVObject::TCtoFrames(std::string timecode) throw (AVException*)
 {
 	//determine if drop frame
 	// NSRange dropFrameRange = [timecode rangeOfString:@";"];
@@ -398,17 +397,17 @@ int AVObject::TCtoFrames(std::string timecode)
 }
 
 
-void AVObject::setInTimecode(std::string sin)
+void AVObject::setInTimecode(std::string sin) throw (AVException*)
 {
 	this->setIn(this->TCtoFrames(sin));
 }
 
-void AVObject::setOutTimecode(std::string sout)
+void AVObject::setOutTimecode(std::string sout) throw (AVException*) 
 {
 	this->setOut(this->TCtoFrames(sout));
 }
 
-void AVObject::setInOutTimecode(std::string tc)
+void AVObject::setInOutTimecode(std::string tc) throw (AVException*)
 {
 
 	std::stringstream ss(tc);
@@ -421,25 +420,34 @@ void AVObject::setInOutTimecode(std::string tc)
 	
 }
 
-void AVObject::setFrameRate(AVRational rational)
+void AVObject::setFrameRate(AVRational rational) throw (AVException*)
 {	
-	this->setFrameRateNum(rational.num);
-	this->setFrameRateDen(rational.den);
+	
+	try {
+	
+		this->setFrameRateNum(rational.num);
+		this->setFrameRateDen(rational.den);
+		
+	} catch (AVException *e) {
+		std::cerr << e->getMessage() << " " << rational.num << ":" << rational.den << "\n";
+	}
 }
 
-void AVObject::setFrameRateNum(int num)
+void AVObject::setFrameRateNum(int num) throw (AVException*)
 {
-	if (num > 0)
-		frameRate.num = num;
+	if (num <= 0)
+		throw new AVException ("Invalid Frame rate",INVALID_ARGUMENT);
+	frameRate.num = num;
 }
 
-void AVObject::setFrameRateDen(int den)
+void AVObject::setFrameRateDen(int den) throw (AVException*)
 {
-	if (den > 0)
-		frameRate.den = den;
+	if (den <= 0)
+		throw new AVException ("Invalid Frame rate",INVALID_ARGUMENT);
+	frameRate.den = den;
 }
 
-void AVObject::setSampleAspect(AVRational rational)
+void AVObject::setSampleAspect(AVRational rational) throw (AVException*)
 {
 	if (rational.den>0 && rational.num>0)
 	{
@@ -449,16 +457,20 @@ void AVObject::setSampleAspect(AVRational rational)
 }
 
 
-void AVObject::setSampleAspectNum(int num)
+void AVObject::setSampleAspectNum(int num) throw (AVException*)
 {
-	if (num > 0)
-		sampleAspect.num = num;
+	if (num <= 0)
+		throw new AVException ("Invalid Aspect ratio",INVALID_ARGUMENT);
+
+	sampleAspect.num = num;
 }
 
-void AVObject::setSampleAspectDen(int den)
+void AVObject::setSampleAspectDen(int den) throw (AVException*)
 {
-	if (den > 0)
-		sampleAspect.den = den;
+	if (den <= 0)
+		throw new AVException ("Invalid Aspect ratio",INVALID_ARGUMENT);
+
+	sampleAspect.den = den;
 }
 
 void AVObject::setChromaSampling(PixelFormat samp)
@@ -466,7 +478,7 @@ void AVObject::setChromaSampling(PixelFormat samp)
 	frameChromaSampling = samp;
 }
 
-void AVObject::setChromaSamplingFromY4M(int y4mChroma)
+void AVObject::setChromaSamplingFromY4M(int y4mChroma) throw (AVException*)
 {
 	
 	switch (y4mChroma) {
@@ -477,7 +489,8 @@ void AVObject::setChromaSamplingFromY4M(int y4mChroma)
 		case Y4M_CHROMA_420JPEG: this->setChromaSampling(PIX_FMT_YUVJ420P); break;
 			
 		default:
-			std::cerr << "AV: Unsupported Chroma: " << y4mChroma << "\n";
+			throw new AVException("AV: Unsupported Chroma: " + y4mChroma, UNSUPPORTED_CHROMA);
+		//	std::cerr << "AV: Unsupported Chroma: " << y4mChroma << "\n";
 			break;
 	}
 	
@@ -512,7 +525,7 @@ AVFrame * AVObject::getAVFrame(void)
 AVFrame * AVObject::decodeAndGetNextAVFrame(void)
 { 
 	this->decodeNextFrame(); 
-	this->getAVFrame(); 
+	return this->getAVFrame(); 
 }
 
 void AVObject::dumpFormat(void)

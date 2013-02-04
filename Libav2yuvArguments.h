@@ -8,6 +8,8 @@ extern "C" {
 #include <vector>
 #include <iostream>
 
+#include "AVException.h"
+
 #define PAL "PAL"
 #define PAL_WIDE "PAL_WIDE"
 #define NTSC "NTSC"
@@ -34,7 +36,7 @@ private:
 	
 public:
 	Libav2yuvArguments();
-	Libav2yuvArguments(int, char**);
+	Libav2yuvArguments(int, char**) throw (AVException*);
 	~Libav2yuvArguments();
 	
 	void usage(void);
