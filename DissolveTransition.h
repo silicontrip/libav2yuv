@@ -17,6 +17,7 @@ class DissolveTransition: public AVObject {
 	
 	unsigned int frames;
 	
+public:
 	DissolveTransition(AVObject *, AVObject *, unsigned int);
 	~DissolveTransition();
 	

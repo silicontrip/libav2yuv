@@ -7,6 +7,8 @@ DissolveTransition::DissolveTransition(AVObject *f, AVObject *t, unsigned int fr
 	this->setAVTo(t);
 	
 	frameCounter = 0;
+	
+	this->allocFrame();
 }
 
 DissolveTransition::~DissolveTransition()
@@ -70,7 +72,7 @@ int DissolveTransition::decodeNextFrame(void)
 	pFrameFrom = fromAV->getAVFrame();
 	pFrameTo = toAV->getAVFrame();
 
-	percent = frameCounter / frames;
+	percent = 1.0 * frameCounter / frames;
 		
 	// be a good idea to optimise this.
 	for (int y=0; y<h; y++) {
@@ -85,6 +87,9 @@ int DissolveTransition::decodeNextFrame(void)
 			}
 		}
 	}
+	
+	frameCounter++;
+	
 	return this->getHeight()*pFrame->linesize[0] +
 	this->getHeight()*pFrame->linesize[1] +
 	this->getHeight()*pFrame->linesize[2];

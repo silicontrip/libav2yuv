@@ -21,23 +21,13 @@ EdlListFilter::EdlListFilter(std::string filename, int st)  throw (AVException*)
 	
 }
 
-void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
+struct edlEntry EdlListFilter::parseEDLEntry (std::string line, int st) 
 {
 	
-	std::ifstream fileContents(filename.c_str());
-	std::vector<std::string> lines;
-	std::string s;
-
+	//	std::cerr << "fn:" << fileName << " m:" << mode << " t:" << transition << " in:" << tcIn << " out:" << tcOut << "\n";
 	
-	while (std::getline(fileContents, s)) { 
-		entries.push_back(this->parseEDLEntry(s,st));
-	}
-}
-
-
-AVObject * EdlListFilter::parseEDLEntry (std::string line, int st) throw (AVException*)
-{
-	std::string fileName;
+	struct edlEntry entry;
+	
 	std::string mode;
 	std::string transition;
 	std::string tcIn;
@@ -47,38 +37,116 @@ AVObject * EdlListFilter::parseEDLEntry (std::string line, int st) throw (AVExce
 	// grumble... it's delimited on a single space
 	
 	std::stringstream items(line);
-	std::getline(items, fileName,' ');
-	std::getline(items, mode,' ');
-	std::getline(items, transition,' ');
+	std::getline(items, entry.name,' ');
+	std::getline(items, entry.channel,' ');
+	std::getline(items, entry.transition,' ');
 	
 	// cut transition does not have a duration.
-	if (transition.compare("C")) {
-		std::getline(items, duration,' ');
+	if (entry.transition.compare("C")) {
+		std::getline(items, entry.duration,' ');
 	}
 	
-	std::getline(items, tcIn,' ');
-	std::getline(items, tcOut,' ');
+	std::getline(items, entry.sourceIn,' ');
+	std::getline(items, entry.sourceOut,' ');
 	
-	//	std::cerr << "fn:" << fileName << " m:" << mode << " t:" << transition << " in:" << tcIn << " out:" << tcOut << "\n";
-	
-	
-	// more TODO
-	Libav *entry;
-	if ((st == AVMEDIA_TYPE_VIDEO) && this->hasVideo(mode))
-	{
-		std::cerr << "EDL Adding Video entry: " << fileName << "\n";
-		entry = new Libav(fileName, AVMEDIA_TYPE_VIDEO, -1);
-	}
-	
-	if ((st == AVMEDIA_TYPE_AUDIO) && this->hasAudio(mode))
-	{
-		std::cerr << "EDL Adding Audio entry: " << fileName << "\n";
-		entry = new Libav(fileName, AVMEDIA_TYPE_AUDIO, -1);
-	}
-	entry->setInTimecode(tcIn);
-	entry->setOutTimecode(tcOut);
-
 	return entry;
+}
+
+void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
+{
+	
+	std::ifstream fileContents(filename.c_str());
+	std::vector<std::string> lines;
+	std::string s;
+
+	std::vector<struct edlEntry> edlEntries;
+	
+	while (std::getline(fileContents, s)) { 
+		edlEntries.push_back(this->parseEDLEntry(s,st));
+	}
+	
+	std::cerr << "Size: " << edlEntries.size() << "\n";
+	
+	for (int i=0; i< edlEntries.size(); i++) 
+	{
+		struct edlEntry entry = edlEntries.at(i);
+		
+		struct edlEntry entry2;
+		
+		if (i+1 == edlEntries.size()) {
+			entry2.name = "//BLACK"; // black generator
+			entry2.sourceIn = "0";
+		} else {
+			entry2 = edlEntries.at(i+1);
+		}
+		
+		if ((st == AVMEDIA_TYPE_VIDEO) && this->hasVideo(entry.channel)) {
+			std::cerr << "EDL Adding Video entry: " << entry.name << "\n";
+			
+			AVObject *videoEntry;
+			
+			videoEntry = new Libav(entry.name, AVMEDIA_TYPE_VIDEO, -1);
+			
+			videoEntry->setInTimecode(entry.sourceIn);
+			
+			if (!entry.transition.compare("C")) {
+				videoEntry->setOutTimecode(entry.sourceOut);
+				entries.push_back(videoEntry);
+			}
+			if (!entry.transition.compare("D")) {
+				
+				
+				int dur = atoi(entry.duration.c_str());
+
+				std::cerr << "dissolve from: " << entry.name << " to: " << entry2.name << " for " << dur << " frames.\n";
+
+				
+				videoEntry->setOut(videoEntry->TCtoFrames(entry.sourceOut) - dur);
+				entries.push_back(videoEntry);
+				
+				
+				Libav *video1 = new Libav (entry.name, AVMEDIA_TYPE_VIDEO, -1);
+				video1->setIn(video1->TCtoFrames(entry.sourceOut) - dur);
+				video1->setOut(video1->TCtoFrames(entry.sourceOut));
+				
+				Libav *video2 = new Libav (entry2.name, AVMEDIA_TYPE_VIDEO, -1);
+				video2->setIn(video2->TCtoFrames(entry2.sourceIn) );
+				video2->setOut(video2->TCtoFrames(entry2.sourceIn) + dur );
+
+				videoEntry = new DissolveTransition(video1,video2,dur);
+				entries.push_back(videoEntry);
+
+				videoEntry = new Libav(entry2.name, AVMEDIA_TYPE_VIDEO, -1);
+								  
+				videoEntry->setIn((videoEntry->TCtoFrames(entry2.sourceIn) + dur ));
+				videoEntry->setOutTimecode(entry2.sourceOut);
+  
+				entries.push_back(videoEntry);
+				i++;
+				
+			}
+			
+			
+		}
+		
+		if ((st == AVMEDIA_TYPE_AUDIO) && this->hasAudio(entry.channel))
+		{
+			std::cerr << "EDL Adding Audio entry: " << entry.name << "\n";
+			
+			Libav *audioEntry;
+			
+			audioEntry = new Libav(entry.name, AVMEDIA_TYPE_AUDIO, -1);
+			
+			audioEntry->setInTimecode(entry.sourceIn);
+			audioEntry->setOutTimecode(entry.sourceOut);
+			
+			
+			entries.push_back(audioEntry);
+		}
+		
+		std::cerr << "name: " << entry.name << " channel: " << entry.channel << " transition: " << entry.transition << " duration: " << entry.duration << " in: " << entry.sourceIn << " out: " << entry.sourceOut << "\n";
+	}
+	
 }
 
 bool EdlListFilter::hasAudio(std::string mode) 

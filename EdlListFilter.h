@@ -65,11 +65,23 @@
 
 #import "Libav.h"
 #import "AVObject.h"
+#import "DissolveTransition.h"
 
 #import <iostream>
 #import <string>
 #import <list>
 #import <fstream>
+
+struct edlEntry {
+	std::string name;
+	std::string channel;
+	std::string transition;
+	std::string duration;
+	std::string sourceIn;
+	std::string sourceOut;
+};
+
+	
 
 class EdlListFilter: public AVObject {
 
@@ -79,7 +91,6 @@ protected:
 	bool hasAudio(std::string); 
 	bool hasVideo(std::string); 
 	AVObject * currentAV(void);
-
 	
 public:
 	EdlListFilter();
@@ -87,7 +98,8 @@ public:
 
 	void setFile (std::string, int) throw (AVException*);
 	
-	AVObject* parseEDLEntry(std::string, int) throw (AVException*);
+	struct edlEntry parseEDLEntry(std::string, int);
+	AVObject *Factory(std::string, std::string, int, std::string, std::string) throw (AVException *); 
 
 	
 	int decodeNextFrame(void);
