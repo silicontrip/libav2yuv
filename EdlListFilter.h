@@ -62,6 +62,12 @@
  
  */
 
+extern "C" {
+#include <mpegconsts.h>
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+}
+
 
 #import "Libav.h"
 #import "AVObject.h"
@@ -92,14 +98,17 @@ protected:
 	bool hasVideo(std::string); 
 	AVObject * currentAV(void);
 	
+	void validateList(std::vector<struct edlEntry>,int) throw (AVException *);
+	struct edlEntry parseEDLEntry(std::string, int);
+	AVObject * videoFactory (std::string);
+
+	
 public:
 	EdlListFilter();
 	EdlListFilter(std::string, int) throw (AVException*);
 
 	void setFile (std::string, int) throw (AVException*);
 	
-	struct edlEntry parseEDLEntry(std::string, int);
-	AVObject *Factory(std::string, std::string, int, std::string, std::string) throw (AVException *); 
 
 	
 	int decodeNextFrame(void);
@@ -108,6 +117,7 @@ public:
 	void dumpFormat(void);
 	
 	// These are all supposed to be defined in AVObject
+	/*
 	AVRational getFrameRate(void) ;
 	int getFrameRateNum(void); 
 	int getFrameRateDen(void); 
@@ -127,6 +137,6 @@ public:
 	AVSampleFormat getSampleFormat(void);
 	int getSamplesPerSecond(void);
 	double getSamplesPerFrame(void);
-
+*/
 	
 };

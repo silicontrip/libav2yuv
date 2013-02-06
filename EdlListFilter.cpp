@@ -28,13 +28,8 @@ struct edlEntry EdlListFilter::parseEDLEntry (std::string line, int st)
 	
 	struct edlEntry entry;
 	
-	std::string mode;
-	std::string transition;
-	std::string tcIn;
-	std::string tcOut;
-	std::string duration;
-	
 	// grumble... it's delimited on a single space
+	// multiple spaces are treated as multiple delimiters.
 	
 	std::stringstream items(line);
 	std::getline(items, entry.name,' ');
@@ -52,6 +47,96 @@ struct edlEntry EdlListFilter::parseEDLEntry (std::string line, int st)
 	return entry;
 }
 
+AVObject * EdlListFilter::videoFactory (std::string filename) {
+
+	AVObject * video;
+	
+	// Arg! black generator needs a framerate.
+	if (filename.compare("//BLACK") == 0) 
+	{
+		video = new AVObject();
+		
+		if (hasWidth())
+			video->setWidth(getWidth());
+		if (hasHeight()) 
+			video->setHeight(getHeight());
+		if (hasFrameRate())
+			video->setFrameRate(getFrameRate());
+		if (hasChromaSampling())
+			video->setChromaSampling(getChromaSampling());
+		if (hasSampleAspect())
+			video->setSampleAspect(getSampleAspect());
+		
+		video->allocFrame();
+		
+	} else {
+		video =  new Libav(filename, AVMEDIA_TYPE_VIDEO, -1);
+	}
+	
+	
+	return video;
+}
+
+void EdlListFilter::validateList(std::vector<struct edlEntry> edlEntries, int st) throw (AVException *)
+{
+	
+	for (int i=0; i< edlEntries.size(); i++) 
+	{
+		struct edlEntry entry = edlEntries.at(i);
+		
+		if ((st == AVMEDIA_TYPE_VIDEO) && this->hasVideo(entry.channel)) 
+		{
+			AVObject *videoEntry;
+			videoEntry = this->videoFactory(entry.name);
+			
+			if (getWidth() == 0) 
+				this->setWidth(videoEntry->getWidth());
+			else
+				if (videoEntry->getWidth() != 0 && getWidth() != videoEntry->getWidth())
+					throw new AVException("Inconsistent video Widths",EDL_PARSER_ERROR);
+			
+			if (getHeight() == 0) 
+				setHeight(videoEntry->getHeight());
+			else
+				if (videoEntry->getHeight() != 0 && getHeight() != videoEntry->getHeight())
+					throw new AVException("Inconsistent video Heights",EDL_PARSER_ERROR);
+			
+			if (getFrameRateNum()==0 && getFrameRateDen()==0) 
+				setFrameRate(videoEntry->getFrameRate());
+			else 
+				if (videoEntry->getFrameRateNum() !=0 && 
+					videoEntry->getFrameRateDen() !=0 && 
+					getFrameRateNum() !=videoEntry->getFrameRateNum() && 
+					getFrameRateDen() != videoEntry->getFrameRateDen())
+					throw new AVException("Inconsistent video Framerates",EDL_PARSER_ERROR);
+			
+			if (getSampleAspectNum()==0 && getSampleAspectDen()==0) 
+				setSampleAspect(videoEntry->getSampleAspect());
+			else 
+				if (videoEntry->getSampleAspectNum() !=0 && videoEntry->getSampleAspectDen()!=0 && 
+					getSampleAspectNum() !=videoEntry->getSampleAspectNum() && getSampleAspectDen() != videoEntry->getSampleAspectDen())
+					throw new AVException("Inconsistent video Aspect Ratio (this is probably minor, I may ignore this in future)",EDL_PARSER_ERROR);
+			
+			if (getChromaSampling() == PIX_FMT_NONE)
+				setChromaSampling(videoEntry->getChromaSampling());
+			else
+				if (videoEntry->getChromaSampling() !=PIX_FMT_NONE && getChromaSampling() != videoEntry->getChromaSampling())
+					throw new AVException("Inconsistent video Chroma subsampling (sometimes this can be ignored)",EDL_PARSER_ERROR);
+			
+			delete videoEntry;
+			
+		}
+		if ((st == AVMEDIA_TYPE_AUDIO) && this->hasAudio(entry.channel))
+		{
+			AVObject *audioEntry;
+			audioEntry = new Libav(entry.name, AVMEDIA_TYPE_AUDIO, -1);
+			// check consistency
+			delete audioEntry;
+		}
+	}
+	
+}
+
 void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 {
 	
@@ -65,20 +150,14 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 		edlEntries.push_back(this->parseEDLEntry(s,st));
 	}
 	
-	std::cerr << "Size: " << edlEntries.size() << "\n";
+	//  validate the entries.
+			
+	this->validateList(edlEntries,st);
 	
 	for (int i=0; i< edlEntries.size(); i++) 
 	{
 		struct edlEntry entry = edlEntries.at(i);
 		
-		struct edlEntry entry2;
-		
-		if (i+1 == edlEntries.size()) {
-			entry2.name = "//BLACK"; // black generator
-			entry2.sourceIn = "0";
-		} else {
-			entry2 = edlEntries.at(i+1);
-		}
 		
 		if ((st == AVMEDIA_TYPE_VIDEO) && this->hasVideo(entry.channel)) {
 			std::cerr << "EDL Adding Video entry: " << entry.name << "\n";
@@ -87,19 +166,26 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 			
 				
 			if (!entry.transition.compare("C")) {
-				videoEntry = new Libav(entry.name, AVMEDIA_TYPE_VIDEO, -1);
+				videoEntry = this->videoFactory(entry.name);
 				
 				videoEntry->setInTimecode(entry.sourceIn);
-				
 				videoEntry->setOutTimecode(entry.sourceOut);
+				
 				entries.push_back(videoEntry);
 			}
 			if (!entry.transition.compare("D")) {
 				
-				videoEntry = new Libav(entry.name, AVMEDIA_TYPE_VIDEO, -1);
+				struct edlEntry entry2;
 				
+				if (i+1 == edlEntries.size()) {
+					entry2.name = "//BLACK"; // black generator
+					entry2.sourceIn = "0";
+				} else {
+					entry2 = edlEntries.at(i+1);
+				}				
+				
+				videoEntry = this->videoFactory(entry.name);
 				videoEntry->setInTimecode(entry.sourceIn);
-				
 				
 				int dur = atoi(entry.duration.c_str());
 
@@ -110,22 +196,29 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 
 				
 				videoEntry->setOut(source1out - dur - 1);
-				entries.push_back(videoEntry);
+				if (source1out - dur - 1 >=0)
+					entries.push_back(videoEntry);
 				
 				
-				Libav *video1 = new Libav (entry.name, AVMEDIA_TYPE_VIDEO, -1);
+				AVObject *video1 = this->videoFactory(entry.name);
+				
 				video1->setIn(source1out - dur + 1);
 				video1->setOut(source1out);
 				
-				Libav *video2 = new Libav (entry2.name, AVMEDIA_TYPE_VIDEO, -1);
+				AVObject *video2 = this->videoFactory(entry2.name);
+				
+				
 				video2->setIn(source2in );
 				video2->setOut(source2in + dur );
 
 				videoEntry = new DissolveTransition(video1,video2,dur);
+				
 				entries.push_back(videoEntry);
 
-				videoEntry = new Libav(entry2.name, AVMEDIA_TYPE_VIDEO, -1);
-								  
+				
+			videoEntry = this->videoFactory(entry.name);
+				
+				
 				videoEntry->setIn( source2in + dur + 1 );
 				videoEntry->setOutTimecode(entry2.sourceOut);
   
@@ -152,7 +245,7 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 			entries.push_back(audioEntry);
 		}
 		
-		std::cerr << "name: " << entry.name << " channel: " << entry.channel << " transition: " << entry.transition << " duration: " << entry.duration << " in: " << entry.sourceIn << " out: " << entry.sourceOut << "\n";
+	//	std::cerr << "name: " << entry.name << " channel: " << entry.channel << " transition: " << entry.transition << " duration: " << entry.duration << " in: " << entry.sourceIn << " out: " << entry.sourceOut << "\n";
 	}
 	
 }
@@ -220,9 +313,19 @@ int EdlListFilter::decodeNextAudio(void)
 
 void EdlListFilter::dumpFormat(void)
 {
+	
+	std::cerr << "\n";
+	std::cerr << "EDL List AVObject: "  << this->getWidth() << "x" << this->getHeight() << " FPS:" << this->getFrameRateAsString() << " chroma: " << this->getChromaSampling()  << "\n";
+
+	int count = 1;
+	
 	for (std::list<AVObject *>::iterator o=entries.begin(); o != entries.end(); ++o)
+	{
+		std::cerr << count++ << ". ";
 		(*o)->dumpFormat();
-	std::cerr<<"EDL List AVObject\n";
+	}
+	//std::cerr << "EDL List AVObject: "  << this->getWidth() << "x" << this->getHeight() << " FPS:" << this->getFrameRateAsString()  << "\n";
+	
 
 }
 
@@ -231,6 +334,7 @@ AVObject * EdlListFilter::currentAV(void)
 	return entries.front();
 }
 
+/*
 AVRational EdlListFilter::getFrameRate(void) 
 { 
 	return this->currentAV()->getFrameRate();
@@ -308,6 +412,6 @@ double EdlListFilter::getSamplesPerFrame(void)
 { 
 	return this->currentAV()->getSamplesPerFrame(); 
 }
-
+*/
 
 
