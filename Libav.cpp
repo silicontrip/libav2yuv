@@ -60,8 +60,8 @@ Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*
 	
 	pFrame=avcodec_alloc_frame();
 	
-//	std::cerr<<"framerate: " << pFormatCtx->streams[avStream]->r_frame_rate.num <<":" <<pFormatCtx->streams[avStream]->r_frame_rate.den << "\n";
-//	std::cerr<<"dar: " << pCodecCtx->sample_aspect_ratio.num <<":" <<pCodecCtx->sample_aspect_ratio.den << "\n";
+	//std::cerr<<"framerate: " << pFormatCtx->streams[avStream]->r_frame_rate.num <<":" <<pFormatCtx->streams[avStream]->r_frame_rate.den << "\n";
+	//std::cerr<<"dar: " << pCodecCtx->sample_aspect_ratio.num <<":" <<pCodecCtx->sample_aspect_ratio.den << "\n";
 
 	this->setFrameRate(pFormatCtx->streams[avStream]->r_frame_rate);
 	this->setSampleAspect(pCodecCtx->sample_aspect_ratio);
@@ -147,10 +147,13 @@ int Libav::openAVCodec(void)
 void Libav::dumpFormat(void) 
 {	
 #if LIBAVFORMAT_VERSION_MAJOR  < 53
-	dump_format(pFormatCtx, 0, this->getFilename().c_str(), 0);
+//	dump_format(pFormatCtx, 0, this->getFilename().c_str(), 0);
 #else
-	av_dump_format(pFormatCtx, 0, this->getFilename().c_str(), 0);
+//	av_dump_format(pFormatCtx, 0, this->getFilename().c_str(), 0);
 #endif
+	// single line information.  need more information;
+	// frame rate. Sample Aspect. In and Out.
+	std::cerr << "AV: " << lavFileName << " " << this->getWidth() << "x" << this->getHeight() << " FPS:" << this->getFrameRateAsString() <<  " chroma: " << this->getChromaSampling() << " IN:" << this->getInTimecode() << " OUT:" <<this->getOutTimecode() << "\n";
 }
 
 int Libav::decodeNextAudio(void) throw (AVException*)
