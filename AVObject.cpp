@@ -70,23 +70,24 @@ AVObject::AVObject(PixelFormat ch, int h, int w) throw (AVException*)
 
 void AVObject::allocFrame(void) throw (AVException*)
 {
-	if (hasWidth() && hasHeight() && hasChromaSampling()) 
+	
+	pFrame=avcodec_alloc_frame();
+	
+	if (pFrame)
 	{
-	
-		pFrame=avcodec_alloc_frame();
-	
-		if (pFrame)
+		if (hasWidth() && hasHeight() && hasChromaSampling()) 
 		{
+			
 			PixelFormat ch = this->getChromaSampling();
 			int h = this->getHeight();
 			int w = this->getWidth();
-		
+			
 			// std::cerr << "Alloc: " << w << "x" << h << " pix: " << this->getChromaSampling() << " (" << ch << ")\n";
-		
+			
 			int size = avpicture_get_size(ch, w, h);
 			if (pictureBuffer)
 				av_free(pictureBuffer);
-		
+			
 			pictureBuffer = (uint8_t *)av_malloc(size);
 			if (pictureBuffer) {
 				avpicture_fill((AVPicture *)pFrame, pictureBuffer, ch, w, h);
@@ -95,6 +96,8 @@ void AVObject::allocFrame(void) throw (AVException*)
 				pFrame = NULL;
 				throw new AVException("Unable to allocate picture buffer",MEMORY_ALLOCATION_ERROR);
 			}
+		} else {
+			std::cerr << "Not enough parameters to allocate picture buffer\n";
 		}
 	}
 }
@@ -398,7 +401,7 @@ void AVObject::setOut(int fout)
 {
 	secondsOut.num = 0;
 	secondsOut.den = fout;
-
+	
 	// frameOut = fout;
 }
 
@@ -416,8 +419,8 @@ void AVObject::setIn(AVRational fin)
 void AVObject::setOut(AVRational fout)
 {
 	
-//	std::cerr<<"set out avrational: " << fout.num <<"." << fout.den << "\n";
-
+	//	std::cerr<<"set out avrational: " << fout.num <<"." << fout.den << "\n";
+	
 	secondsOut.num = fout.num;
 	secondsOut.den = fout.den;
 	
@@ -771,6 +774,7 @@ AVFrame * AVObject::getAVFrame(void)
 { 
 	return pFrame; 
 }
+
 AVFrame * AVObject::decodeAndGetNextAVFrame(void)
 { 
 	this->decodeNextFrame(); 
@@ -780,7 +784,7 @@ AVFrame * AVObject::decodeAndGetNextAVFrame(void)
 void AVObject::dumpFormat(void)
 {
 	std::cerr << "Generator AVObject: "  << this->getWidth() << "x" << this->getHeight() << " FPS:" << this->getFrameRateAsString() << " chroma: " << this->getChromaSampling() << " IN:" << this->getInTimecode() << " OUT:" <<this->getOutTimecode() << "\n";
-
+	
 }
 
 int AVObject::decodeNextAudio(void)
@@ -838,6 +842,7 @@ int AVObject::decodeNextFrame(void)
 void AVObject::freeAVFrame(void)
 { 
 	av_free(pFrame); 
+	pFrame = NULL;
 }
 
 AVObject::~AVObject() {
@@ -845,9 +850,11 @@ AVObject::~AVObject() {
 	// std::cerr << ">> AVObject destructor\n";
 	
 	if (pFrame)
-		av_free(pFrame);
+		avcodec_free_frame(&pFrame);
+	
 	if (pictureBuffer)
 		av_free(pictureBuffer);
+	
 #if LIBAVFORMAT_VERSION_MAJOR  < 54
 	if (aBuffer)
 		av_free(aBuffer);

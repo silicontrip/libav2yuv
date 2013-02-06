@@ -57,9 +57,6 @@ protected:
 	AVFrame *pFrame;
 	uint8_t *pictureBuffer;
 
-	
-
-	
 public:
 	
 	AVObject();
@@ -150,7 +147,6 @@ public:
 	virtual void setHeight(int);
 	virtual void setWidth(int);
 
-	
 	virtual	void dumpFormat(void);
 	virtual	int decodeNextAudio(void);
 	virtual	int decodeNextFrame(void);
