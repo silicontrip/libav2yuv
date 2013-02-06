@@ -160,7 +160,7 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 		
 		
 		if ((st == AVMEDIA_TYPE_VIDEO) && this->hasVideo(entry.channel)) {
-			std::cerr << "EDL Adding Video entry: " << entry.name << "\n";
+			//std::cerr << "EDL Adding Video entry: " << entry.name << "\n";
 			
 			AVObject *videoEntry;
 			
@@ -192,7 +192,7 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 				int source1out = videoEntry->TCtoFrames(entry.sourceOut);
 				int source2in = videoEntry->TCtoFrames(entry2.sourceIn);
 				
-				std::cerr << "dissolve from: " << entry.name << " to: " << entry2.name << " for " << dur << " frames.\n";
+			//	std::cerr << "dissolve from: " << entry.name << " to: " << entry2.name << " for " << dur << " frames.\n";
 
 				
 				videoEntry->setOut(source1out - dur - 1);
@@ -232,7 +232,7 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 		
 		if ((st == AVMEDIA_TYPE_AUDIO) && this->hasAudio(entry.channel))
 		{
-			std::cerr << "EDL Adding Audio entry: " << entry.name << "\n";
+		//	std::cerr << "EDL Adding Audio entry: " << entry.name << "\n";
 			
 			Libav *audioEntry;
 			
@@ -247,6 +247,9 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 		
 	//	std::cerr << "name: " << entry.name << " channel: " << entry.channel << " transition: " << entry.transition << " duration: " << entry.duration << " in: " << entry.sourceIn << " out: " << entry.sourceOut << "\n";
 	}
+	
+	pFrame = this->currentAV()->getAVFrame();
+
 	
 }
 
@@ -265,7 +268,7 @@ bool EdlListFilter::hasVideo(std::string mode)
 int EdlListFilter::decodeNextFrame()
 {
 
-//	std::cerr << ">>EDL decodeNextFrame\n";
+// std::cerr << ">>EDL decodeNextFrame\n";
 	
 	if (this->compareRange(frameCounter) > 0) 
 		return -1;
@@ -277,9 +280,15 @@ int EdlListFilter::decodeNextFrame()
 			delete (this->currentAV());
 
 			entries.pop_front();
-			if (entries.empty())
+			if (entries.empty()) {
+				pFrame = NULL;
 				return -1;
+			}
+			pFrame = this->currentAV()->getAVFrame();
+			
 		}
+	//	std::cerr << "  EDL decodeNextFrame decoded.\n";
+
 		frameCounter++;
 
 	} while (this->compareRange(frameCounter)<0);
@@ -335,6 +344,13 @@ AVObject * EdlListFilter::currentAV(void)
 }
 
 /*
+AVFrame * EdlListFilter::getAVFrame(void) 
+{ 
+	return this->currentAV()->getAVFrame(); 
+}
+*/
+
+/*
 AVRational EdlListFilter::getFrameRate(void) 
 { 
 	return this->currentAV()->getFrameRate();
@@ -387,10 +403,6 @@ int EdlListFilter::getChromaHeight(void)
 int EdlListFilter::getChromaWidth(void)
 { 
 	return this->currentAV()->getChromaWidth(); 
-}
-AVFrame * EdlListFilter::getAVFrame(void) 
-{ 
-	return this->currentAV()->getAVFrame(); 
 }
 int EdlListFilter::getSampleSize(void)
 { 

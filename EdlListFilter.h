@@ -116,6 +116,9 @@ public:
 
 	void dumpFormat(void);
 	
+//	AVFrame * getAVFrame(void);
+
+	
 	// These are all supposed to be defined in AVObject
 	/*
 	AVRational getFrameRate(void) ;
@@ -131,7 +134,6 @@ public:
 	int getWidth(void);
 	int getChromaHeight(void);
 	int getChromaWidth(void);
-	AVFrame * getAVFrame(void);
 	int getSampleSize(void);
 	int getSampleChannels(void);
 	AVSampleFormat getSampleFormat(void);
