@@ -8,7 +8,8 @@ enum AVExceptionCode {
 	INVALID_ARGUMENT,
 	UNSUPPORTED_CHROMA,
 	IO_ERROR,
-	FILE_ERROR
+	FILE_ERROR,
+	EDL_PARSER_ERROR
 };
 
 class AVException: public std::exception {
