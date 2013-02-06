@@ -4,6 +4,7 @@ Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*
 {
 
 	pictureBuffer = NULL;
+	pFrame = NULL;
 	
 	this->setIn(-1);
 	this->setOut(-1);
@@ -58,7 +59,12 @@ Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*
 	 // Could not open codec
 	}
 	
+//	std::cerr << filename << " pframe addr: " << pFrame << "\n";
+	
 	pFrame=avcodec_alloc_frame();
+	
+//	std::cerr << filename << " pframe addr: " << pFrame << "\n";
+
 	
 	//std::cerr<<"framerate: " << pFormatCtx->streams[avStream]->r_frame_rate.num <<":" <<pFormatCtx->streams[avStream]->r_frame_rate.den << "\n";
 	//std::cerr<<"dar: " << pCodecCtx->sample_aspect_ratio.num <<":" <<pCodecCtx->sample_aspect_ratio.den << "\n";
@@ -78,7 +84,8 @@ Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*
 Libav::~Libav()
 {
 	//std::cerr << ">> Libav Destructor\n";
-	avcodec_free_frame(&pFrame);
+	if (pFrame)
+		avcodec_free_frame(&pFrame);
 	avcodec_close(pCodecCtx);
 	if (pFormatCtx)
 #if LIBAVFORMAT_VERSION_MAJOR  < 53
@@ -129,6 +136,7 @@ int Libav::openInputFile(std::string filename)
 #else
 	return avformat_open_input(&pFormatCtx, filename.c_str(), avif, NULL); 
 #endif
+	
 }
 
 
