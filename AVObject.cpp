@@ -9,6 +9,15 @@ AVObject::AVObject()
 	pictureBuffer = NULL;
 	this->setInterlaced(false);
 	
+	this->setHeight(0);
+	this->setWidth(0);
+	frameRate.num=0;
+	frameRate.den=0;
+	sampleAspect.num=0;
+	sampleAspect.den=(0);
+	
+	this->setChromaSampling(PIX_FMT_NONE);
+	
 	this->setColour(16,128,128);
 	
 }
@@ -28,12 +37,12 @@ AVObject::AVObject(int samples, int ch, AVSampleFormat sf, int sps) throw (AVExc
 	bufferSize = samples;
 	
 	pictureBuffer = (uint8_t *)av_malloc(samples *
-							  av_get_bytes_per_sample(sf) *
-							  ch); 
+										 av_get_bytes_per_sample(sf) *
+										 ch); 
 	
 	if (!pictureBuffer) 
 		throw new AVException("Unable to allocate Audio buffer",MEMORY_ALLOCATION_ERROR);
-		
+	
 	avcodec_fill_audio_frame(pFrame, ch, sf,
 							 pictureBuffer,
 							 samples * av_get_bytes_per_sample(sf) * ch,
@@ -61,29 +70,57 @@ AVObject::AVObject(PixelFormat ch, int h, int w) throw (AVException*)
 
 void AVObject::allocFrame(void) throw (AVException*)
 {
-	pFrame=avcodec_alloc_frame();
-	
-	if (pFrame)
+	if (hasWidth() && hasHeight() && hasChromaSampling()) 
 	{
-		PixelFormat ch = this->getChromaSampling();
-		int h = this->getHeight();
-		int w = this->getWidth();
+	
+		pFrame=avcodec_alloc_frame();
+	
+		if (pFrame)
+		{
+			PixelFormat ch = this->getChromaSampling();
+			int h = this->getHeight();
+			int w = this->getWidth();
 		
-		int size = avpicture_get_size(ch, w, h);
-		if (pictureBuffer)
-			av_free(pictureBuffer);
+			// std::cerr << "Alloc: " << w << "x" << h << " pix: " << this->getChromaSampling() << " (" << ch << ")\n";
 		
-		pictureBuffer = (uint8_t *)av_malloc(size);
-		if (pictureBuffer) {
-			avpicture_fill((AVPicture *)pFrame, pictureBuffer, ch, w, h);
-		} else {
-			av_free(pFrame);
-			pFrame = NULL;
-			throw new AVException("Unable to allocate picture buffer",MEMORY_ALLOCATION_ERROR);
+			int size = avpicture_get_size(ch, w, h);
+			if (pictureBuffer)
+				av_free(pictureBuffer);
+		
+			pictureBuffer = (uint8_t *)av_malloc(size);
+			if (pictureBuffer) {
+				avpicture_fill((AVPicture *)pFrame, pictureBuffer, ch, w, h);
+			} else {
+				av_free(pFrame);
+				pFrame = NULL;
+				throw new AVException("Unable to allocate picture buffer",MEMORY_ALLOCATION_ERROR);
+			}
 		}
 	}
 }
 
+std::string AVObject::getSamplingAspectAsString(void)
+{
+	std::stringstream out (std::stringstream::out);
+	
+	out << sampleAspect.num << ":" << sampleAspect.den;
+	
+	return out.str();	
+	
+}
+
+
+std::string AVObject::getFrameRateAsString(void)
+{
+	std::stringstream out (std::stringstream::out);
+	out << frameRate.num << ":" << frameRate.den;
+	return out.str();	
+}
+
+bool AVObject::hasFrameRate(void)
+{
+	return frameRate.num != 0 && frameRate.den != 0;	
+}
 
 AVRational AVObject::getFrameRate(void)
 {
@@ -100,6 +137,12 @@ int AVObject::getFrameRateDen(void)
 	return frameRate.den;
 }
 
+bool AVObject::hasSampleAspect(void)
+{
+	return sampleAspect.num != 0 && sampleAspect.den != 0;	
+}
+
+
 AVRational AVObject::getSampleAspect(void)
 {
 	return sampleAspect;
@@ -115,6 +158,10 @@ int AVObject::getSampleAspectDen(void)
 	return sampleAspect.den;
 }
 
+bool AVObject::hasChromaSampling(void) {
+	return frameChromaSampling != PIX_FMT_NONE;
+}
+
 const char * AVObject::getChromaSamplingName(void)
 {
 	return av_get_pix_fmt_name(this->getChromaSampling());
@@ -123,6 +170,19 @@ const char * AVObject::getChromaSamplingName(void)
 PixelFormat AVObject::getChromaSampling(void)
 {
 	return frameChromaSampling;
+}
+
+int AVObject::getInterlace(void)
+{
+	
+	if (getIsInterlaced()) {
+		if (getInterlaceTopFieldFirst()) 
+		{
+			return Y4M_ILACE_TOP_FIRST;
+		} 
+		return Y4M_ILACE_BOTTOM_FIRST;
+	}
+	return Y4M_ILACE_NONE;
 }
 
 bool AVObject::getIsInterlaced(void)
@@ -138,10 +198,23 @@ bool AVObject::getInterlaceTopFieldFirst(void)
 	return 0;
 }
 
+
+bool AVObject::hasHeight(void)
+{
+	return frameHeight != 0;
+}
+
 int AVObject::getHeight(void)
 {
 	return frameHeight;
 }
+
+bool AVObject::hasWidth(void)
+{
+	return frameWidth != 0;
+}
+
+
 int AVObject::getWidth(void)
 {
 	return frameWidth;
@@ -211,23 +284,24 @@ int AVObject::getFrameCounter(void)
 
 int AVObject::getIn(void)
 {
-	return frameIn;
+	return getFrameRateNum() * secondsIn.num / getFrameRateDen() + secondsIn.den;
+	//return frameIn;
 }
 
 int AVObject::getOut(void)
 {
-	return frameOut;
+	return getFrameRateNum() * secondsOut.num / getFrameRateDen() + secondsOut.den;
 }
 
 int AVObject::compareRange(int fr)
 {
 	
-	if (frameIn == -1 && frameOut == -1) 
+	if (!hasIn() && !hasOut()) 
 		return 0;
 	
-	if (fr < frameIn && frameIn != -1) 
+	if (hasIn() && fr < getIn()) 
 		return -1;
-	if (fr > frameOut && frameOut != -1)
+	if (hasOut() && fr > getOut())
 		return 1;
 	// there should be no other conditions.
 	
@@ -236,23 +310,33 @@ int AVObject::compareRange(int fr)
 	
 }
 
+bool AVObject::hasIn (void)
+{
+	return secondsIn.den != -1;
+}
+
+bool AVObject::hasOut(void)
+{
+	return secondsOut.den != -1;
+}
+
 int AVObject::compareSamplesRange(int fr)
 {
 	
-	if (frameIn == -1 && frameOut == -1) 
+	if (!hasIn() && !hasOut()) 
 		return 0;
 	
 	double spf = this->getSamplesPerFrame();
 	
-	int samplesIn= frameIn * spf;
-	int samplesOut= frameOut * spf;
+	int samplesIn= this->getIn() * spf;
+	int samplesOut= this->getOut() * spf;
 	
 	//NSLog(@"Compare samples Range: %d (%d - %d) ",fr,samplesIn,samplesOut);
 	
 	
-	if (fr <  samplesIn && frameIn != -1) 
+	if (fr <  samplesIn && hasIn()) 
 		return -1;
-	if (fr >= samplesOut && frameOut != -1)
+	if (fr >= samplesOut && hasOut())
 		return 1;
 	
 	return 0;
@@ -261,12 +345,12 @@ int AVObject::compareSamplesRange(int fr)
 
 int64_t AVObject::getSamplesIn(void)
 {
-	return frameIn * this->getSamplesPerFrame();
+	return getIn() * this->getSamplesPerFrame();
 }
 
 int64_t AVObject::getSamplesOut(void)
 {
-	return frameOut * this->getSamplesPerFrame();
+	return getOut() * this->getSamplesPerFrame();
 }
 
 int AVObject::getSampleSize(void)
@@ -305,13 +389,41 @@ void AVObject::setColour(uint8_t y, uint8_t u, uint8_t v)
 
 void AVObject::setIn(int fin)
 {
-	frameIn = fin;
+	secondsIn.num = 0;
+	secondsIn.den = fin;
+	// frameIn = fin;
 }
 
 void AVObject::setOut(int fout)
 {
-	frameOut = fout;
+	secondsOut.num = 0;
+	secondsOut.den = fout;
+
+	// frameOut = fout;
 }
+
+
+void AVObject::setIn(AVRational fin)
+{
+	
+	//std::cerr<<"set in avrational: " << fin.num <<"." << fin.den << "\n";
+	
+	secondsIn.num = fin.num;
+	secondsIn.den = fin.den;
+	// frameIn = fin;
+}
+
+void AVObject::setOut(AVRational fout)
+{
+	
+//	std::cerr<<"set out avrational: " << fout.num <<"." << fout.den << "\n";
+
+	secondsOut.num = fout.num;
+	secondsOut.den = fout.den;
+	
+	// frameOut = fout;
+}
+
 
 void AVObject::setSampleChannels(int ch)
 {
@@ -329,20 +441,78 @@ void AVObject::setSamplesPerSecond(int sps)
 	samplesPerSecond = sps;
 }
 
-int AVObject::TCtoFrames(std::string timecode) throw (AVException*)
+std::string AVObject::getInTimecode(void)
 {
-	//determine if drop frame
-	// NSRange dropFrameRange = [timecode rangeOfString:@";"];
+	if (this->getIn() >= 0) 
+		return this->FramesToTC(this->getIn());
+	return "null";
+}
+
+std::string AVObject::getOutTimecode(void)
+{
+	if (this->getOut() >= 0) 
+		return this->FramesToTC(this->getOut());
+	return "null";
+}
+
+
+std::string AVObject::FramesToTC(int frames)
+{
+	
+	int frn = this->getFrameRateNum();
+	int frd = this->getFrameRateDen();
+	
+	std::stringstream out (std::stringstream::out);
+	
+	if ( frn % frd )
+	{
+		// non integer frame rate
+		
+		// non drop frame rate
+		// round up to nearest integer frame rate.
+		// that's right time code != actual play time.
+		frn += frd - (frn % frd);
+		
+		// SMPTE algorithm for 29.97
+		// 2 skipped frames per minute, excluding the 10 minute divisible ones.
+		
+		/*
+		 int smpted = fc / 17982;
+		 int smptem = fc % 17982;
+		 frames +=  18*smpted + 2*((smptem - 2) / 1798);
+		 */
+		
+		// not calculating drop frame at this point
+	}
+	
+	//	std::cerr << frd << "*" << frames << "/" << frn << "\n";
+	
+	int h = frd * frames / frn / 3600;
+	int m = (frd * frames / frn / 60) % 60;
+	int s = (frd * frames / frn) % 60;
+	int f = frames % (frn / frd);
+	
+	
+	out << "" <<  h  << ":" << std::setfill('0') << std::setw(2) << m << ":" << s << ":" << f;
+	return out.str();
+}
+
+
+// This method isn't dependent on having a framerate set.
+AVRational AVObject::TCtoSecondsFrames(std::string timecode) throw (AVException*)
+{
 	bool drop = timecode.find(";") != std::string::npos;
 	bool dropFrame = true;
 	
 	int frn = this->getFrameRateNum();
 	int frd =  this->getFrameRateDen();
 	
+	AVRational secframe;
 	// std::cerr <<  "drop find: " << drop << "\n";
 	
 	if (!drop) 
 	{
+		// need looser comparison
 		if ( 1.0 * frn / frd == 30000.0 / 1001.0) {
 			frn = 30;
 			frd = 1;
@@ -363,32 +533,111 @@ int AVObject::TCtoFrames(std::string timecode) throw (AVException*)
 	
 	// no real simple way of splitting a string
 	// without using external libraries or additional code.
-	std::vector<std::string> digits;
+	std::vector<int> digits;
 	std::stringstream ss(newTimeCode);
 	std::string s;
 	
 	while (getline(ss, s, ':')) {
-		
-	//	std::cerr << "digit: " << s << "\n";
-		digits.push_back(s);
+		std::stringstream digitin(s);
+		int digit;
+		digitin >> digit; 
+		//	std::cerr << "digit: " << s << "\n";
+		digits.push_back(digit);
 	}
 	
-	int frames = atoi(digits.back().c_str());
+	int frames = digits.back();
 	
-//	int frames = [[digits lastObject] intValue];
+	//	std::cerr << "frames: " << frames << "\n";
+	
+	//	int frames = [[digits lastObject] intValue];
 	int seconds;
+	seconds = 0;
 	
 	if (digits.size() >1) {
 		
-		seconds = 0;
 		int i;
 		for (i=0 ; i<digits.size()-1; i++)
 		{
-			seconds = (seconds * 60) + 	 atoi(digits.at(i).c_str());
+			//		std::cerr << "digit at: " << i << " = " << digits.at(i) <<"\n";
+			
+			seconds = (seconds * 60) + digits.at(i);
 		}
 	}
 	
-	// need to account for drop frame. properly
+	secframe.num = seconds;
+	secframe.den = frames;
+	
+	return secframe;
+}
+
+
+int AVObject::TCtoFrames(std::string timecode) throw (AVException*)
+{
+	//determine if drop frame
+	// NSRange dropFrameRange = [timecode rangeOfString:@";"];
+	bool drop = timecode.find(";") != std::string::npos;
+	bool dropFrame = true;
+	
+	int frn = this->getFrameRateNum();
+	int frd =  this->getFrameRateDen();
+	
+	// std::cerr <<  "drop find: " << drop << "\n";
+	
+	if (!drop) 
+	{
+		// need looser comparison
+		if ( 1.0 * frn / frd == 30000.0 / 1001.0) {
+			frn = 30;
+			frd = 1;
+		}
+		dropFrame = false;
+	}
+	
+	std::string newTimeCode;
+	
+	if (drop)
+		newTimeCode = timecode.replace(drop,1,":");
+	else 
+		newTimeCode = timecode;
+	
+	// NSString *newTimecode = [timecode stringByReplacingOccurrencesOfString:@";" withString:@":"];
+	// NSArray *digits = [newTimecode componentsSeparatedByString:@":"];
+	
+	
+	// no real simple way of splitting a string
+	// without using external libraries or additional code.
+	std::vector<int> digits;
+	std::stringstream ss(newTimeCode);
+	std::string s;
+	
+	while (getline(ss, s, ':')) {
+		std::stringstream digitin(s);
+		int digit;
+		digitin >> digit; 
+		//	std::cerr << "digit: " << s << "\n";
+		digits.push_back(digit);
+	}
+	
+	int frames = digits.back();
+	
+	//	std::cerr << "frames: " << frames << "\n";
+	
+	//	int frames = [[digits lastObject] intValue];
+	int seconds;
+	seconds = 0;
+	
+	if (digits.size() >1) {
+		
+		int i;
+		for (i=0 ; i<digits.size()-1; i++)
+		{
+			//		std::cerr << "digit at: " << i << " = " << digits.at(i) <<"\n";
+			
+			seconds = (seconds * 60) + digits.at(i);
+		}
+	}
+	
+	// need to account for drop frame... properly
 	
 	int frame = frames + seconds * frn / frd;
 	
@@ -399,17 +648,17 @@ int AVObject::TCtoFrames(std::string timecode) throw (AVException*)
 
 void AVObject::setInTimecode(std::string sin) throw (AVException*)
 {
-	this->setIn(this->TCtoFrames(sin));
+	this->setIn(this->TCtoSecondsFrames(sin));
 }
 
 void AVObject::setOutTimecode(std::string sout) throw (AVException*) 
 {
-	this->setOut(this->TCtoFrames(sout));
+	this->setOut(this->TCtoSecondsFrames(sout));
 }
 
 void AVObject::setInOutTimecode(std::string tc) throw (AVException*)
 {
-
+	
 	std::stringstream ss(tc);
 	std::string s;
 	
@@ -424,7 +673,7 @@ void AVObject::setFrameRate(AVRational rational) throw (AVException*)
 {	
 	
 	try {
-	
+		
 		this->setFrameRateNum(rational.num);
 		this->setFrameRateDen(rational.den);
 		
@@ -461,7 +710,7 @@ void AVObject::setSampleAspectNum(int num) throw (AVException*)
 {
 	if (num <= 0)
 		throw new AVException ("Invalid Aspect ratio",INVALID_ARGUMENT);
-
+	
 	sampleAspect.num = num;
 }
 
@@ -469,7 +718,7 @@ void AVObject::setSampleAspectDen(int den) throw (AVException*)
 {
 	if (den <= 0)
 		throw new AVException ("Invalid Aspect ratio",INVALID_ARGUMENT);
-
+	
 	sampleAspect.den = den;
 }
 
@@ -490,7 +739,7 @@ void AVObject::setChromaSamplingFromY4M(int y4mChroma) throw (AVException*)
 			
 		default:
 			throw new AVException("AV: Unsupported Chroma: " + y4mChroma, UNSUPPORTED_CHROMA);
-		//	std::cerr << "AV: Unsupported Chroma: " << y4mChroma << "\n";
+			//	std::cerr << "AV: Unsupported Chroma: " << y4mChroma << "\n";
 			break;
 	}
 	
@@ -530,7 +779,8 @@ AVFrame * AVObject::decodeAndGetNextAVFrame(void)
 
 void AVObject::dumpFormat(void)
 {
-	std::cerr<<"Black generator AV Object: " << this->getWidth() <<"x" << this->getHeight() << "\n";	
+	std::cerr << "Generator AVObject: "  << this->getWidth() << "x" << this->getHeight() << " FPS:" << this->getFrameRateAsString() << " chroma: " << this->getChromaSampling() << " IN:" << this->getInTimecode() << " OUT:" <<this->getOutTimecode() << "\n";
+
 }
 
 int AVObject::decodeNextAudio(void)
@@ -566,7 +816,7 @@ int AVObject::decodeNextAudio(void)
 int AVObject::decodeNextFrame(void)
 {
 	if (this->compareRange(frameCounter) < 0)
-		frameCounter = frameIn;
+		frameCounter = getIn();
 	
 	// I only need to do this once.
 	if (this->compareRange(frameCounter) == 0) {

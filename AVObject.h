@@ -10,6 +10,8 @@ extern "C" {
 }
 #include <string>
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 #include <vector>
 #include <sstream>
 
@@ -17,23 +19,24 @@ extern "C" {
 
 class AVObject {
 
-protected:
-	int frameCounter;
-	int frameIn;
-	int frameOut;
+private:
+//	int frameIn;
+//	int frameOut;
 	
+	// may have to change this again.
+	// to handle NTSC drop frame timecode
+	AVRational secondsIn;
+	AVRational secondsOut;
+
 	int samplesPerSecond;
 	int sampleChannels;
 	AVSampleFormat sampleFormat;
-	int64_t sampleCounter;
 	int bufferSize;
 	int frameWidth;
 	int frameHeight;
 	
 	AVRational frameRate;
 	AVRational sampleAspect;
-	AVFrame *pFrame;
-	uint8_t *pictureBuffer;
 	
 	uint8_t colour_y;
 	uint8_t colour_u;
@@ -47,8 +50,14 @@ protected:
 	bool isInterlaced;
 	bool interlaceTopFieldFirst;
 	
-	void allocFrame(void) throw (AVException*);
-	void freeAVFrame(void);
+protected:
+	
+	int64_t sampleCounter;
+	int frameCounter;
+	AVFrame *pFrame;
+	uint8_t *pictureBuffer;
+
+	
 
 	
 public:
@@ -59,22 +68,37 @@ public:
 	
 	virtual ~AVObject();
 
+	std::string getSamplingAspectAsString(void);
+	std::string getFrameRateAsString(void);
+
+	
+	virtual bool hasFrameRate(void);
 	virtual AVRational getFrameRate(void);
 	virtual int getFrameRateNum(void);
 	virtual int getFrameRateDen(void);
+	virtual bool hasSampleAspect(void);
+
 	virtual AVRational getSampleAspect(void);
 	virtual int getSampleAspectNum(void);
 	virtual int getSampleAspectDen(void);
+	virtual bool hasChromaSampling(void);
 	virtual const char * getChromaSamplingName(void);
 	virtual PixelFormat getChromaSampling(void);
+	//virtual bool hasInterlace(void);
+	virtual int getInterlace(void);
 	virtual bool getIsInterlaced(void);
 	virtual bool getInterlaceTopFieldFirst(void);
+	virtual bool hasHeight(void);
 	virtual int getHeight(void);
+	virtual bool hasWidth(void);
 	virtual int getWidth(void);
 	virtual int getChromaHeight(void);
 	virtual int getChromaWidth(void);
 
 	virtual int getFrameCounter(void);
+	virtual bool hasIn(void);
+	virtual bool hasOut(void);
+
 	virtual int getIn(void);
 	virtual int getOut(void);
 	virtual int compareRange(int);
@@ -90,12 +114,21 @@ public:
 
 	virtual void setIn(int);
 	virtual void setOut(int);
+	virtual void setIn(AVRational);
+	virtual void setOut(AVRational);
+
 	virtual void setSampleChannels(int);
 	virtual void setSampleFormat(AVSampleFormat);
 
 	virtual void setSamplesPerSecond(int);
 
+	AVRational TCtoSecondsFrames(std::string) throw (AVException*);
 	int TCtoFrames(std::string) throw (AVException*);
+	std::string FramesToTC(int);
+	std::string getInTimecode(void);
+	std::string getOutTimecode(void);
+
+	
 	void setInTimecode(std::string) throw (AVException*);
 	void setOutTimecode(std::string) throw (AVException*);
 	void setInOutTimecode(std::string tc) throw (AVException*);
@@ -124,5 +157,9 @@ public:
 	
 	virtual AVFrame * getAVFrame(void);
 	virtual AVFrame * decodeAndGetNextAVFrame(void);
+	
+	void allocFrame(void) throw (AVException*);
+	void freeAVFrame(void);
+
 
 };
