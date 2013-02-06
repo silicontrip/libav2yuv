@@ -26,7 +26,8 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv) throw (AVException
 		
 	};
 	
-	
+	std::string argins;
+	std::stringstream argin (argins,std::stringstream::in);
 	
 	int c=0;
 	int option_index = 0;
@@ -41,6 +42,7 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv) throw (AVException
 	aspect.d = 0;
 	chroma = -1;
 	stream = -1;
+	
 	
 	
 	while (c != -1) {
@@ -112,7 +114,10 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv) throw (AVException
 				range = std::string(optarg);
 				break;
 			case 's':
-				stream  = atoi(optarg);
+				argins = std::string(optarg);
+			//	std::stringstream argins (argin, std::stringstream::in);
+				
+				argin >> stream;
 				break;
 			case 'h':
 				this->usage();
