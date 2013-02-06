@@ -3,9 +3,10 @@
 DissolveTransition::DissolveTransition(AVObject *f, AVObject *t, unsigned int fr)
 {
 	this->setFrames(fr);
+	
 	this->setAVFrom(f);
 	this->setAVTo(t);
-	
+		
 	frameCounter = 0;
 	
 	this->allocFrame();
@@ -28,6 +29,8 @@ void DissolveTransition::setAVFrom (AVObject *s)
 	this->setSampleAspect(s->getSampleAspect());
 	this->setHeight(s->getHeight());
 	this->setWidth(s->getWidth());
+	this->setChromaSampling(s->getChromaSampling());
+
 	
 	// we don't get interlace information until the first frame is decoded.
 	
@@ -100,8 +103,12 @@ int DissolveTransition::decodeNextFrame(void)
 
 void DissolveTransition::dumpFormat(void)
 {
-	std::cerr << "Cross Dissolve Transition\nFROM:\n";
+	std::cerr << "Dissolve Transition: "  << this->getWidth() << "x" << this->getHeight() << " FPS:" << this->getFrameRateAsString() << " IN:" << this->getInTimecode() << " OUT:" <<this->getOutTimecode() << "\n";
+
+	std::cerr << "FROM: ";
+
+	
 	fromAV->dumpFormat();
-	std::cerr << "TO: \n" ;
+	std::cerr << "TO: " ;
 	toAV->dumpFormat();
 }
