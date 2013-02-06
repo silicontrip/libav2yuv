@@ -75,7 +75,7 @@ void processAudio (Libav2yuvArguments options, std::vector<AVObject *> edlList) 
 	
 }
 
-void processVideo (Libav2yuvArguments options, std::vector<AVObject *> edlList) throw (AVException)
+void processVideo (Libav2yuvArguments options, std::vector<AVObject *> edlList) throw (AVException *)
 {
 	
 	AVObject *lav = edlList.front();
