@@ -9,7 +9,8 @@ enum AVExceptionCode {
 	UNSUPPORTED_CHROMA,
 	IO_ERROR,
 	FILE_ERROR,
-	EDL_PARSER_ERROR
+	EDL_PARSER_ERROR,
+	TIMECODE_PARSER_ERROR
 };
 
 class AVException: public std::exception {

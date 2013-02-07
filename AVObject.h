@@ -17,6 +17,14 @@ extern "C" {
 
 #include "AVException.h"
 
+struct timecodeStruct {
+	int h;
+	int m;
+	int s;
+	int f;
+	bool df;
+};
+
 class AVObject {
 
 private:
@@ -122,8 +130,10 @@ public:
 
 	virtual void setSamplesPerSecond(int);
 
-	AVRational TCtoSecondsFrames(std::string) throw (AVException*);
+	// AVRational TCtoSecondsFrames(std::string) throw (AVException*);
+	struct timecodeStruct TCtoStruct(std::string); 
 	int TCtoFrames(std::string) throw (AVException*);
+	int StructToFrames (struct timecodeStruct tc) throw (AVException *);
 	std::string FramesToTC(int);
 	std::string getInTimecode(void);
 	std::string getOutTimecode(void);

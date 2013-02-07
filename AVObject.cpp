@@ -1,6 +1,5 @@
 #include "AVObject.h"
 
-
 AVObject::AVObject()
 {
 	
@@ -514,6 +513,7 @@ std::string AVObject::FramesToTC(int frames)
 
 
 // This method isn't dependent on having a framerate set.
+/*
 AVRational AVObject::TCtoSecondsFrames(std::string timecode) throw (AVException*)
 {
 	bool drop = timecode.find(";") != std::string::npos;
@@ -584,40 +584,25 @@ AVRational AVObject::TCtoSecondsFrames(std::string timecode) throw (AVException*
 	
 	return secframe;
 }
+*/
 
-
-int AVObject::TCtoFrames(std::string timecode) throw (AVException*)
+struct timecodeStruct AVObject::TCtoStruct(std::string timecode) 
 {
-	//determine if drop frame
-	// NSRange dropFrameRange = [timecode rangeOfString:@";"];
-	bool drop = timecode.find(";") != std::string::npos;
-	bool dropFrame = true;
-	
-	int frn = this->getFrameRateNum();
-	int frd =  this->getFrameRateDen();
-	
-	// std::cerr <<  "drop find: " << drop << "\n";
-	
-	if (!drop) 
-	{
-		// need looser comparison
-		if ( 1.0 * frn / frd == 30000.0 / 1001.0) {
-			frn = 30;
-			frd = 1;
-		}
-		dropFrame = false;
-	}
-	
+	struct timecodeStruct tcs;
 	std::string newTimeCode;
+
+	tcs.f = 0;
+	tcs.s = 0;
+	tcs.m = 0;
+	tcs.h = 0;
+	
+	int drop  = timecode.find(";");
+	tcs.df = drop != std::string::npos;
 	
 	if (drop)
 		newTimeCode = timecode.replace(drop,1,":");
 	else 
 		newTimeCode = timecode;
-	
-	// NSString *newTimecode = [timecode stringByReplacingOccurrencesOfString:@";" withString:@":"];
-	// NSArray *digits = [newTimecode componentsSeparatedByString:@":"];
-	
 	
 	// no real simple way of splitting a string
 	// without using external libraries or additional code.
@@ -633,31 +618,55 @@ int AVObject::TCtoFrames(std::string timecode) throw (AVException*)
 		digits.push_back(digit);
 	}
 	
-	int frames = digits.back();
+	int point = digits.size() -1;
 	
-	//	std::cerr << "frames: " << frames << "\n";
+	tcs.f = digits.at(point--);
+	if (point>=0)
+		tcs.s = digits.at(point--);
+	if (point>=0)
+		tcs.m = digits.at(point--);
+	if (point>=0)
+		tcs.h = digits.at(point--);
 	
-	//	int frames = [[digits lastObject] intValue];
-	int seconds;
-	seconds = 0;
+	return tcs;
 	
-	if (digits.size() >1) {
-		
-		int i;
-		for (i=0 ; i<digits.size()-1; i++)
+}
+
+int AVObject::StructToFrames (struct timecodeStruct tc) throw (AVException *)
+{
+
+	int num = getFrameRateNum();
+	int den = getFrameRateDen();
+	int dropFrames = 0;
+	
+	int sec = tc.h * 3600 + tc.m * 60 + tc.s;
+	
+	if (num % den)
+	{
+		num += den - (num % den);
+
+		if (tc.df) 
 		{
-			//		std::cerr << "digit at: " << i << " = " << digits.at(i) <<"\n";
+			if ( fabs(29.97 - (1.0 * num / den )) < 0.001){
+				// TODO: this only works for 29.97
+				// there is only drop code algorithm for 30000/1001
+				
+				int totalMinutes = 60 * tc.h + tc.m;
+				// 2 skipped frames per minute, excluding the 10 minute divisible ones.
+				dropFrames  =  2 * (totalMinutes - totalMinutes / 10);
+			} else {
+				throw new AVException ("Unknown drop frame framerate: ",TIMECODE_PARSER_ERROR);
+			}
 			
-			seconds = (seconds * 60) + digits.at(i);
 		}
 	}
+	return sec * num / den + tc.f + dropFrames;
 	
-	// need to account for drop frame... properly
-	
-	int frame = frames + seconds * frn / frd;
-	
-	
-	return frame;
+}
+
+int AVObject::TCtoFrames(std::string timecode) throw (AVException*)
+{
+	return this->StructToFrames (this->TCtoStruct(timecode));
 }
 
 
