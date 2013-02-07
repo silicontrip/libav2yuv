@@ -96,7 +96,6 @@ protected:
 	
 	bool hasAudio(std::string); 
 	bool hasVideo(std::string); 
-	AVObject * currentAV(void);
 	
 	void validateList(std::vector<struct edlEntry>,int) throw (AVException *);
 	struct edlEntry parseEDLEntry(std::string, int);
@@ -105,6 +104,8 @@ protected:
 	
 public:
 	EdlListFilter();
+	~EdlListFilter();
+
 	EdlListFilter(std::string, int) throw (AVException*);
 
 	void setFile (std::string, int) throw (AVException*);
@@ -116,6 +117,8 @@ public:
 
 	void dumpFormat(void);
 	
+	AVObject * currentAV(void);
+
 //	AVFrame * getAVFrame(void);
 
 	

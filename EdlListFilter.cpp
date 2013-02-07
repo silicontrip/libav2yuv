@@ -11,6 +11,11 @@ EdlListFilter::EdlListFilter()
 	
 }
 
+EdlListFilter::~EdlListFilter() 
+{
+	pFrame = NULL;
+}
+
 EdlListFilter::EdlListFilter(std::string filename, int st)  throw (AVException*)
 {
 	frameCounter = 0;
@@ -158,7 +163,6 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 	{
 		struct edlEntry entry = edlEntries.at(i);
 		
-		
 		if ((st == AVMEDIA_TYPE_VIDEO) && this->hasVideo(entry.channel)) {
 			//std::cerr << "EDL Adding Video entry: " << entry.name << "\n";
 			
@@ -194,35 +198,35 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 				
 			//	std::cerr << "dissolve from: " << entry.name << " to: " << entry2.name << " for " << dur << " frames.\n";
 
-				
-				videoEntry->setOut(source1out - dur - 1);
-				if (source1out - dur - 1 >=0)
+				//create transition FROM video 
+				// change out point 
+				videoEntry->setOut(source1out - dur);
+				if (source1out - dur >=0)
 					entries.push_back(videoEntry);
+				else
+					throw new AVException("Not enough source video for transition",EDL_PARSER_ERROR);
 				
-				
+				// create transition
 				AVObject *video1 = this->videoFactory(entry.name);
-				
 				video1->setIn(source1out - dur + 1);
 				video1->setOut(source1out);
 				
 				AVObject *video2 = this->videoFactory(entry2.name);
-				
-				
-				video2->setIn(source2in );
-				video2->setOut(source2in + dur );
+				video2->setIn(source2in);
+				video2->setOut(source2in + dur - 1);
 
-				videoEntry = new DissolveTransition(video1,video2,dur);
+				AVObject * dissolveEntry = new DissolveTransition(video1,video2,dur);
 				
-				entries.push_back(videoEntry);
+				entries.push_back(dissolveEntry);
 
+				//create transition TO video
+				// change IN point
+				AVObject *videoOut = this->videoFactory(entry2.name);
 				
-			videoEntry = this->videoFactory(entry.name);
-				
-				
-				videoEntry->setIn( source2in + dur + 1 );
-				videoEntry->setOutTimecode(entry2.sourceOut);
+				videoOut->setIn( source2in + dur);
+				videoOut->setOutTimecode(entry2.sourceOut);
   
-				entries.push_back(videoEntry);
+				entries.push_back(videoOut);
 				i++;
 				
 			}
@@ -248,6 +252,8 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 	//	std::cerr << "name: " << entry.name << " channel: " << entry.channel << " transition: " << entry.transition << " duration: " << entry.duration << " in: " << entry.sourceIn << " out: " << entry.sourceOut << "\n";
 	}
 	
+//	this->currentAV()->dumpFormat();
+
 	pFrame = this->currentAV()->getAVFrame();
 
 	
@@ -284,6 +290,7 @@ int EdlListFilter::decodeNextFrame()
 				pFrame = NULL;
 				return -1;
 			}
+			//this->currentAV()->dumpFormat();
 			pFrame = this->currentAV()->getAVFrame();
 			
 		}
