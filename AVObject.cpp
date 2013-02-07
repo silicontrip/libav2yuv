@@ -101,7 +101,7 @@ void AVObject::allocFrame(void) throw (AVException*)
 				throw new AVException("Unable to allocate picture buffer",MEMORY_ALLOCATION_ERROR);
 			}
 		} else {
-			std::cerr << "Not enough parameters to allocate picture buffer\n";
+			// std::cerr << "Not enough parameters to allocate picture buffer\n";
 		}
 	}
 }
@@ -694,15 +694,15 @@ void AVObject::setFrameRate(AVRational rational) throw (AVException*)
 
 void AVObject::setFrameRateNum(int num) throw (AVException*)
 {
-	if (num <= 0)
-		throw new AVException ("Invalid Frame rate",INVALID_ARGUMENT);
+//	if (num <= 0)
+//		throw new AVException ("Invalid Frame rate",INVALID_ARGUMENT);
 	frameRate.num = num;
 }
 
 void AVObject::setFrameRateDen(int den) throw (AVException*)
 {
-	if (den <= 0)
-		throw new AVException ("Invalid Frame rate",INVALID_ARGUMENT);
+//	if (den <= 0)
+//		throw new AVException ("Invalid Frame rate",INVALID_ARGUMENT);
 	frameRate.den = den;
 }
 
