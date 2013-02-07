@@ -17,6 +17,7 @@ Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*
 	
 	pFormatCtx = NULL;
 	
+	frameCounter = 0;
 	avStream = -1;
 	streamType = st;
 	
