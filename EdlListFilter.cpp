@@ -166,9 +166,16 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 		if ((st == AVMEDIA_TYPE_VIDEO) && this->hasVideo(entry.channel)) {
 			//std::cerr << "EDL Adding Video entry: " << entry.name << "\n";
 			
+			
+			// This behaviour is incorrect.
+			// transitions occur at the beginning of the current edit
+			// and after the out point of the previous 
+			
+			
+			// add previous transition duration to IN
+/*
 			if (i>0) 
 			{
-				// add previous transition duration to in
 				
 				struct edlEntry previous = edlEntries.at(i-1);
 				std::stringstream ssdur(previous.duration,std::stringstream::in);
@@ -181,7 +188,7 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 				entry.sourceIn = this->FramesToTC(fr);
 
 			}
-			
+*/			
 			AVObject *videoEntry;
 			
 				
@@ -195,58 +202,48 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 			}
 			if (!entry.transition.compare("D")) {
 				
-				struct edlEntry entry2;
+				struct edlEntry previous;
 				
-				if (i+1 == edlEntries.size()) {
-					entry2.name = "//BLACK"; // black generator
-					entry2.sourceIn = "0";
+				if (i==0) {
+					previous.name = "//BLACK"; // black generator
+					previous.sourceIn = "0";
+					previous.sourceOut = "0";
 				} else {
-					entry2 = edlEntries.at(i+1);
-				}				
-				
-				videoEntry = this->videoFactory(entry.name);
-				videoEntry->setInTimecode(entry.sourceIn);
+					previous = edlEntries.at(i-1);
+				}
 				
 				int dur = atoi(entry.duration.c_str());
 
-				int source1out = videoEntry->TCtoFrames(entry.sourceOut);
-				int source2in = videoEntry->TCtoFrames(entry2.sourceIn);
+				int transitionOut = this->TCtoFrames(previous.sourceOut);
+				int transitionIn = this->TCtoFrames(entry.sourceIn);
+				
+				// transition comes first.
+				
+				AVObject *video1 = this->videoFactory(previous.name);
+				video2->setIn(transitionOut);
+				video2->setOut(transitionOut + dur - 1);
+				
+				// create transition
+				AVObject *video2 = this->videoFactory(entry.name);
+				video2->setIn(transitionIn);
+				video2->setOut(transitionIn + dur - 1);
+				
+				
+				AVObject * dissolveEntry = new DissolveTransition(video1,video2,dur);
+				
+				entries.push_back(dissolveEntry);
+				
+				videoEntry = this->videoFactory(entry.name);
+				videoEntry->setInTimecode(transitionIn + dur);
+				videoEntry->setInTimecode(entry.sourceOut);
+
+
 				
 		//	std::cerr << "dissolve from: " << entry.name << " to: " << entry2.name << " for " << dur << " frames.\n";
 
 				//create transition FROM video 
 				// change out point 
-				videoEntry->setOut(source1out - dur);
-				if (source1out - dur >=0)
-					entries.push_back(videoEntry);
-				else
-					throw new AVException("Not enough source video for transition",EDL_PARSER_ERROR);
-				
-				// create transition
-				AVObject *video1 = this->videoFactory(entry.name);
-				video1->setIn(source1out - dur + 1);
-				video1->setOut(source1out);
-				
-				AVObject *video2 = this->videoFactory(entry2.name);
-				video2->setIn(source2in);
-				video2->setOut(source2in + dur - 1);
 
-				AVObject * dissolveEntry = new DissolveTransition(video1,video2,dur);
-				
-				entries.push_back(dissolveEntry);
-
-				//create transition TO video
-				// change IN point
-				
-				/*
-				AVObject *videoOut = this->videoFactory(entry2.name);
-				
-				videoOut->setIn( source2in + dur);
-				videoOut->setOutTimecode(entry2.sourceOut);
-  
-				entries.push_back(videoOut);
-				i++;
-				*/
 			}
 			
 			
