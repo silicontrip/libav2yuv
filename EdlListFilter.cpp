@@ -166,6 +166,22 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 		if ((st == AVMEDIA_TYPE_VIDEO) && this->hasVideo(entry.channel)) {
 			//std::cerr << "EDL Adding Video entry: " << entry.name << "\n";
 			
+			if (i>0) 
+			{
+				// add previous transition duration to in
+				
+				struct edlEntry previous = edlEntries.at(i-1);
+				std::stringstream ssdur(previous.duration,std::stringstream::in);
+				int duration;
+				ssdur >> duration;
+				
+				int fr = this->TCtoFrames(entry.sourceIn) + duration;
+				//std::cerr << "in frame: " << fr << "\n";
+				
+				entry.sourceIn = this->FramesToTC(fr);
+
+			}
+			
 			AVObject *videoEntry;
 			
 				
@@ -196,7 +212,7 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 				int source1out = videoEntry->TCtoFrames(entry.sourceOut);
 				int source2in = videoEntry->TCtoFrames(entry2.sourceIn);
 				
-			//	std::cerr << "dissolve from: " << entry.name << " to: " << entry2.name << " for " << dur << " frames.\n";
+		//	std::cerr << "dissolve from: " << entry.name << " to: " << entry2.name << " for " << dur << " frames.\n";
 
 				//create transition FROM video 
 				// change out point 
@@ -221,6 +237,8 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 
 				//create transition TO video
 				// change IN point
+				
+				/*
 				AVObject *videoOut = this->videoFactory(entry2.name);
 				
 				videoOut->setIn( source2in + dur);
@@ -228,7 +246,7 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
   
 				entries.push_back(videoOut);
 				i++;
-				
+				*/
 			}
 			
 			
