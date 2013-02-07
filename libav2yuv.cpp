@@ -79,8 +79,7 @@ void processVideo (Libav2yuvArguments options, std::vector<AVObject *> edlList) 
 {
 	
 	AVObject *lav = edlList.front();
-	
-	lav->dumpFormat();
+//	lav->dumpFormat();
 	
 	//	NSLog(@"%dx%d by %d:%d at %d:%d",[lav getWidth],[lav getHeight],[lav getSampleAspectNum],[lav getSampleAspectDen],[lav getFrameRateNum],[lav getFrameRateDen]);
 	
@@ -130,13 +129,16 @@ void processVideo (Libav2yuvArguments options, std::vector<AVObject *> edlList) 
 	{
 		
 		lav = *video;
+
+		EdlListFilter *edl = (EdlListFilter*)*video;
 		
-		//for (AVObject *video in edlList) {
-		//	if (video != nil) {
+		lav->dumpFormat();
 		
 		while (lav->decodeNextFrame() >=0)
 		{
 			yuv.setYUVFrameDataWithAVFrame(lav->getAVFrame());
+		//	std::cerr << lav->getFrameCounter()  << ". ";
+		//	edl->currentAV()->dumpFormat();
 			yuv.write();
 		}
 		delete *video;
