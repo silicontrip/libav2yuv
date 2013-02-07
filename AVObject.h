@@ -20,13 +20,16 @@ extern "C" {
 class AVObject {
 
 private:
-//	int frameIn;
-//	int frameOut;
+	int frameIn;
+	int frameOut;
 	
 	// may have to change this again.
 	// to handle NTSC drop frame timecode
-	AVRational secondsIn;
-	AVRational secondsOut;
+//	AVRational secondsIn;
+//	AVRational secondsOut;
+	std::string timecodeIn;
+	std::string timecodeOut;
+
 
 	int samplesPerSecond;
 	int sampleChannels;
@@ -111,8 +114,8 @@ public:
 
 	virtual void setIn(int);
 	virtual void setOut(int);
-	virtual void setIn(AVRational);
-	virtual void setOut(AVRational);
+	// virtual void setIn(AVRational);
+	// virtual void setOut(AVRational);
 
 	virtual void setSampleChannels(int);
 	virtual void setSampleFormat(AVSampleFormat);

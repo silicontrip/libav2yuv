@@ -291,13 +291,15 @@ int AVObject::getFrameCounter(void)
 
 int AVObject::getIn(void)
 {
-	return getFrameRateNum() * secondsIn.num / getFrameRateDen() + secondsIn.den;
-	//return frameIn;
+	//return getFrameRateNum() * secondsIn.num / getFrameRateDen() + secondsIn.den;
+	return frameIn;
 }
 
 int AVObject::getOut(void)
 {
-	return getFrameRateNum() * secondsOut.num / getFrameRateDen() + secondsOut.den;
+	return frameOut;
+
+//	return getFrameRateNum() * secondsOut.num / getFrameRateDen() + secondsOut.den;
 }
 
 int AVObject::compareRange(int fr)
@@ -322,12 +324,15 @@ int AVObject::compareRange(int fr)
 
 bool AVObject::hasIn (void)
 {
-	return secondsIn.den != -1;
+	return frameIn != -1;
+	//return secondsIn.den != -1;
 }
 
 bool AVObject::hasOut(void)
 {
-	return secondsOut.den != -1;
+	return frameOut != -1;
+
+//	return secondsOut.den != -1;
 }
 
 int AVObject::compareSamplesRange(int fr)
@@ -399,20 +404,20 @@ void AVObject::setColour(uint8_t y, uint8_t u, uint8_t v)
 
 void AVObject::setIn(int fin)
 {
-	secondsIn.num = 0;
-	secondsIn.den = fin;
-	// frameIn = fin;
+	//secondsIn.num = 0;
+	//secondsIn.den = fin;
+	frameIn = fin;
 }
 
 void AVObject::setOut(int fout)
 {
-	secondsOut.num = 0;
-	secondsOut.den = fout;
+	//secondsOut.num = 0;
+	//secondsOut.den = fout;
 	
-	// frameOut = fout;
+	frameOut = fout;
 }
 
-
+/*
 void AVObject::setIn(AVRational fin)
 {
 	
@@ -433,7 +438,7 @@ void AVObject::setOut(AVRational fout)
 	
 	// frameOut = fout;
 }
-
+*/
 
 void AVObject::setSampleChannels(int ch)
 {
@@ -658,12 +663,12 @@ int AVObject::TCtoFrames(std::string timecode) throw (AVException*)
 
 void AVObject::setInTimecode(std::string sin) throw (AVException*)
 {
-	this->setIn(this->TCtoSecondsFrames(sin));
+	this->setIn(this->TCtoFrames(sin));
 }
 
 void AVObject::setOutTimecode(std::string sout) throw (AVException*) 
 {
-	this->setOut(this->TCtoSecondsFrames(sout));
+	this->setOut(this->TCtoFrames(sout));
 }
 
 void AVObject::setInOutTimecode(std::string tc) throw (AVException*)
