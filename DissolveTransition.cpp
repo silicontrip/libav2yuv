@@ -105,10 +105,10 @@ void DissolveTransition::dumpFormat(void)
 {
 	std::cerr << "Dissolve Transition: "  << this->getWidth() << "x" << this->getHeight() << " FPS:" << this->getFrameRateAsString() << " IN:" << this->getInTimecode() << " OUT:" <<this->getOutTimecode() << "\n";
 
-	std::cerr << "FROM: ";
+	std::cerr << "   FROM: ";
 
 	
 	fromAV->dumpFormat();
-	std::cerr << "TO: " ;
+	std::cerr << "   TO: " ;
 	toAV->dumpFormat();
 }
