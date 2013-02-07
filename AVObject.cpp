@@ -288,6 +288,19 @@ int AVObject::getFrameCounter(void)
 	return frameCounter;
 }
 
+bool AVObject::hasIn (void)
+{
+	return frameIn != -1;
+	//return secondsIn.den != -1;
+}
+
+bool AVObject::hasOut(void)
+{
+	return frameOut != -1;
+	
+	//	return secondsOut.den != -1;
+}
+
 int AVObject::getIn(void)
 {
 	//return getFrameRateNum() * secondsIn.num / getFrameRateDen() + secondsIn.den;
@@ -301,6 +314,8 @@ int AVObject::getOut(void)
 //	return getFrameRateNum() * secondsOut.num / getFrameRateDen() + secondsOut.den;
 }
 
+
+
 int AVObject::compareRange(int fr)
 {
 	
@@ -312,7 +327,11 @@ int AVObject::compareRange(int fr)
 	
 	if (hasIn() && fr < getIn()) 
 		return -1;
-	if (hasOut() && fr >= getOut())
+	
+	// not sure of the exact behaviour of the out point.
+	// do we send the out frame?  fr>=getOut()
+	// do we not send the out frame? fr+1 >= getOut()
+	if (hasOut() && fr+1 >= getOut())
 		return 1;
 	// there should be no other conditions.
 	
@@ -321,18 +340,6 @@ int AVObject::compareRange(int fr)
 	
 }
 
-bool AVObject::hasIn (void)
-{
-	return frameIn != -1;
-	//return secondsIn.den != -1;
-}
-
-bool AVObject::hasOut(void)
-{
-	return frameOut != -1;
-
-//	return secondsOut.den != -1;
-}
 
 int AVObject::compareSamplesRange(int fr)
 {
@@ -586,7 +593,7 @@ AVRational AVObject::TCtoSecondsFrames(std::string timecode) throw (AVException*
 }
 */
 
-struct timecodeStruct AVObject::TCtoStruct(std::string timecode) 
+struct timecodeStruct AVObject::TCtoStruct(std::string timecode) throw (AVException*)
 {
 	struct timecodeStruct tcs;
 	std::string newTimeCode;
@@ -596,19 +603,27 @@ struct timecodeStruct AVObject::TCtoStruct(std::string timecode)
 	tcs.m = 0;
 	tcs.h = 0;
 	
-	int drop  = timecode.find(";");
-	tcs.df = drop != std::string::npos;
+	//std::cerr << ">> TCtoStruct (" << timecode << ")\n";
 	
-	if (drop)
-		newTimeCode = timecode.replace(drop,1,":");
-	else 
-		newTimeCode = timecode;
+	int drop  = timecode.find(";");
+	tcs.df = (drop != std::string::npos);
+	
+	//std::cerr << "   drop=" << drop <<"\n";
+
+	if (tcs.df)
+		timecode = timecode.replace(drop,1,":");
+	
+	//std::cerr << "   timecode=" << timecode <<"\n";
+
 	
 	// no real simple way of splitting a string
 	// without using external libraries or additional code.
 	std::vector<int> digits;
-	std::stringstream ss(newTimeCode);
+	std::stringstream ss(timecode);
 	std::string s;
+	
+	//std::cerr << "   while (getline\n";
+
 	
 	while (getline(ss, s, ':')) {
 		std::stringstream digitin(s);
@@ -620,14 +635,27 @@ struct timecodeStruct AVObject::TCtoStruct(std::string timecode)
 	
 	int point = digits.size() -1;
 	
+	if (point<0)
+		throw new AVException("Invalid timecode",TIMECODE_PARSER_ERROR);
+	
+	//std::cerr << "   tcs.f " << point << "\n";
+
 	tcs.f = digits.at(point--);
+//	std::cerr << "   tcs.m " << point << "\n";
+
 	if (point>=0)
 		tcs.s = digits.at(point--);
+	//std::cerr << "   tcs.s " << point << "\n";
+
 	if (point>=0)
 		tcs.m = digits.at(point--);
+	//std::cerr << "   tcs.h " << point << "\n";
+
 	if (point>=0)
 		tcs.h = digits.at(point--);
 	
+	//std::cerr << "<< TCtoStruct\n";
+
 	return tcs;
 	
 }
@@ -666,7 +694,11 @@ int AVObject::StructToFrames (struct timecodeStruct tc) throw (AVException *)
 
 int AVObject::TCtoFrames(std::string timecode) throw (AVException*)
 {
-	return this->StructToFrames (this->TCtoStruct(timecode));
+	
+//	std::cerr << ">> TCtoFrames (" << timecode <<")\n";
+	struct timecodeStruct tc = this->TCtoStruct(timecode);
+//	std::cerr << "   StructToFrames\n";
+	return this->StructToFrames (tc);
 }
 
 

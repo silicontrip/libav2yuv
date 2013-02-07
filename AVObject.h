@@ -131,7 +131,7 @@ public:
 	virtual void setSamplesPerSecond(int);
 
 	// AVRational TCtoSecondsFrames(std::string) throw (AVException*);
-	struct timecodeStruct TCtoStruct(std::string); 
+	struct timecodeStruct TCtoStruct(std::string) throw (AVException*); 
 	int TCtoFrames(std::string) throw (AVException*);
 	int StructToFrames (struct timecodeStruct tc) throw (AVException *);
 	std::string FramesToTC(int);
