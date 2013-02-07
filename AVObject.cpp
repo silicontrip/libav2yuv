@@ -16,6 +16,8 @@ AVObject::AVObject()
 	sampleAspect.num=0;
 	sampleAspect.den=(0);
 	
+	frameCounter = 0;
+	
 	this->setChromaSampling(PIX_FMT_NONE);
 	
 	this->setColour(16,128,128);
@@ -62,6 +64,8 @@ AVObject::AVObject(PixelFormat ch, int h, int w) throw (AVException*)
 	
 	this->setIn(-1);
 	this->setOut(-1);
+	
+	frameCounter = 0;
 	
 	pictureBuffer = NULL;
 	this->allocFrame();
@@ -302,9 +306,12 @@ int AVObject::compareRange(int fr)
 	if (!hasIn() && !hasOut()) 
 		return 0;
 	
+	// getting off by one frame errors here.
+	// hopefully fixed by trial and error.
+	
 	if (hasIn() && fr < getIn()) 
 		return -1;
-	if (hasOut() && fr > getOut())
+	if (hasOut() && fr >= getOut())
 		return 1;
 	// there should be no other conditions.
 	
