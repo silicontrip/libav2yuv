@@ -26,7 +26,7 @@ EdlListFilter::EdlListFilter(std::string filename, int st)  throw (AVException*)
 	
 }
 
-struct edlEntry EdlListFilter::parseEDLEntry (std::string line, int st) 
+struct edlEntry EdlListFilter::parseEDLEntry (std::string line, int st) throw (AVException *)
 {
 	
 	//	std::cerr << "fn:" << fileName << " m:" << mode << " t:" << transition << " in:" << tcIn << " out:" << tcOut << "\n";
@@ -35,6 +35,8 @@ struct edlEntry EdlListFilter::parseEDLEntry (std::string line, int st)
 	
 	// grumble... it's delimited on a single space
 	// multiple spaces are treated as multiple delimiters.
+	
+	entry.duration = "0";
 	
 	std::stringstream items(line);
 	std::getline(items, entry.name,' ');
@@ -48,6 +50,25 @@ struct edlEntry EdlListFilter::parseEDLEntry (std::string line, int st)
 	
 	std::getline(items, entry.sourceIn,' ');
 	std::getline(items, entry.sourceOut,' ');
+	
+	if (entry.name.size() == 0) 
+		throw new AVException("Invalid EDL: no name",EDL_PARSER_ERROR);
+	
+	if (entry.channel.size() == 0) 
+		throw new AVException("Invalid EDL: no channel",EDL_PARSER_ERROR);
+
+	if (entry.transition.size() == 0) 
+		throw new AVException("Invalid EDL: no transition",EDL_PARSER_ERROR);
+
+	if (entry.duration.size() == 0) 
+		throw new AVException("Invalid EDL: no duration for non cut transition",EDL_PARSER_ERROR);
+
+	if (entry.sourceIn.size() == 0) 
+		throw new AVException("Invalid EDL: no in",EDL_PARSER_ERROR);
+
+	if (entry.sourceOut.size() == 0) 
+		throw new AVException("Invalid EDL: no out",EDL_PARSER_ERROR);
+
 	
 	return entry;
 }
@@ -220,13 +241,13 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 				// transition comes first.
 				
 				AVObject *video1 = this->videoFactory(previous.name);
-				video2->setIn(transitionOut);
-				video2->setOut(transitionOut + dur - 1);
+				video1->setIn(transitionOut);
+				video1->setOut(transitionOut + dur);
 				
 				// create transition
 				AVObject *video2 = this->videoFactory(entry.name);
 				video2->setIn(transitionIn);
-				video2->setOut(transitionIn + dur - 1);
+				video2->setOut(transitionIn + dur);
 				
 				
 				AVObject * dissolveEntry = new DissolveTransition(video1,video2,dur);
@@ -234,9 +255,10 @@ void EdlListFilter::setFile(std::string filename, int st) throw (AVException*)
 				entries.push_back(dissolveEntry);
 				
 				videoEntry = this->videoFactory(entry.name);
-				videoEntry->setInTimecode(transitionIn + dur);
-				videoEntry->setInTimecode(entry.sourceOut);
+				videoEntry->setIn(transitionIn + dur);
+				videoEntry->setOutTimecode(entry.sourceOut);
 
+				entries.push_back(videoEntry);
 
 				
 		//	std::cerr << "dissolve from: " << entry.name << " to: " << entry2.name << " for " << dur << " frames.\n";

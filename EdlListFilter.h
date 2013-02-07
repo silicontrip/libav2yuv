@@ -98,7 +98,7 @@ protected:
 	bool hasVideo(std::string); 
 	
 	void validateList(std::vector<struct edlEntry>,int) throw (AVException *);
-	struct edlEntry parseEDLEntry(std::string, int);
+	struct edlEntry parseEDLEntry(std::string, int) throw (AVException *);
 	AVObject * videoFactory (std::string);
 
 	
