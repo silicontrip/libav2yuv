@@ -123,3 +123,5 @@ test.*
 Design/
 build
 *.xcodeproj
+libav2yuv/*
+libav2yuv.sln
