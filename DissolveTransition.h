@@ -10,8 +10,8 @@ extern "C" {
 
 class DissolveTransition : public Transition {
 public: 
-        DissolveTransition(AVObject *f, AVObject *t, unsigned int fr);
-        ~DissolveTransition(void);
+        DissolveTransition(AVObject *f, AVObject *t, unsigned int fr) : Transition(f,t,fr) { };
+        ~DissolveTransition(void) { };
         int decodeNextFrame(void);
         void dumpFormat(void);
 
