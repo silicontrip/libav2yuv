@@ -7,27 +7,11 @@ extern "C" {
 
 #include "AVObject.h"
 
-class DissolveTransition: public AVObject {
-	
-	
-	AVObject * fromAV;
-	AVObject * toAV;
-
-	int frameCounter;
-	
-	unsigned int frames;
+class DissolveTransition: public Transition {
 	
 public:
-	DissolveTransition(AVObject *, AVObject *, unsigned int);
-	~DissolveTransition();
-	
-	void setAVFrom (AVObject *);
-	void setAVTo (AVObject *);
-	
-	void setFrames (unsigned int);
-	
-	int decodeNextFrame(void);
-	void dumpFormat(void);
-	
+	//DissolveTransition(AVObject *, AVObject *, unsigned int);
+	//~DissolveTransition();
+		
 	
 };

@@ -64,6 +64,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\AVException.h" />
+    <ClInclude Include="..\AVObject.h" />
+    <ClInclude Include="..\ChromaFilter.h" />
+    <ClInclude Include="..\DissolveTransition.h" />
+    <ClInclude Include="..\EdlListFilter.h" />
+    <ClInclude Include="..\Libav.h" />
+    <ClInclude Include="..\Libav2yuvArguments.h" />
+    <ClInclude Include="..\LibavWaveWriter.h" />
+    <ClInclude Include="..\Libyuv.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\AVException.cpp" />
+    <ClCompile Include="..\AVObject.cpp" />
+    <ClCompile Include="..\ChromaFilter.cpp" />
+    <ClCompile Include="..\DissolveTransition.cpp" />
+    <ClCompile Include="..\EdlListFilter.cpp" />
+    <ClCompile Include="..\Libav.cpp" />
+    <ClCompile Include="..\libav2yuv.cpp" />
+    <ClCompile Include="..\Libav2yuvArguments.cpp" />
+    <ClCompile Include="..\LibavWaveWriter.cpp" />
+    <ClCompile Include="..\Libyuv.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
