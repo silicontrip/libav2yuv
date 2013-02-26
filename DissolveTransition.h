@@ -6,12 +6,14 @@ extern "C" {
 #include <iostream>
 
 #include "AVObject.h"
+#include "Transition.h"
 
-class DissolveTransition: public Transition {
-	
-public:
-	//DissolveTransition(AVObject *, AVObject *, unsigned int);
-	//~DissolveTransition();
-		
+class DissolveTransition : public Transition {
+public: 
+        DissolveTransition(AVObject *f, AVObject *t, unsigned int fr);
+        ~DissolveTransition(void);
+        int decodeNextFrame(void);
+        void dumpFormat(void);
+
 	
 };

@@ -18,7 +18,7 @@ public:
 	void setAVTo (AVObject *);
 	void setFrames (unsigned int);
 	
-	abstract int decodeNextFrame(void);
-	abstract void dumpFormat(void);
+	virtual int decodeNextFrame(void);
+	virtual void dumpFormat(void);
 };
 

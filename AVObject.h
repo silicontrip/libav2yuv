@@ -1,3 +1,4 @@
+#pragma once
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -169,6 +170,5 @@ public:
 	
 	void allocFrame(void) throw (AVException*);
 	void freeAVFrame(void);
-
 
 };
