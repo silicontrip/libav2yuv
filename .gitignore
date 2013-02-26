@@ -116,3 +116,10 @@ App_Data/*.ldf
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+*.o
+libav2yuv
+test.*
+*.edl
+Design/
+build
+*.xcodeproj
