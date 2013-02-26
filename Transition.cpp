@@ -20,7 +20,7 @@ Transition::~Transition(void)
 	delete toAV;
 }
 
-void DissolveTransition::setAVFrom (AVObject *s)
+void Transition::setAVFrom (AVObject *s)
 {
 	fromAV = s;
 	
@@ -38,12 +38,12 @@ void DissolveTransition::setAVFrom (AVObject *s)
 	 */
 }	
 
-void DissolveTransition::setAVTo (AVObject *s)
+void Transition::setAVTo (AVObject *s)
 {
 	toAV = s;
 }	
 
-void DissolveTransition::setFrames(unsigned int f)
+void Transition::setFrames(unsigned int f)
 {
 	frames = f;
 }
