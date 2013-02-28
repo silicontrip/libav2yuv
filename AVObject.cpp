@@ -605,7 +605,7 @@ struct timecodeStruct AVObject::TCtoStruct(std::string timecode) throw (AVExcept
 	
 	//std::cerr << ">> TCtoStruct (" << timecode << ")\n";
 	
-	int drop  = timecode.find(";");
+	size_t drop  = timecode.find(";");
 	tcs.df = (drop != std::string::npos);
 	
 	//std::cerr << "   drop=" << drop <<"\n";
@@ -633,7 +633,7 @@ struct timecodeStruct AVObject::TCtoStruct(std::string timecode) throw (AVExcept
 		digits.push_back(digit);
 	}
 	
-	int point = digits.size() -1;
+	size_t point = digits.size() -1;
 	
 	if (point<0)
 		throw new AVException("Invalid timecode",TIMECODE_PARSER_ERROR);
