@@ -142,6 +142,6 @@ int LibavWaveWriter::writeFrameData(AVFrame *pFrame) throw (AVException*)
 	//	NSLog(@"avcodec free frame");
 	
     avcodec_free_frame(&frame);
-	
+	return 0;
 }
 
