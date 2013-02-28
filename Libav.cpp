@@ -642,6 +642,10 @@ int Libav::decodeNextAudio(void) throw (AVException*)
 				// send partial frame
 				//NSLog(@"partial case 1");
 				
+                if ((this->getSamplesOut() - this->getSamplesIn()) > INT_MAX) {
+                    throw new AVException(std::string("Sample Range Too Large"),SAMPLE_RANGE_ERROR);
+                }
+                
 				pFrame->nb_samples =(this->getSamplesOut() - this->getSamplesIn()) ;
 				avcodec_fill_audio_frame(pFrame, this->getSampleChannels(), this->getSampleFormat(),
 										 iFrame->data[0] + (this->getSamplesIn() - sampleCounter) * bytesPerSample,
@@ -652,6 +656,11 @@ int Libav::decodeNextAudio(void) throw (AVException*)
 				// send partial frame
 				//NSLog(@"partial case 2");
 				
+                if ((sampleCounter + numSamples - this->getSamplesIn() + 1) > INT_MAX) {
+                    throw new AVException(std::string("Sample Range Too Large"),SAMPLE_RANGE_ERROR);
+                }
+
+                
 				pFrame->nb_samples =( sampleCounter + numSamples - this->getSamplesIn() + 1) ;
 				avcodec_fill_audio_frame(pFrame, this->getSampleChannels(), this->getSampleFormat(),
 										 iFrame->data[0] + (this->getSamplesIn() - sampleCounter) * bytesPerSample,
@@ -663,6 +672,11 @@ int Libav::decodeNextAudio(void) throw (AVException*)
 				// send partial frame
 				//NSLog(@"partial case 3");
 				
+                if ((this->getSamplesOut() - sampleCounter) > INT_MAX) {
+                    throw new AVException(std::string("Sample Range Too Large"),SAMPLE_RANGE_ERROR);
+                }
+
+                
 				pFrame->nb_samples =( this->getSamplesOut() - sampleCounter);
 				avcodec_fill_audio_frame(pFrame, this->getSampleChannels(), this->getSampleFormat(),
 										 iFrame->data[0],

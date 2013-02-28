@@ -9,7 +9,8 @@ enum AVExceptionCode {
 	IO_ERROR,
 	FILE_ERROR,
 	EDL_PARSER_ERROR,
-	TIMECODE_PARSER_ERROR
+	TIMECODE_PARSER_ERROR,
+    SAMPLE_RANGE_ERROR
 };
 
 class AVException: public std::exception {
