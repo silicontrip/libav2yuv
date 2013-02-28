@@ -3,7 +3,6 @@
 #import <iostream>
 
 enum AVExceptionCode {
-
 	MEMORY_ALLOCATION_ERROR,
 	INVALID_ARGUMENT,
 	UNSUPPORTED_CHROMA,
