@@ -40,7 +40,10 @@ Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*
 		// another constructor error.
 	}
 	if ((avStream = this->findStream(streamNumber,streamType)) == -1) {
-		throw new AVException("couldn't find requested AV stream: " + streamNumber, FILE_ERROR);
+        std::stringstream exception;
+        exception << "couldn't find requested AV stream: " << streamNumber;
+
+		throw new AVException(exception.str(), FILE_ERROR);
 
 		//std::cerr<<"initWithFile: couldn't find requested AV stream\n";
 		// constructor error blah blah
