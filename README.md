@@ -54,9 +54,9 @@ Cut to "BLACK" on video and A1 & A2:
     SPLIT:    AUDIO DELAY=  00:00:00:06
     053 021    V     C        01:21:05:19 01:21:06:26 01:00:51:11 01:00:52:18
     053 021    A     C        01:21:05:25 01:21:06:26 01:00:51:17 01:00:52:18
+    HERES A NOTE
+    THERE CAN BE MORE
 
-HERES A NOTE
-THERE CAN BE MORE
 KEY- Background-reel 131, Foreground-reel 051, with freeze on reel 131, with two notes:
  
     Edit # Reel Name  Channel Trans      Dur      Source IN          Source OUT          Record IN         Record OUT
@@ -81,10 +81,8 @@ The EDL Filter parser format is in the form:
     /Users/d332027/Movies/TheFaceOfTheEnemy/the_face_of_the_enemy_09.mpg VA C 0:0:0:0 0:3:38:15
     /Users/d332027/Movies/TheFaceOfTheEnemy/the_face_of_the_enemy_10.mpg VA C 0:0:0:0 0:5:46:0
  
-The edit number and reel name is replaced by a filename.
-Channel works in the same way.  However A refers to both audio channels, left and right.
- 
-Transition Type. Currently only 'C' (for cut) and 'D' (dissolve) is supported.
-Source in and Source out work in the same way.  Many video files do not support time code. So the first frame of the file is considered 0:0:0:0
- 
-Record in and record out are not used.
+- The edit number and reel name is replaced by a filename.
+- Channel works in the same way.  However A refers to both audio channels, left and right.
+- Transition Type. Currently only 'C' (for cut) and 'D' (dissolve) is supported.
+- Source in and Source out work in the same way.  Many video files do not support time code. So the first frame of the file is considered 0:0:0:0
+- Record in and record out are not used.
