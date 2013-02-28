@@ -341,7 +341,7 @@ int AVObject::compareRange(int fr)
 }
 
 
-int AVObject::compareSamplesRange(int fr)
+int AVObject::compareSamplesRange(int64_t fr)
 {
 	
 	if (!hasIn() && !hasOut()) 
@@ -633,10 +633,10 @@ struct timecodeStruct AVObject::TCtoStruct(std::string timecode) throw (AVExcept
 		digits.push_back(digit);
 	}
 	
-	size_t point = digits.size() -1;
+	int64_t point = digits.size() -1;
 	
 	if (point<0)
-		throw new AVException("Invalid timecode",TIMECODE_PARSER_ERROR);
+		throw new AVException(std::string("Invalid timecode"),TIMECODE_PARSER_ERROR);
 	
 	//std::cerr << "   tcs.f " << point << "\n";
 
@@ -794,7 +794,10 @@ void AVObject::setChromaSamplingFromY4M(int y4mChroma) throw (AVException*)
 		case Y4M_CHROMA_420JPEG: this->setChromaSampling(PIX_FMT_YUVJ420P); break;
 			
 		default:
-			throw new AVException("AV: Unsupported Chroma: " + y4mChroma, UNSUPPORTED_CHROMA);
+            std::stringstream exception;
+            exception << "AV: Unsupported Chroma: " << y4mChroma;
+            
+			throw new AVException(exception.str(), UNSUPPORTED_CHROMA);
 			//	std::cerr << "AV: Unsupported Chroma: " << y4mChroma << "\n";
 			break;
 	}
@@ -867,7 +870,8 @@ int AVObject::decodeNextAudio(void)
 	{
 		// send entire frame.
 	}
-	// sampleCount += samples. 
+	// sampleCount += samples.
+    return 0;
 }
 
 int AVObject::decodeNextFrame(void)
