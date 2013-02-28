@@ -26,6 +26,8 @@ Format for EDL file
 
 http://www.edlmax.com/EdlMaxHelp/Edl/maxguide.html
 
+These examples are from the above site, they are a basis for the EDL format which libav2yuv supports.  An actual
+libav2yuv EDL file is shown below.
 
 Here are several examples (CMX format):
  
@@ -33,12 +35,14 @@ Cut to "BLACK" on video and A1 & A2:
  
     Edit # Reel Name  Channel Trans      Dur      Source IN          Source OUT          Record IN         Record OUT
     002    BL  AA/V  C        00:00:00:00 00:00:10:00 00:59:45:00 00:59:55:00
-    75 frame dissolve from reel 123 to reel 123B on video and A1:
+
+75 frame dissolve from reel 123 to reel 123B on video and A1:
   
     Edit # Reel Name  Channel Trans      Dur      Source IN          Source OUT          Record IN         Record OUT
     105 123    B     C        03:05:57:17 03:05:57:17 01:00:21:20 01:00:21:20
     105 123B   B     D    075 03:15:33:09 03:15:35:24 01:00:21:20 01:00:24:05
-    30 frame wipe (pattern 001) from reel 002 to reel 003 on video only:
+
+30 frame wipe (pattern 001) from reel 002 to reel 003 on video only:
  
     Edit # Reel Name  Channel Trans      Dur      Source IN          Source OUT          Record IN         Record OUT
     002 002    V     C        02:00:10:00 02:00:10:00 01:00:13:18 01:00:13:18 
@@ -61,9 +65,9 @@ KEY- Background-reel 131, Foreground-reel 051, with freeze on reel 131, with two
     M2  131          000.0                10:57:41:00
  
  
-This sample is taken from an actual CMX EDL file.
+This sample is based on an actual LIBAV2YUV EDL file.
  
-This EDL Filter parser format is in the form:
+The EDL Filter parser format is in the form:
  
     # <filename|tag>  <Channel>  <TransitionType>[num]  [duration]  [srcIn]  [srcOut]  [recIn]  [recOut]
     /Users/d332027/Movies/TheFaceOfTheEnemy/the_face_of_the_enemy_01.mpg VA C 0:0:0:0 0:4:9:0
@@ -80,7 +84,7 @@ This EDL Filter parser format is in the form:
 The edit number and reel name is replaced by a filename.
 Channel works in the same way.  However A refers to both audio channels, left and right.
  
-Transition Type. Currently only 'C' (for cut) and  'D' (dissolve) is supported.
+Transition Type. Currently only 'C' (for cut) and 'D' (dissolve) is supported.
 Source in and Source out work in the same way.  Many video files do not support time code. So the first frame of the file is considered 0:0:0:0
  
 Record in and record out are not used.
