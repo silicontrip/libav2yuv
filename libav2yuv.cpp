@@ -130,7 +130,7 @@ void processVideo (Libav2yuvArguments options, std::vector<AVObject *> edlList) 
 		
 		lav = *video;
         
-		EdlListFilter *edl = (EdlListFilter*)*video;
+	//	EdlListFilter *edl = (EdlListFilter*)*video;
 		
 		lav->dumpFormat();
 		
