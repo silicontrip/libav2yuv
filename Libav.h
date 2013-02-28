@@ -33,6 +33,13 @@ protected:
 	int findStream(int,int);
 	int openAVCodec(void);
 
+    const char *av_get_codecid(enum AVCodecID);
+    const char *av_get_field_order(enum AVFieldOrder);
+    const char *av_get_media_type_string(enum AVMediaType );
+    const char *av_get_colorrange(enum AVColorRange);
+    const char *av_get_colorspace(enum AVColorSpace);
+
+    
 	
 public:
 	Libav(std::string,int,int) throw (AVException*);
