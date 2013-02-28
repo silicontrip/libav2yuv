@@ -111,7 +111,7 @@ public:
 	virtual int getIn(void);
 	virtual int getOut(void);
 	virtual int compareRange(int);
-	virtual int compareSamplesRange(int);
+	virtual int compareSamplesRange(int64_t);
 	virtual int64_t getSamplesIn(void);
 	virtual int64_t getSamplesOut(void);
 	virtual int getSampleSize(void);
