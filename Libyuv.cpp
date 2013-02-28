@@ -229,9 +229,6 @@ void Libyuv::setYUVFrameDataWithAVFrame(AVFrame *pFrame)
 		memcpy(frameData[0]+y*w,(pFrame->data[0])+y*pFrame->linesize[0],w);
 		if (y<ch) {
 			
-#ifdef DEBUG
-			mjpeg_debug("copy %d bytes to: %x from: %x",cw,dst[1]+y*cw,(src->data[1])+y*src->linesize[1]);
-#endif
 			//	NSLog(@"memcpy1");
 			
 			memcpy(frameData[1]+y*cw,(pFrame->data[1])+y*pFrame->linesize[1],cw);
