@@ -44,7 +44,7 @@ struct edlEntry EdlListFilter::parseEDLEntry (std::string line, int st) throw (A
 	std::getline(items, entry.transition,' ');
 	
 	// cut transition does not have a duration.
-	if (entry.transition.compare("C")) {
+	if (entry.transition.compare("C")) { // if not Cut
 		std::getline(items, entry.duration,' ');
 	}
 	
