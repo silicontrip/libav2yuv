@@ -376,7 +376,131 @@ const char *Libav::av_get_colorspace(enum AVColorSpace colorspace)
 	}
 }
 
+void Libav::initMeta(AVFormatContext *fmt_ctx) {
+    
+    AVDictionaryEntry *tag = NULL;
+    char *container = NULL;
 
+    while ((tag = av_dict_get(fmt_ctx->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
+        meta[std::string(tag->key)] =  std::string(tag->value);
+		if (strcmp(tag->key,"major_brand")==0) {
+            // mp4 or mov
+			if (strcmp(tag->value,"qt")==0) {
+                container = "mov";
+			}
+			if (strcmp(tag->value,"mp42")==0) {
+                container = "mp4";
+			}
+		}
+	}
+
+    if (container == NULL) {
+		meta[std::string("FORMAT_NAME")] = std::string(fmt_ctx->iformat->name);
+	} else {
+        meta[std::string("FORMAT_NAME")] = std::string(container);
+	}
+
+    std::stringstream numberStreams;
+    numberStreams << fmt_ctx->nb_streams;
+    
+    meta[std::string("STREAMS")] = numberStreams.str();
+
+    for(int  i=0; i<fmt_ctx->nb_streams; i++) {
+        
+		AVCodecContext *codec_ctx = fmt_ctx->streams[i]->codec;
+        
+		const char * stream_type = av_get_media_type_string(fmt_ctx->streams[i]->codec->codec_type);
+
+        char key[128]; // possible overflow
+        char val[128]; // as above
+		
+		sprintf (key,"STREAM_%d_TYPE",i);
+        meta [std::string(key)]= std::string(stream_type);
+        
+		sprintf (key,"STREAM_%s_CODEC_ID",stream_type);
+        meta[std::string(key)]=std::string(av_get_codecid(codec_ctx->codec_id));
+        
+		if (fmt_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+            
+			sprintf(key,"STREAM_%s_AFPS_RATIO",stream_type);
+            sprintf(val,"%d:%d",fmt_ctx->streams[i]->avg_frame_rate.num,fmt_ctx->streams[i]->avg_frame_rate.den);
+            meta[std::string(key)]=std::string(val);
+            
+			sprintf(key,"STREAM_%s_FPS_RATIO",stream_type);
+            sprintf(val,"%d:%d",fmt_ctx->streams[i]->r_frame_rate.num,fmt_ctx->streams[i]->r_frame_rate.den);
+            meta[std::string(key)]=std::string(val);
+
+            
+			sprintf(key,"STREAM_%s_FPS",stream_type);
+            sprintf(val,"%f",1.0*fmt_ctx->streams[i]->r_frame_rate.num / fmt_ctx->streams[i]->r_frame_rate.den);
+            meta[std::string(key)]=std::string(val);
+            
+			sprintf (key,"STREAM_%s_WIDTH",stream_type);
+            sprintf (val,"%d",codec_ctx->width);
+            meta[std::string(key)]=std::string(val);
+
+			sprintf (key,"STREAM_%s_HEIGHT",stream_type);
+            sprintf (val,"%d",codec_ctx->height);
+            meta[std::string(key)]=std::string(val);
+
+			sprintf (key,"STREAM_%s_PIX_FMT",stream_type);
+            
+           // std::cerr << codec_ctx->pix_fmt << "\n";
+            
+            const char * pixFmtName = av_get_pix_fmt_name(codec_ctx->pix_fmt);
+            
+     //       std::cerr << av_get_pix_fmt_name(codec_ctx->pix_fmt) << "\n";
+            
+            if (pixFmtName)
+                meta[std::string(key)]=std::string(pixFmtName);
+            
+			sprintf(key,"STREAM_%s_SAR",stream_type);
+            sprintf(val,"%d:%d",codec_ctx->sample_aspect_ratio.num,codec_ctx->sample_aspect_ratio.den);
+            meta[std::string(key)]=std::string(val);
+
+			sprintf (key,"STREAM_%s_REFFRAMES",stream_type);
+            sprintf (val,"%d",codec_ctx->refs);
+            meta[std::string(key)]=std::string(val);
+
+			sprintf (key,"STREAM_%s_COLORSPACE",stream_type);
+            meta[std::string(key)] = std::string(av_get_colorspace(codec_ctx->colorspace));
+            
+			sprintf (key,"STREAM_%s_COLORRANGE",stream_type);
+            meta[std::string(key)] = std::string(av_get_colorrange(codec_ctx->color_range));
+			
+            sprintf (key,"STREAM_%s_FIELDORDER",stream_type);
+            meta[std::string(key)] = std::string(av_get_field_order(codec_ctx->field_order));
+            
+            
+		}
+		if (fmt_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
+			sprintf (key,"STREAM_%s_SAMPLERATE",stream_type);
+            sprintf(val,"%d",codec_ctx->sample_rate);
+            meta[std::string(key)]=std::string(val);
+
+            
+			sprintf (key,"STREAM_%s_CHANNELS",stream_type);
+            sprintf(val,"%d",codec_ctx->channels);
+            meta[std::string(key)]=std::string(val);
+
+			sprintf (key,"STREAM_%s_SAMPLEFORMAT",stream_type);
+            
+            const char * smpFmtName = av_get_sample_fmt_name(codec_ctx->sample_fmt);
+
+            if (smpFmtName)
+                meta[std::string(key)]=std::string(av_get_sample_fmt_name(codec_ctx->sample_fmt));
+		}
+		
+		
+		while ((tag = av_dict_get(fmt_ctx->streams[i]->metadata, "", tag, AV_DICT_IGNORE_SUFFIX)))
+        {
+			sprintf(key,"STREAM_%s_%s", stream_type,tag->key);
+            meta[std::string(key)]=std::string(tag->value);
+        }
+	}
+    
+}
+    
 Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*)
 {
 
@@ -416,6 +540,14 @@ Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*
 		//std::cerr<<"initWithFile: avformat_find_stream_info failed\n";
 		// another constructor error.
 	}
+    
+    //
+    
+   // this->initMeta(fmt_ctx);
+    
+    this->initMeta(pFormatCtx);
+
+    
 	if ((avStream = this->findStream(streamNumber,streamType)) == -1) {
         std::stringstream exception;
         exception << "couldn't find requested AV stream: " << streamNumber;
@@ -511,12 +643,18 @@ int Libav::openInputFile(std::string filename)
 	pFormatCtx = NULL;
 	// this is supposed to be passed in by command line options.
 	avif = NULL;
+    int ret;
 	
 #if LIBAVFORMAT_VERSION_MAJOR  < 53
-	return av_open_input_file(&pFormatCtx, filename.c_str(), avif, 0, NULL);
+	return  av_open_input_file(&pFormatCtx, filename.c_str(), avif, 0, NULL);
+
 #else
-	return avformat_open_input(&pFormatCtx, filename.c_str(), avif, NULL); 
+	return  avformat_open_input(&pFormatCtx, filename.c_str(), avif, NULL);
 #endif
+
+    // I know that this is a strange place to put it
+
+    return ret;
 	
 }
 
@@ -599,18 +737,18 @@ int Libav::decodeNextAudio(void) throw (AVException*)
 					return bytes;
 			} while (packet.stream_index != avStream) ;
 			
-			int len;
+			// int len;
 			
 #if LIBAVFORMAT_VERSION_MAJOR  < 50
-			len = avcodec_decode_audio2(pCodecCtx, aBuffer, &numBytes, packet.data, packet.size);
+			avcodec_decode_audio2(pCodecCtx, aBuffer, &numBytes, packet.data, packet.size);
 #elseif LIBAVFORMAT_VERSION_MAJOR  < 54
-			len = avcodec_decode_audio3(pCodecCtx, aBuffer, &numBytes, &packet);
+			avcodec_decode_audio3(pCodecCtx, aBuffer, &numBytes, &packet);
 #else				
 			gotFrame = 0;
 			iFrame=avcodec_alloc_frame();
 			avcodec_get_frame_defaults(iFrame);
 			
-			len = avcodec_decode_audio4(pCodecCtx, iFrame, &gotFrame, &packet);
+			avcodec_decode_audio4(pCodecCtx, iFrame, &gotFrame, &packet);
 			//			NSLog (@"avcodec_decode_audio4 len: %d gotFrame: %d",len,gotFrame);
 			
 			if (gotFrame) {
@@ -770,6 +908,23 @@ int Libav::decodeNextFrame(void) throw (AVException*)
 	av_free_packet(&packet);
 #endif
 	return bytes;
+}
+
+void Libav::dumpMeta() {
+
+    for(std::map<std::string, std::string>::iterator iter=meta.begin(); iter!=meta.end(); ++iter) {
+        
+       //  std::pair<std::string, std::string> st = *iter;
+        
+        std::cout << (*iter).first << "=" << (*iter).second << std::endl;
+    }
+
+
+}
+
+std::string Libav::getMetaKey(std::string key)
+{
+    return meta[key];
 }
 
 std::string Libav::getFilename(void) {

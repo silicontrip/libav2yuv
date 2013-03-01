@@ -8,6 +8,19 @@
 #import "LibavWaveWriter.h"
 
 
+void identifyVideo(std::vector<AVObject *> edlList) throw (AVException)
+{
+    Libav *lav;
+    std::vector<AVObject *>::iterator file;
+    for (file=edlList.begin(); file != edlList.end(); ++file)
+    {
+        lav = dynamic_cast<Libav *>(*file);
+     
+        lav->dumpMeta();
+        
+    }
+
+}
 
 // wave writer
 void processAudio (Libav2yuvArguments options, std::vector<AVObject *> edlList) throw (AVException)
@@ -213,13 +226,18 @@ int main(int argc, char *argv[])
 		
 		if (edlList.size() > 0 )
 		{
-			if (streamMode == AVMEDIA_TYPE_VIDEO) {
+            if (options.getIdentify()) {
+                identifyVideo(edlList);
+            } else if (streamMode == AVMEDIA_TYPE_VIDEO) {
 				processVideo(options,edlList);
-			} else {
-				// decode audio
+			} else  {
+	// decode audio
 				processAudio(options,edlList);
-			}
-		}
+            } 
+		} else {
+            std::cerr << "No Video to process.\nTry libav2yuv -h for help.\n";
+           //  options.usage();
+        }
 	} catch (AVException *e) {
 		std::cerr << "ERROR occurred: " << e->getMessage() << "\n";
 	}

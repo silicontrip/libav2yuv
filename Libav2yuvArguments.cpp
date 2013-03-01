@@ -12,6 +12,7 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv) throw (AVException
 	{
 		{"audio", no_argument, 0, 'w'},
 		{"interlace", required_argument, 0, 'I'},
+        {"identify", no_argument, 0, 'i'},
 		{"frameRate", required_argument, 0, 'F'},
 		{"format", required_argument, 0, 'f'},
 		{"aspect", required_argument, 0, 'A'},
@@ -42,11 +43,11 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv) throw (AVException
 	aspect.d = 0;
 	chroma = -1;
 	stream = -1;
-	
+	identify = 0;
 	
 	
 	while (c != -1) {
-		c = getopt_long (argc, argv, "wEcI:f:F:A:s:S:o:r:h",
+		c = getopt_long (argc, argv, "wEciI:f:F:A:s:S:o:r:h",
 						 legal_flags, &option_index);
 		
 		switch(c) {
@@ -58,6 +59,9 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv) throw (AVException
 				break;
 			case 'c':
 				convert=true;
+				break;
+            case 'i':
+				identify=true;
 				break;
 			case 'I':
 				switch (optarg[0]) {

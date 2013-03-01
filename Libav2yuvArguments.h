@@ -23,6 +23,7 @@ private:
 	bool extensions;
 	bool audio;
 	bool convert;
+    bool identify;
 	
 	int interlace;
 	y4m_ratio_t frameRate;
@@ -55,6 +56,7 @@ public:
 	bool getExtensions(void) { return extensions; }
 	bool getAudio(void) { return audio; }
 	bool getConvert(void) { return convert; }
+    bool getIdentify(void) { return identify; }
 	
 	bool hasInterlace(void) { return interlace != -1; }
 	bool hasChroma(void) { return chroma != -1; }

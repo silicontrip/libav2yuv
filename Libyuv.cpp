@@ -85,7 +85,7 @@ void Libyuv::setExtensions(int ext)
 int Libyuv::setOutputFilename(std::string filename) throw (AVException*)
 {
 	
-	fdOut = open(filename.c_str(),O_WRONLY|O_CREAT);
+	fdOut = open(filename.c_str(),O_WRONLY|O_CREAT,0644);
 	if (fdOut <0) 
 		throw new AVException("Unable to open output file",IO_ERROR);
 	return fdOut;

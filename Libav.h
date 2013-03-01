@@ -5,6 +5,7 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 #include <string>
+#include <map>
 
 #include "AVException.h"
 #include "AVObject.h"
@@ -21,6 +22,10 @@ protected:
 	AVCodec *pCodec;
 	AVPacket packet;
 	
+    std::map<std::string, std::string> meta;
+    
+   // typedef pair<std::string, std::string> metaDict;
+    
 	std::string lavFileName;
 	
 	int avStream;
@@ -38,6 +43,7 @@ protected:
     const char *av_get_media_type_string(enum AVMediaType );
     const char *av_get_colorrange(enum AVColorRange);
     const char *av_get_colorspace(enum AVColorSpace);
+    void initMeta(AVFormatContext *);
 
     
 	
@@ -50,4 +56,9 @@ public:
 	std::string getFilename(void);
 	int decodeNextAudio(void) throw (AVException*);
 	int decodeNextFrame(void) throw (AVException*);
+    
+    std::string getMetaKey(std::string);
+    void dumpMeta();
+
+    
 };
