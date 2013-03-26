@@ -15,16 +15,16 @@ LibavWaveWriter::LibavWaveWriter() throw (AVException*)
 
 	oc->oformat = libavfmt;
 
-	AVCodec *codec = avcodec_find_encoder(libavfmt->audio_codec);
+	codec = avcodec_find_encoder(libavfmt->audio_codec);
 	if (!codec) {
 		throw new AVException("Codec not supported",FILE_ERROR);
 
 //		std::cerr << "codec not found\n";
 	}
-	
+    
 	audio_st = avformat_new_stream(oc, codec);
-
-	if (!audio_st) {
+	
+    if (!audio_st) {
 		throw new AVException("Could not alloc stream",FILE_ERROR);
 
 	//	std::cerr << "Could not alloc stream\n";
@@ -65,9 +65,9 @@ int LibavWaveWriter::writeHeader(void) throw (AVException *)
 {
 	
 	AVCodecContext *c = audio_st->codec;
-	
+	    
 	//	NSLog(@"avcodec_open2");
-	if (avcodec_open2(c, NULL, NULL) < 0) {
+	if (avcodec_open2(c, codec, NULL) < 0) {
 		throw new AVException("Codec not supported",FILE_ERROR);
 		std::cerr << "could not open codec\n";
 		return -1;

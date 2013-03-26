@@ -117,6 +117,7 @@ public:
 	virtual int getSampleSize(void);
 	virtual int getSampleChannels(void);
 	virtual AVSampleFormat getSampleFormat(void);
+    virtual void setRequestSampleFormat(AVSampleFormat sf);
 	virtual int getSamplesPerSecond(void);
 	virtual double getSamplesPerFrame(void);
 	void setColour(uint8_t, uint8_t, uint8_t);

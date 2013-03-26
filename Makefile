@@ -1,7 +1,7 @@
-OPTFLAGS=-O3
+OPTFLAGS=-g
 CFLAGS=$(OPTFLAGS) -I/usr/local/include -I/usr/local/include/mjpegtools -I/opt/local/include -D__STDC_CONSTANT_MACROS
 CC=g++
-LDFLAGS=-L/usr/X11/lib  -L/usr/local/lib -L/opt/local/lib
+LDFLAGS=-L/usr/X11/lib  -L/usr/local/lib 
 MJPEGFLAGS= -lmjpegutils
 FFMPEG_FLAGS= -lswscale -lavcodec -lavformat -lavutil
 

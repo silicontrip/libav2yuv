@@ -488,7 +488,7 @@ void Libav::initMeta(AVFormatContext *fmt_ctx) {
             const char * smpFmtName = av_get_sample_fmt_name(codec_ctx->sample_fmt);
 
             if (smpFmtName)
-                meta[std::string(key)]=std::string(av_get_sample_fmt_name(codec_ctx->sample_fmt));
+                meta[std::string(key)]=std::string(smpFmtName);
 		}
 		
 		
@@ -563,6 +563,12 @@ Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*
 	pCodecCtx = pFormatCtx->streams[avStream]->codec;
 	pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
 	
+    
+    // this is a hack to work around the unsupported S16P
+    if (pCodecCtx->sample_fmt == AV_SAMPLE_FMT_S16P)
+        pCodecCtx->request_sample_fmt = AV_SAMPLE_FMT_S16;
+
+    
 	// open codec context
 	if (this->openAVCodec() < 0)
 	{
@@ -681,6 +687,12 @@ void Libav::dumpFormat(void)
 	// single line information.  need more information;
 	// frame rate. Sample Aspect. In and Out.
 	std::cerr << "AV: " << lavFileName << " " << this->getWidth() << "x" << this->getHeight() << " FPS:" << this->getFrameRateAsString() <<  " chroma: " << this->getChromaSampling() << " IN:" << this->getInTimecode() << " OUT:" <<this->getOutTimecode() << "\n";
+}
+
+
+void Libav::setRequestSampleFormat(AVSampleFormat sf)
+{
+    pCodecCtx->request_sample_fmt = sf;
 }
 
 int Libav::decodeNextAudio(void) throw (AVException*)

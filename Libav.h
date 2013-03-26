@@ -31,7 +31,7 @@ protected:
 	int avStream;
 	int streamType;
 	
-	int16_t		*aBuffer;
+	int16_t *aBuffer;
 	
 	int openInputFile(std::string);
 	int findStreamInfo(void);
@@ -44,13 +44,10 @@ protected:
     const char *av_get_colorrange(enum AVColorRange);
     const char *av_get_colorspace(enum AVColorSpace);
     void initMeta(AVFormatContext *);
-
-    
 	
 public:
 	Libav(std::string,int,int) throw (AVException*);
 	~Libav();
-
 	
 	void dumpFormat(void);
 	std::string getFilename(void);
@@ -59,6 +56,6 @@ public:
     
     std::string getMetaKey(std::string);
     void dumpMeta();
-
+    void setRequestSampleFormat(AVSampleFormat sf);
     
 };

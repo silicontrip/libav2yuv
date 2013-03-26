@@ -17,7 +17,7 @@ protected:
 	AVFormatContext *oc;
 	AVOutputFormat *libavfmt;
 	AVStream *audio_st;
-	
+	AVCodec *codec;
 	
 public:
 	LibavWaveWriter() throw (AVException*);

@@ -25,14 +25,11 @@ void identifyVideo(std::vector<AVObject *> edlList) throw (AVException)
 // wave writer
 void processAudio (Libav2yuvArguments options, std::vector<AVObject *> edlList) throw (AVException)
 {
-	
+    
 	AVObject *lav = edlList.front();
-	
-	//libavWaveWriter *nfh=[[libavWaveWriter alloc] init];
-	
-	//NSLog(@"libavWaveWriter initWithFormat");
-	
+    
 	LibavWaveWriter nfh;
+    
 	nfh.setSampleFormat(lav->getSampleFormat());
 	nfh.setSampleChannels(lav->getSampleChannels());
 	
@@ -42,17 +39,16 @@ void processAudio (Libav2yuvArguments options, std::vector<AVObject *> edlList) 
 		nfh.setOutputFilename(options.getOutFile());
 	}
 	
-	
 	// need to decode the first frame to get the Samples per second.
-	
+    
 	if (lav->decodeNextAudio() >= 0) {
 		
 		nfh.setSamplesPerSecond(lav->getSamplesPerSecond());
-		
 		nfh.writeHeader();
 		nfh.writeFrameData(lav->getAVFrame());
-		
+        
 		std::vector<AVObject *>::iterator audio;
+
 		for (audio=edlList.begin(); audio != edlList.end(); ++audio)
 		{
 			

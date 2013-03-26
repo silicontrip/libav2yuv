@@ -388,6 +388,12 @@ AVSampleFormat AVObject::getSampleFormat(void)
 {
 	return sampleFormat; 
 }
+
+void AVObject::setRequestSampleFormat(AVSampleFormat sf)
+{
+    sampleFormat = sf;
+}
+
 int AVObject::getSamplesPerSecond(void)
 {
 	return samplesPerSecond; 
