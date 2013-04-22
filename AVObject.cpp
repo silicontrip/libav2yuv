@@ -792,6 +792,8 @@ void AVObject::setChromaSampling(PixelFormat samp)
 void AVObject::setChromaSamplingFromY4M(int y4mChroma) throw (AVException*)
 {
 	
+  //  std::cerr << "setChromaSampling: " << y4mChroma << "\n";
+    
 	switch (y4mChroma) {
 		case Y4M_CHROMA_420MPEG2: this->setChromaSampling(PIX_FMT_YUV420P); break;
 		case Y4M_CHROMA_422: this->setChromaSampling(PIX_FMT_YUV422P); break;
