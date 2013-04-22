@@ -47,6 +47,8 @@ void ChromaFilter::setAVSource (AVObject *s)
 void ChromaFilter::setAVChroma(PixelFormat convertMode) throw (AVException*)
 {
 
+   // std::cerr << "setAVChroma\n";
+
 	this->setChromaSampling(convertMode);
 	this->allocFrame();
 
@@ -57,6 +59,8 @@ void ChromaFilter::setAVChroma(PixelFormat convertMode) throw (AVException*)
 
 void ChromaFilter::setY4MChroma(int convertMode) throw (AVException*)
 {
+    
+   // std::cerr << "setY4MChroma\n";
 	this->setChromaSamplingFromY4M(convertMode);
 	this->setAVChroma(this->getChromaSampling());	
 }
@@ -78,6 +82,7 @@ int ChromaFilter::decodeNextFrame(void)
 
 void ChromaFilter::dumpFormat(void)
 {
-	source->dumpFormat();
 	std::cerr << "chroma conversion filter: " << this->getChromaSamplingName() << "\n";
+    source->dumpFormat();
+
 }
