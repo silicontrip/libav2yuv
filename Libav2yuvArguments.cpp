@@ -143,6 +143,10 @@ Libav2yuvArguments::Libav2yuvArguments(int argc, char** argv) throw (AVException
 		}
 	}
 	
+    if (convert && chroma == -1)
+    {
+        throw new AVException(std::string("Chroma conversion selected but no Chroma Mode."), INVALID_ARGUMENT);
+    }
 	
 	// std::cerr<<"optind: " << optind <<"\n";
 	
