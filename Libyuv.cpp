@@ -16,7 +16,7 @@ void Libyuv::init(void) throw (AVException*)
 	frameData[2]=NULL;
 	
 	this->setOutputFd(1); // STDOUT
-	
+	this->setInputFd(0); // STDIN
 }
 
 Libyuv::Libyuv() throw (AVException*)
@@ -95,6 +95,11 @@ int Libyuv::setOutputFilename(std::string filename) throw (AVException*)
 void Libyuv::setOutputFd(int fd) 
 {
 	fdOut = fd;
+}
+
+void Libyuv::setInputFd(int fd)
+{
+    fdIn = fd;
 }
 
 void Libyuv::setWidth(int w)
@@ -222,18 +227,10 @@ void Libyuv::setYUVFrameDataWithAVFrame(AVFrame *pFrame)
 	//std::cerr<<"memcpy0 " << w << " " << pFrame->linesize[0] << " " <<  frameData[0] << " " << std::hex  << pFrame->data[0] << "\n";
 
 	for (y=0; y<h; y++) {
-		//		mjpeg_debug ("copy %d bytes to: %x from: %x",w,dst[0]+y*w,(src->data[0])+y*src->linesize[0]);
-		//	NSLog(@"memcpy0 %d %d %x %x",w,pFrame->linesize[0],m[0],pFrame->data[0]);
-		
 		
 		memcpy(frameData[0]+y*w,(pFrame->data[0])+y*pFrame->linesize[0],w);
 		if (y<ch) {
-			
-			//	NSLog(@"memcpy1");
-			
 			memcpy(frameData[1]+y*cw,(pFrame->data[1])+y*pFrame->linesize[1],cw);
-			//	NSLog(@"memcpy2");
-			
 			memcpy(frameData[2]+y*cw,(pFrame->data[2])+y*pFrame->linesize[2],cw);
 		}
 	}
@@ -251,6 +248,32 @@ int Libyuv::writeHeader(void) throw (AVException*)
 		throw new AVException ("unable to write Y4M header",IO_ERROR);
 	
 	return write_error_code;
+}
+
+int Libyuv::readHeader(void) throw (AVException*)
+{
+	
+	int read_error_code = y4m_read_stream_header(fdOut, &yuvStreamInfo);
+	if (read_error_code == Y4M_OK)
+		fileHeaderRead = true;
+	else
+		throw new AVException ("unable to read Y4M header",IO_ERROR);
+	
+	return read_error_code;
+}
+
+int Libyuv::read(void) throw (AVException *)
+{
+    
+	y4m_init_frame_info( &yuvFrameInfo );
+
+    int read_error_code = y4m_read_frame(fdIn, yuvStreamInfo,&yuvFrameInfo,FrameData );
+
+    if (write_error_code != Y4M_OK)
+		throw new AVException ("unable to read Y4M frame",IO_ERROR);
+	
+	return write_error_code;
+    
 }
 
 int Libyuv::write(void) throw (AVException*)
