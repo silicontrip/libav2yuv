@@ -54,7 +54,8 @@ public:
     int readHeader(void) throw (AVException*);
 	int write(void) throw (AVException*);
     int read(void) throw (AVException*);
-
+    uint8_t **getYUVFrame(void);
+    
 	void deallocFrameData(void);
 
 };

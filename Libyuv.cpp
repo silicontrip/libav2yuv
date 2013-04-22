@@ -234,9 +234,13 @@ void Libyuv::setYUVFrameDataWithAVFrame(AVFrame *pFrame)
 			memcpy(frameData[2]+y*cw,(pFrame->data[2])+y*pFrame->linesize[2],cw);
 		}
 	}
-	
-	
 }
+
+uint8_t **Libyuv::getYUVFrame(void)
+{
+    return frameData;
+}
+
 
 int Libyuv::writeHeader(void) throw (AVException*)
 {
@@ -267,12 +271,12 @@ int Libyuv::read(void) throw (AVException *)
     
 	y4m_init_frame_info( &yuvFrameInfo );
 
-    int read_error_code = y4m_read_frame(fdIn, yuvStreamInfo,&yuvFrameInfo,FrameData );
+    int read_error_code = y4m_read_frame(fdIn, &yuvStreamInfo, &yuvFrameInfo,frameData );
 
-    if (write_error_code != Y4M_OK)
+    if (read_error_code != Y4M_OK)
 		throw new AVException ("unable to read Y4M frame",IO_ERROR);
 	
-	return write_error_code;
+	return read_error_code;
     
 }
 
