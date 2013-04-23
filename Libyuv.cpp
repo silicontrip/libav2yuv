@@ -1,6 +1,7 @@
 
 #include "Libyuv.h"
 
+
 void Libyuv::init(void) throw (AVException*)
 {
 	y4m_init_stream_info (&yuvStreamInfo);
@@ -257,11 +258,15 @@ int Libyuv::writeHeader(void) throw (AVException*)
 int Libyuv::readHeader(void) throw (AVException*)
 {
 	
-	int read_error_code = y4m_read_stream_header(fdOut, &yuvStreamInfo);
-	if (read_error_code == Y4M_OK)
+	int read_error_code = y4m_read_stream_header(fdIn, &yuvStreamInfo);
+  //  std::cerr<< "Error: " << read_error_code << " perr:" << strerror(errno) << "\n";
+
+    
+	
+    if (read_error_code == Y4M_OK)
 		fileHeaderRead = true;
 	else
-		throw new AVException ("unable to read Y4M header",IO_ERROR);
+		throw new AVException ("unable to read Y4M header: ",IO_ERROR);
 	
 	return read_error_code;
 }
