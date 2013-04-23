@@ -247,6 +247,10 @@ int Libyuv::writeHeader(void) throw (AVException*)
 {
 	
 	int write_error_code = y4m_write_stream_header(fdOut, &yuvStreamInfo);
+    
+    std::cerr<< "Error: " << write_error_code << " perr:" << strerror(errno) <<
+    " fdout: " << fdOut << "\n";
+    
 	if (write_error_code == Y4M_OK)
 		fileHeaderWritten = true;
 	else 
@@ -311,4 +315,17 @@ void Libyuv::deallocFrameData(void)
 	}
 }	
 
+void Libyuv::copyStreamInfo(Libyuv in)
+{
+    y4m_copy_stream_info( &yuvStreamInfo,
+                         &in.yuvStreamInfo);
+}
 
+void Libyuv::dumpInfo (void)
+{
+
+    std::cerr << "w: " << getWidth() << " h: " << getHeight() <<
+    " chroma: " << y4m_si_get_chroma(&yuvStreamInfo) <<
+    "\n";
+
+}

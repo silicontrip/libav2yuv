@@ -57,5 +57,9 @@ public:
     uint8_t **getYUVFrame(void);
     
 	void deallocFrameData(void);
+    void copyStreamInfo(Libyuv in);
+    
+    void dumpInfo();
+    
 
 };
