@@ -47,7 +47,7 @@ Libyuv::~Libyuv()
 	y4m_fini_frame_info(&yuvFrameInfo);
 	y4m_fini_stream_info(&yuvStreamInfo);
 	close (fdOut);
-	
+	close (fdIn);
 	this->deallocFrameData();
 }
 
@@ -248,8 +248,7 @@ int Libyuv::writeHeader(void) throw (AVException*)
 	
 	int write_error_code = y4m_write_stream_header(fdOut, &yuvStreamInfo);
     
-    std::cerr<< "Error: " << write_error_code << " perr:" << strerror(errno) <<
-    " fdout: " << fdOut << "\n";
+  //  std::cerr<< "Error: " << write_error_code << " perr:" << strerror(errno) << " fdout: " << fdOut << "\n";
     
 	if (write_error_code == Y4M_OK)
 		fileHeaderWritten = true;
@@ -315,10 +314,9 @@ void Libyuv::deallocFrameData(void)
 	}
 }	
 
-void Libyuv::copyStreamInfo(Libyuv in)
+void Libyuv::copyStreamInfo(Libyuv *in)
 {
-    y4m_copy_stream_info( &yuvStreamInfo,
-                         &in.yuvStreamInfo);
+    y4m_copy_stream_info( &yuvStreamInfo, &(in->yuvStreamInfo));
 }
 
 void Libyuv::dumpInfo (void)
@@ -326,6 +324,7 @@ void Libyuv::dumpInfo (void)
 
     std::cerr << "w: " << getWidth() << " h: " << getHeight() <<
     " chroma: " << y4m_si_get_chroma(&yuvStreamInfo) <<
+    " interlace: " << y4m_si_get_interlace(&yuvStreamInfo) <<
     "\n";
 
 }
