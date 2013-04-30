@@ -26,7 +26,8 @@ public:
 	
 	Libyuv() throw (AVException*);
 	~Libyuv();
-	Libyuv(int,int,AVRational,AVRational,PixelFormat) throw (AVException*);
+//	Libyuv(int,int,AVRational,AVRational,PixelFormat) throw (AVException*);
+	Libyuv(int,int,y4m_ratio_t,y4m_ratio_t,int) throw (AVException*);
 
 	
 	void allocFrameData(void) throw (AVException*);
@@ -40,11 +41,11 @@ public:
 	void setInterlacing(int);
 	void setInterlaceAndOrder(int, int);
 	void setChromaSampling (int );
-	void setChromaSamplingFromAV(PixelFormat) throw (AVException*);
+	// void setChromaSamplingFromAV(PixelFormat) throw (AVException*);
 	void setFrameRate(y4m_ratio_t);
-	void setFrameRateAVRational(AVRational);
+	// void setFrameRateAVRational(AVRational);
 	void setSampleAspect(y4m_ratio_t );
-	void setSampleAspectAVRational(AVRational);
+	// void setSampleAspectAVRational(AVRational);
 	int getHeight(void);
 	int getWidth(void);
 	int getChromaHeight(void);

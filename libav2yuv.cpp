@@ -6,6 +6,7 @@
 #import "ChromaFilter.h"
 #import "EdlListFilter.h"
 #import "LibavWaveWriter.h"
+#import "AVYUVAdaptor.h"
 
 
 void identifyVideo(std::vector<AVObject *> edlList) throw (AVException)
@@ -94,9 +95,9 @@ void processVideo (Libav2yuvArguments options, std::vector<AVObject *> edlList) 
 	
 	Libyuv yuv(lav->getWidth(),
 			   lav->getHeight(),
-			   lav->getSampleAspect(),
-			   lav->getFrameRate(),
-			   lav->getChromaSampling());
+			   AVYUVAdaptor::AVRationalToY4mRatio(lav->getSampleAspect()),
+			   AVYUVAdaptor::AVRationalToY4mRatio(lav->getFrameRate()),
+			   AVYUVAdaptor::AVPixelFormatToYUVChroma(lav->getChromaSampling()));
 	
 	if (options.getExtensions())
 	{

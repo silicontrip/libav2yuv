@@ -5,7 +5,7 @@ LDFLAGS=-L/usr/X11/lib  -L/usr/local/lib
 MJPEGFLAGS= -lmjpegutils
 FFMPEG_FLAGS= -lswscale -lavcodec -lavformat -lavutil
 
-OBJ=AVObject.o ChromaFilter.o LibavWaveWriter.o EdlListFilter.o Libav.o Libyuv.o Libav2yuvArguments.o libav2yuv.o DissolveTransition.o AVException.o Transition.o
+OBJ=AVObject.o ChromaFilter.o LibavWaveWriter.o EdlListFilter.o Libav.o Libyuv.o Libav2yuvArguments.o libav2yuv.o DissolveTransition.o AVException.o Transition.o AVYUVAdaptor.o
 
 all: libav2yuv
 

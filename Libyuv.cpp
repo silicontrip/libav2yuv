@@ -27,6 +27,7 @@ Libyuv::Libyuv() throw (AVException*)
 	//NSLog(@"< libyuv init");
 }
 
+/*
 Libyuv::Libyuv(int w, int h, AVRational sa, AVRational fr, PixelFormat pf) throw (AVException*)
 {
 
@@ -41,6 +42,22 @@ Libyuv::Libyuv(int w, int h, AVRational sa, AVRational fr, PixelFormat pf) throw
 	
 	
 }
+*/
+Libyuv::Libyuv(int w, int h, y4m_ratio_t sa, y4m_ratio_t fr, int pf) throw (AVException*)
+{
+    
+	this->init();
+	this->setWidth(w);
+	this->setHeight(h);
+	this->setSampleAspect(sa);
+	this->setFrameRate(fr);
+	this->setChromaSampling(pf);
+	
+	this->allocFrameData();
+	
+	
+}
+
 
 Libyuv::~Libyuv()
 {
@@ -139,6 +156,7 @@ void Libyuv::setChromaSampling (int ch)
 	y4m_si_set_chroma(&yuvStreamInfo,ch); 
 }
 
+/*
 void Libyuv::setChromaSamplingFromAV(PixelFormat pix_fmt) throw (AVException*)
 {
 	switch (pix_fmt) 
@@ -156,6 +174,7 @@ void Libyuv::setChromaSamplingFromAV(PixelFormat pix_fmt) throw (AVException*)
 			break;	
 	}
 }
+*/
 
 void Libyuv::setFrameRate(y4m_ratio_t fr)
 { 
@@ -168,6 +187,7 @@ void Libyuv::setFrameRate(y4m_ratio_t fr)
 	y4m_si_set_framerate(&yuvStreamInfo, fr); 
 }
 
+/*
 void Libyuv::setFrameRateAVRational(AVRational rational)
 {
 	y4m_ratio_t fr;
@@ -176,7 +196,7 @@ void Libyuv::setFrameRateAVRational(AVRational rational)
 	fr.n = rational.num;
 	this->setFrameRate(fr);
 }
-
+*/
 void Libyuv::setSampleAspect(y4m_ratio_t sa)
 { 
 	
@@ -189,6 +209,7 @@ void Libyuv::setSampleAspect(y4m_ratio_t sa)
 	y4m_si_set_sampleaspect(&yuvStreamInfo, sa); 
 }
 
+/*
 void Libyuv::setSampleAspectAVRational(AVRational rational)
 {
 	y4m_ratio_t sa;
@@ -197,7 +218,7 @@ void Libyuv::setSampleAspectAVRational(AVRational rational)
 	sa.n = rational.num;
 	this->setSampleAspect(sa);
 }
-
+*/
 int Libyuv::getHeight(void) 
 { 
 	return y4m_si_get_plane_height(&yuvStreamInfo,0); 
@@ -224,15 +245,25 @@ void Libyuv::setYUVFrameDataWithAVFrame(AVFrame *pFrame)
 	int ch = this->getChromaHeight();
 	int cw = this->getChromaWidth();
 
+    int cch = 0,cchh = 0;
+    int ls0 =0, ls1=0;
+    
 	//fprintf(stderr, " memcpy0 %d %d %x %x\n",w,pFrame->linesize[0],frameData[0],pFrame->data[0]);
 	//std::cerr<<"memcpy0 " << w << " " << pFrame->linesize[0] << " " <<  frameData[0] << " " << std::hex  << pFrame->data[0] << "\n";
 
+    // check that AVFrame matches the YUVFrame
+    
+    
 	for (y=0; y<h; y++) {
 		
-		memcpy(frameData[0]+y*w,(pFrame->data[0])+y*pFrame->linesize[0],w);
+		memcpy(frameData[0]+cch,(pFrame->data[0])+ls0,w);
+        cch += w;
+        ls0 += pFrame->linesize[0];
 		if (y<ch) {
-			memcpy(frameData[1]+y*cw,(pFrame->data[1])+y*pFrame->linesize[1],cw);
-			memcpy(frameData[2]+y*cw,(pFrame->data[2])+y*pFrame->linesize[2],cw);
+			memcpy(frameData[1]+cchh,(pFrame->data[1])+ls1,cw);
+			memcpy(frameData[2]+cchh,(pFrame->data[2])+ls1,cw);
+            cchh += cw;
+            ls1 += pFrame->linesize[1];
 		}
 	}
 }
