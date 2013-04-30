@@ -39,7 +39,7 @@ public:
 	void setWidth(int);
 	void setHeight(int); 
 	void setInterlacing(int);
-	void setInterlaceAndOrder(int, int);
+	//void setInterlaceAndOrder(int, int);
 	void setChromaSampling (int );
 	// void setChromaSamplingFromAV(PixelFormat) throw (AVException*);
 	void setFrameRate(y4m_ratio_t);

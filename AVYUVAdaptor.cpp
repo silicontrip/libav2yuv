@@ -48,5 +48,18 @@ void AVYUVAdaptor::copyAVFrameToY4MFrame (uint8_t ** frameData, AVFrame *pFrame)
 			memcpy(frameData[2]+y*cw,(pFrame->data[2])+y*pFrame->linesize[2],cw);
 		}
 	}
+}
 
+int AVYUVAdaptor::interlaceAndOrderToY4M (int i, int tff)
+{
+	
+	if (i) {
+		if (tff) {
+			return(Y4M_ILACE_TOP_FIRST);
+		} else {
+			return(Y4M_ILACE_BOTTOM_FIRST);
+		}
+	} else {
+		return(Y4M_ILACE_NONE);
+	}
 }

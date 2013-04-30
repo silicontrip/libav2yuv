@@ -14,8 +14,9 @@ extern "C" {
 class AVYUVAdaptor {
 
 public:
-static int AVPixelFormatToYUVChroma(PixelFormat) throw (AVException*);
-static const y4m_ratio_t AVRationalToY4mRatio (AVRational);
-static void copyAVFrameToY4MFrame (uint8_t ** , AVFrame *);
+    static int AVPixelFormatToYUVChroma(PixelFormat) throw (AVException*);
+    static const y4m_ratio_t AVRationalToY4mRatio (AVRational);
+    static void copyAVFrameToY4MFrame (uint8_t ** , AVFrame *);
+    static int interlaceAndOrderToY4M (int i, int tff);
 
 };
