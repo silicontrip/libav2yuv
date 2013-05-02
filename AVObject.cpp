@@ -168,9 +168,9 @@ bool AVObject::hasChromaSampling(void) {
 	return frameChromaSampling != PIX_FMT_NONE;
 }
 
-const char * AVObject::getChromaSamplingName(void)
+const std::string AVObject::getChromaSamplingName(void)
 {
-	return av_get_pix_fmt_name(this->getChromaSampling());
+	return std::string(av_get_pix_fmt_name(this->getChromaSampling()));
 }
 
 PixelFormat AVObject::getChromaSampling(void)
@@ -845,9 +845,10 @@ AVFrame * AVObject::decodeAndGetNextAVFrame(void)
 	return this->getAVFrame(); 
 }
 
+
 void AVObject::dumpFormat(void)
 {
-	std::cerr << "Generator AVObject: "  << this->getWidth() << "x" << this->getHeight() << " FPS:" << this->getFrameRateAsString() << " chroma: " << this->getChromaSampling() << " IN:" << this->getInTimecode() << " OUT:" <<this->getOutTimecode() << "\n";
+	std::cerr << "Generator AVObject: "  << this->getWidth() << "x" << this->getHeight() << " FPS:" << this->getFrameRateAsString() << " chroma:" << this->getChromaSamplingName() << " IN:" << this->getInTimecode() << " OUT:" <<this->getOutTimecode() << "\n";
 	
 }
 

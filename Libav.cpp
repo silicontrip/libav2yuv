@@ -686,7 +686,7 @@ void Libav::dumpFormat(void)
 #endif
 	// single line information.  need more information;
 	// frame rate. Sample Aspect. In and Out.
-	std::cerr << "AV: " << lavFileName << " " << this->getWidth() << "x" << this->getHeight() << " FPS:" << this->getFrameRateAsString() <<  " chroma: " << this->getChromaSampling() << " IN:" << this->getInTimecode() << " OUT:" <<this->getOutTimecode() << "\n";
+	std::cerr << "AV:" << lavFileName << " " << this->getWidth() << "x" << this->getHeight() << " FPS:" << this->getFrameRateAsString() <<  " chroma:" << this->getChromaSamplingName() << " IN:" << this->getInTimecode() << " OUT:" <<this->getOutTimecode() << "\n";
 }
 
 
@@ -924,14 +924,9 @@ int Libav::decodeNextFrame(void) throw (AVException*)
 
 void Libav::dumpMeta() {
 
-    for(std::map<std::string, std::string>::iterator iter=meta.begin(); iter!=meta.end(); ++iter) {
-        
-       //  std::pair<std::string, std::string> st = *iter;
-        
+    for(std::map<std::string, std::string>::iterator iter=meta.begin(); iter!=meta.end(); ++iter)
         std::cout << (*iter).first << "=" << (*iter).second << std::endl;
-    }
-
-
+    
 }
 
 std::string Libav::getMetaKey(std::string key)

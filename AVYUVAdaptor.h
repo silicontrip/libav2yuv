@@ -4,6 +4,7 @@ extern "C" {
 #include <mpegconsts.h>
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
+#include <libavutil/pixdesc.h>
 }
 
 #include <string>
@@ -14,6 +15,7 @@ extern "C" {
 class AVYUVAdaptor {
 
 public:
+    // should be Y4M not YUV 
     static int AVPixelFormatToYUVChroma(PixelFormat) throw (AVException*);
     static const y4m_ratio_t AVRationalToY4mRatio (AVRational);
     static void copyAVFrameToY4MFrame (uint8_t ** , AVFrame *);

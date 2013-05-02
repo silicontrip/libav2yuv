@@ -91,7 +91,7 @@ public:
 	virtual int getSampleAspectNum(void);
 	virtual int getSampleAspectDen(void);
 	virtual bool hasChromaSampling(void);
-	virtual const char * getChromaSamplingName(void);
+	virtual const std::string getChromaSamplingName(void);
 	virtual PixelFormat getChromaSampling(void);
 	//virtual bool hasInterlace(void);
 	virtual int getInterlace(void);
