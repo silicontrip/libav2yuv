@@ -28,6 +28,7 @@ protected:
     
 	std::string lavFileName;
 	
+	int isOpen;
 	int avStream;
 	int streamType;
 	
