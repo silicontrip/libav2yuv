@@ -612,7 +612,8 @@ Libav::~Libav()
 {
 	//std::cerr << ">> Libav Destructor\n";
 	if (pFrame)
-		avcodec_free_frame(&pFrame);
+		av_frame_free(&pFrame);
+		//avcodec_free_frame(&pFrame);
 	avcodec_close(pCodecCtx);
 	if (pFormatCtx)
 #if LIBAVFORMAT_VERSION_MAJOR  < 53
@@ -861,7 +862,8 @@ int Libav::decodeNextAudio(void) throw (AVException*)
 			}
 		}
 		
-		avcodec_free_frame(&iFrame);
+		//avcodec_free_frame(&iFrame);
+		av_frame_free(&iFrame);
 		av_free(iFrame);
 		av_free_packet(&packet);
 		
