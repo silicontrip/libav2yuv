@@ -521,9 +521,15 @@ Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*
 	frameCounter = 0;
 	avStream = -1;
 	streamType = st;
+	isOpen = 0;
 	
 	lavFileName =std::string(filename);
 	
+}
+
+Libav::open () throw (AVException*)
+{
+
 	av_register_all();
 
 	if (this->openInputFile(filename) < 0)
@@ -540,7 +546,7 @@ Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*
 		//std::cerr<<"initWithFile: avformat_find_stream_info failed\n";
 		// another constructor error.
 	}
-    
+	
     //
     
    // this->initMeta(fmt_ctx);
@@ -580,7 +586,8 @@ Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*
 	
 //	std::cerr << filename << " pframe addr: " << pFrame << "\n";
 	
-	pFrame=avcodec_alloc_frame();
+	//pFrame=avcodec_alloc_frame();
+	pFrame=av_frame_alloc();
 	
 //	std::cerr << filename << " pframe addr: " << pFrame << "\n";
 
@@ -598,6 +605,7 @@ Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*
 	this->setWidth(pCodecCtx->width);
 	this->setSampleFormat(pCodecCtx->sample_fmt);
 	this->setSampleChannels(pCodecCtx->channels);
+	this->isOpen = 1;
 }
 
 Libav::~Libav()
@@ -707,9 +715,13 @@ int Libav::decodeNextAudio(void) throw (AVException*)
 	//NSLog(@"> [libav decodeNextAudio] sample counter: %d",sampleCounter);
 	// there must be another way to initialise the audio decoder than this sampleCounter test.
 	
+	if (!this->isOpen)
+		this->open();
+	
 	if (sampleCounter == 0)
 	{
-		pFrame=avcodec_alloc_frame();
+		//pFrame=avcodec_alloc_frame();
+		pFrame=av_frame_alloc();
 		if (!pFrame)
 			throw new AVException ("Unable to allocate AUDIO buffer",MEMORY_ALLOCATION_ERROR);
 		avcodec_get_frame_defaults(pFrame);		
@@ -757,7 +769,8 @@ int Libav::decodeNextAudio(void) throw (AVException*)
 			avcodec_decode_audio3(pCodecCtx, aBuffer, &numBytes, &packet);
 #else				
 			gotFrame = 0;
-			iFrame=avcodec_alloc_frame();
+			//iFrame=avcodec_alloc_frame();
+			iFrame=av_frame_alloc();
 			avcodec_get_frame_defaults(iFrame);
 			
 			avcodec_decode_audio4(pCodecCtx, iFrame, &gotFrame, &packet);
@@ -869,6 +882,9 @@ int Libav::decodeNextFrame(void) throw (AVException*)
 	int bytes;
 	int frameFinished;
 	
+	if (!this->isOpen)
+		this->open();
+	
 	if (this->compareRange(frameCounter) > 0)
 		return -1;
 	
@@ -879,9 +895,10 @@ int Libav::decodeNextFrame(void) throw (AVException*)
 			// Find our specified stream
 			do {
 				bytes = av_read_frame(pFormatCtx, &packet);
+				// this could mean end of file
 				if (bytes < 0) {
-					throw new AVException ("unable to read frame",IO_ERROR);
-				//	return bytes;
+				//	throw new AVException ("unable to read frame",IO_ERROR);
+					return bytes;
 				}
 			} while (packet.stream_index != avStream) ;
 			

@@ -28,7 +28,9 @@ AVObject::AVObject(int samples, int ch, AVSampleFormat sf, int sps) throw (AVExc
 	
 	// AUDIO
 	
-	pFrame=avcodec_alloc_frame();
+	// TODO: wrap this in a VERSION #if
+	//pFrame=avcodec_alloc_frame();
+	pFrame=av_frame_alloc();
 	avcodec_get_frame_defaults(pFrame);
 	
 	this->setSampleChannels(ch);
@@ -74,7 +76,8 @@ AVObject::AVObject(PixelFormat ch, int h, int w) throw (AVException*)
 void AVObject::allocFrame(void) throw (AVException*)
 {
 	
-	pFrame=avcodec_alloc_frame();
+	//pFrame=avcodec_alloc_frame();
+	pFrame=av_frame_alloc();
 	
 	if (pFrame)
 	{

@@ -108,7 +108,9 @@ int LibavWaveWriter::writeFrameData(AVFrame *pFrame) throw (AVException*)
 	AVCodecContext *c = audio_st->codec;
 	AVPacket pkt = { 0 }; // data and size must be 0;
     int got_packet;
-    AVFrame *frame = avcodec_alloc_frame();
+	// I'm not sure which version this changed
+    //AVFrame *frame = avcodec_alloc_frame();
+    AVFrame *frame = av_frame_alloc();
 	int status;
 	
 	frame->nb_samples = pFrame->nb_samples;
