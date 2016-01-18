@@ -31,7 +31,8 @@ AVObject::AVObject(int samples, int ch, AVSampleFormat sf, int sps) throw (AVExc
 	// TODO: wrap this in a VERSION #if
 	//pFrame=avcodec_alloc_frame();
 	pFrame=av_frame_alloc();
-	avcodec_get_frame_defaults(pFrame);
+	//avcodec_get_frame_defaults(pFrame);
+	av_frame_unref(pFrame);
 	
 	this->setSampleChannels(ch);
 	this->setSampleFormat(sf);

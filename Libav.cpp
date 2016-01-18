@@ -726,7 +726,8 @@ int Libav::decodeNextAudio(void) throw (AVException*)
 		pFrame=av_frame_alloc();
 		if (!pFrame)
 			throw new AVException ("Unable to allocate AUDIO buffer",MEMORY_ALLOCATION_ERROR);
-		avcodec_get_frame_defaults(pFrame);		
+		//avcodec_get_frame_defaults(pFrame);		
+		av_frame_unref(pFrame);
 	}
 	
 	// we don't know SPS until we decode the first frame. 
@@ -773,7 +774,8 @@ int Libav::decodeNextAudio(void) throw (AVException*)
 			gotFrame = 0;
 			//iFrame=avcodec_alloc_frame();
 			iFrame=av_frame_alloc();
-			avcodec_get_frame_defaults(iFrame);
+			//avcodec_get_frame_defaults(iFrame);
+			av_frame_unref(iFrame);
 			
 			avcodec_decode_audio4(pCodecCtx, iFrame, &gotFrame, &packet);
 			//			NSLog (@"avcodec_decode_audio4 len: %d gotFrame: %d",len,gotFrame);
