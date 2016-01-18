@@ -919,7 +919,8 @@ AVObject::~AVObject() {
 	// std::cerr << ">> AVObject destructor\n";
 	
 	if (pFrame)
-		avcodec_free_frame(&pFrame);
+		av_free_frame(&pFrame);
+		//avcodec_free_frame(&pFrame);
 	
 	if (pictureBuffer)
 		av_free(pictureBuffer);
