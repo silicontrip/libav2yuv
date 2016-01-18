@@ -38,6 +38,7 @@ protected:
 	int findStreamInfo(void);
 	int findStream(int,int);
 	int openAVCodec(void);
+	void open() throw (AVException*);
 
     const char *av_get_codecid(enum AVCodecID);
     const char *av_get_field_order(enum AVFieldOrder);

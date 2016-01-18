@@ -398,7 +398,7 @@ void Libav::initMeta(AVFormatContext *fmt_ctx) {
     if (container[0] == '\0') {
 		meta[std::string("FORMAT_NAME")] = std::string(fmt_ctx->iformat->name);
 	} else {
-        meta[std::string("FORMAT_NAME")] = std::string(container);
+		meta[std::string("FORMAT_NAME")] = std::string(container);
 	}
 
     std::stringstream numberStreams;
@@ -528,14 +528,14 @@ Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*
 	
 }
 
-Libav::open () throw (AVException*)
+void Libav::open () throw (AVException*)
 {
 
 	av_register_all();
 
-	if (this->openInputFile(filename) < 0)
+	if (this->openInputFile(lavFileName) < 0)
 	{
-		throw new AVException("Failed to open file: " + filename, IO_ERROR);
+		throw new AVException("Failed to open file: " + lavFileName, IO_ERROR);
 		// std::cerr<<"initWithFile: avformat_open_input failed to open: "<<filename << "\n";
 		// how do I deal with constructor errors.
 	}
@@ -555,9 +555,9 @@ Libav::open () throw (AVException*)
     this->initMeta(pFormatCtx);
 
     
-	if ((avStream = this->findStream(streamNumber,streamType)) == -1) {
+	if ((avStream = this->findStream(avStream,streamType)) == -1) {
         std::stringstream exception;
-        exception << "couldn't find requested AV stream: " << streamNumber;
+        exception << "couldn't find requested AV stream: " << avStream;
 
 		throw new AVException(exception.str(), FILE_ERROR);
 
