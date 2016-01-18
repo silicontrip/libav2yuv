@@ -379,22 +379,23 @@ const char *Libav::av_get_colorspace(enum AVColorSpace colorspace)
 void Libav::initMeta(AVFormatContext *fmt_ctx) {
     
     AVDictionaryEntry *tag = NULL;
-    char *container = NULL;
+    char container[4];
 
+	container[0] = '\0';
     while ((tag = av_dict_get(fmt_ctx->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
         meta[std::string(tag->key)] =  std::string(tag->value);
 		if (strcmp(tag->key,"major_brand")==0) {
             // mp4 or mov
 			if (strcmp(tag->value,"qt")==0) {
-                container = "mov";
+				strcpy(container,"mov");
 			}
 			if (strcmp(tag->value,"mp42")==0) {
-                container = "mp4";
+				strcpy(container,"mp4");
 			}
 		}
 	}
 
-    if (container == NULL) {
+    if (container[0] == '\0') {
 		meta[std::string("FORMAT_NAME")] = std::string(fmt_ctx->iformat->name);
 	} else {
         meta[std::string("FORMAT_NAME")] = std::string(container);
