@@ -47,11 +47,15 @@ void ChromaFilter::setAVSource (AVObject *s)
 void ChromaFilter::setAVChroma(PixelFormat convertMode) throw (AVException*)
 {
 
-   // std::cerr << "setAVChroma\n";
+   std::cerr << "setAVChroma from " <<
+    av_get_pix_fmt_name(source->getChromaSampling()) << " to " <<
+    av_get_pix_fmt_name(convertMode) << "\n";
 
 	this->setChromaSampling(convertMode);
 	this->allocFrame();
 
+    
+    
 	imgConvertCtx = sws_getContext(this->getWidth(), this->getHeight(), source->getChromaSampling(), 
 								   this->getWidth(), this->getHeight(), convertMode, SWS_BICUBIC, NULL, NULL, NULL); 
 
