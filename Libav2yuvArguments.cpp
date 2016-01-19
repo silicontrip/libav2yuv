@@ -180,6 +180,7 @@ void Libav2yuvArguments::usage(void)
 	"-o|--out <outputfile>\twrite to file rather than stdout\n" <<
 	"-r|--range [[[HH:]MM:]SS:]FF-[[[HH:]MM:]SS:]FF playout only these frames\n" <<
 	"-E|--extension\t\tenable y4m extensions (may be required if source file is not a common format)\n" <<
+	"-i|--identify\t\tidentify the input file format.\n" <<
 	"-h|--help\t\tprint this help\n" ;
 }	
 
