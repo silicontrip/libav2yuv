@@ -52,8 +52,11 @@ void ChromaFilter::setAVSource (AVObject *s)
 void ChromaFilter::setAVChroma(PixelFormat convertMode) throw (AVException*)
 {
 
-	// something is causeing av_get_pix_fmt_name to crash (or return null)
-   std::cerr << "setAVChroma from " <<
+	// something is causing av_get_pix_fmt_name to crash (or return null)
+
+	source->open();
+
+	std::cerr << "setAVChroma from " <<
 	av_get_pix_fmt_name(source->getChromaSampling()) << 
 	" to " <<
 	av_get_pix_fmt_name(convertMode) << "\n";
