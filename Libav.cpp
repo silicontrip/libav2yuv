@@ -531,9 +531,11 @@ Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*
 void Libav::open () throw (AVException*)
 {
 
+	if (this->isOpen) 
+		return;
 	av_register_all();
 
-	//std::cerr << "libav::open\n";
+	//std::cerr << "libav::open(" << lavFileName << ")\n";
 
 	if (this->openInputFile(lavFileName) < 0)
 	{
