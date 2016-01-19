@@ -209,6 +209,7 @@ int main(int argc, char *argv[])
 				//	{
 				if (options.getConvert())
 				{
+					lav->open();
 					ChromaFilter * chromaConverter = new ChromaFilter(lav,options.getChroma());
 					//	if (chromaConverter != nil) {
 					//[edlList addObject:chromaConverter];
