@@ -533,6 +533,8 @@ void Libav::open () throw (AVException*)
 
 	av_register_all();
 
+	//std::cerr << "libav::open\n";
+
 	if (this->openInputFile(lavFileName) < 0)
 	{
 		throw new AVException("Failed to open file: " + lavFileName, IO_ERROR);
@@ -689,6 +691,11 @@ int Libav::openAVCodec(void)
 
 void Libav::dumpFormat(void) 
 {	
+
+        if (!this->isOpen)
+                this->open();
+
+
 #if LIBAVFORMAT_VERSION_MAJOR  < 53
 //	dump_format(pFormatCtx, 0, this->getFilename().c_str(), 0);
 #else
@@ -946,6 +953,10 @@ int Libav::decodeNextFrame(void) throw (AVException*)
 
 void Libav::dumpMeta() {
 
+        if (!this->isOpen)
+                this->open();
+
+	
     for(std::map<std::string, std::string>::iterator iter=meta.begin(); iter!=meta.end(); ++iter)
         std::cout << (*iter).first << "=" << (*iter).second << std::endl;
     

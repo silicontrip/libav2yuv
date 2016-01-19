@@ -13,6 +13,11 @@ ChromaFilter::ChromaFilter(AVObject *s, int convertMode) throw (AVException*)
 	this->setY4MChroma(convertMode);
 }
 
+void ChromaFilter::open(void) 
+{
+	source->open();
+}
+
 ChromaFilter::~ChromaFilter()
 {
 	if (imgConvertCtx)
@@ -47,9 +52,11 @@ void ChromaFilter::setAVSource (AVObject *s)
 void ChromaFilter::setAVChroma(PixelFormat convertMode) throw (AVException*)
 {
 
+	// something is causeing av_get_pix_fmt_name to crash (or return null)
    std::cerr << "setAVChroma from " <<
-    av_get_pix_fmt_name(source->getChromaSampling()) << " to " <<
-    av_get_pix_fmt_name(convertMode) << "\n";
+	av_get_pix_fmt_name(source->getChromaSampling()) << 
+	" to " <<
+	av_get_pix_fmt_name(convertMode) << "\n";
 
 	this->setChromaSampling(convertMode);
 	this->allocFrame();

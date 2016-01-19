@@ -47,3 +47,8 @@ void Transition::setFrames(unsigned int f)
 {
 	frames = f;
 }
+
+void Transition::open (void) {
+	fromAV->open();
+	toAV->open();
+}

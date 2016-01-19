@@ -20,5 +20,6 @@ public:
 	
 	virtual int decodeNextFrame(void) =0;
 	virtual void dumpFormat(void) =0;
+	virtual void open(void);
 };
 

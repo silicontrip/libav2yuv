@@ -27,6 +27,8 @@ private:
 	void setAVChroma(PixelFormat) throw (AVException*);
 	void setY4MChroma(int) throw (AVException*);
 
+	void open(void);
+
 	int decodeNextFrame(void);
 	void dumpFormat(void);
 	

@@ -74,6 +74,8 @@ AVObject::AVObject(PixelFormat ch, int h, int w) throw (AVException*)
 	
 }
 
+void AVObject::open(void) {;} 
+
 void AVObject::allocFrame(void) throw (AVException*)
 {
 	
@@ -737,6 +739,8 @@ void AVObject::setInOutTimecode(std::string tc) throw (AVException*)
 
 void AVObject::setFrameRate(AVRational rational) throw (AVException*)
 {	
+
+	//std::cerr << "AVObject::set frame rate\n";
 	
 	try {
 		
