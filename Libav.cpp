@@ -379,25 +379,26 @@ const char *Libav::av_get_colorspace(enum AVColorSpace colorspace)
 void Libav::initMeta(AVFormatContext *fmt_ctx) {
     
     AVDictionaryEntry *tag = NULL;
-    char *container = NULL;
+    char container[4];
 
+	container[0] = '\0';
     while ((tag = av_dict_get(fmt_ctx->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
         meta[std::string(tag->key)] =  std::string(tag->value);
 		if (strcmp(tag->key,"major_brand")==0) {
             // mp4 or mov
 			if (strcmp(tag->value,"qt")==0) {
-                container = "mov";
+				strcpy(container,"mov");
 			}
 			if (strcmp(tag->value,"mp42")==0) {
-                container = "mp4";
+				strcpy(container,"mp4");
 			}
 		}
 	}
 
-    if (container == NULL) {
+    if (container[0] == '\0') {
 		meta[std::string("FORMAT_NAME")] = std::string(fmt_ctx->iformat->name);
 	} else {
-        meta[std::string("FORMAT_NAME")] = std::string(container);
+		meta[std::string("FORMAT_NAME")] = std::string(container);
 	}
 
     std::stringstream numberStreams;
@@ -527,14 +528,18 @@ Libav::Libav(std::string filename, int st, int streamNumber) throw (AVException*
 	
 }
 
-Libav::open () throw (AVException*)
+void Libav::open () throw (AVException*)
 {
 
+	if (this->isOpen) 
+		return;
 	av_register_all();
 
-	if (this->openInputFile(filename) < 0)
+	//std::cerr << "libav::open(" << lavFileName << ")\n";
+
+	if (this->openInputFile(lavFileName) < 0)
 	{
-		throw new AVException("Failed to open file: " + filename, IO_ERROR);
+		throw new AVException("Failed to open file: " + lavFileName, IO_ERROR);
 		// std::cerr<<"initWithFile: avformat_open_input failed to open: "<<filename << "\n";
 		// how do I deal with constructor errors.
 	}
@@ -554,9 +559,9 @@ Libav::open () throw (AVException*)
     this->initMeta(pFormatCtx);
 
     
-	if ((avStream = this->findStream(streamNumber,streamType)) == -1) {
+	if ((avStream = this->findStream(avStream,streamType)) == -1) {
         std::stringstream exception;
-        exception << "couldn't find requested AV stream: " << streamNumber;
+        exception << "couldn't find requested AV stream: " << avStream;
 
 		throw new AVException(exception.str(), FILE_ERROR);
 
@@ -586,7 +591,8 @@ Libav::open () throw (AVException*)
 	
 //	std::cerr << filename << " pframe addr: " << pFrame << "\n";
 	
-	pFrame=avcodec_alloc_frame();
+	//pFrame=avcodec_alloc_frame();
+	pFrame=av_frame_alloc();
 	
 //	std::cerr << filename << " pframe addr: " << pFrame << "\n";
 
@@ -611,7 +617,8 @@ Libav::~Libav()
 {
 	//std::cerr << ">> Libav Destructor\n";
 	if (pFrame)
-		avcodec_free_frame(&pFrame);
+		av_frame_free(&pFrame);
+		//avcodec_free_frame(&pFrame);
 	avcodec_close(pCodecCtx);
 	if (pFormatCtx)
 #if LIBAVFORMAT_VERSION_MAJOR  < 53
@@ -686,6 +693,11 @@ int Libav::openAVCodec(void)
 
 void Libav::dumpFormat(void) 
 {	
+
+        if (!this->isOpen)
+                this->open();
+
+
 #if LIBAVFORMAT_VERSION_MAJOR  < 53
 //	dump_format(pFormatCtx, 0, this->getFilename().c_str(), 0);
 #else
@@ -719,10 +731,12 @@ int Libav::decodeNextAudio(void) throw (AVException*)
 	
 	if (sampleCounter == 0)
 	{
-		pFrame=avcodec_alloc_frame();
+		//pFrame=avcodec_alloc_frame();
+		pFrame=av_frame_alloc();
 		if (!pFrame)
 			throw new AVException ("Unable to allocate AUDIO buffer",MEMORY_ALLOCATION_ERROR);
-		avcodec_get_frame_defaults(pFrame);		
+		//avcodec_get_frame_defaults(pFrame);		
+		av_frame_unref(pFrame);
 	}
 	
 	// we don't know SPS until we decode the first frame. 
@@ -767,8 +781,10 @@ int Libav::decodeNextAudio(void) throw (AVException*)
 			avcodec_decode_audio3(pCodecCtx, aBuffer, &numBytes, &packet);
 #else				
 			gotFrame = 0;
-			iFrame=avcodec_alloc_frame();
-			avcodec_get_frame_defaults(iFrame);
+			//iFrame=avcodec_alloc_frame();
+			iFrame=av_frame_alloc();
+			//avcodec_get_frame_defaults(iFrame);
+			av_frame_unref(iFrame);
 			
 			avcodec_decode_audio4(pCodecCtx, iFrame, &gotFrame, &packet);
 			//			NSLog (@"avcodec_decode_audio4 len: %d gotFrame: %d",len,gotFrame);
@@ -858,7 +874,8 @@ int Libav::decodeNextAudio(void) throw (AVException*)
 			}
 		}
 		
-		avcodec_free_frame(&iFrame);
+		//avcodec_free_frame(&iFrame);
+		av_frame_free(&iFrame);
 		av_free(iFrame);
 		av_free_packet(&packet);
 		
@@ -938,6 +955,10 @@ int Libav::decodeNextFrame(void) throw (AVException*)
 
 void Libav::dumpMeta() {
 
+        if (!this->isOpen)
+                this->open();
+
+	
     for(std::map<std::string, std::string>::iterator iter=meta.begin(); iter!=meta.end(); ++iter)
         std::cout << (*iter).first << "=" << (*iter).second << std::endl;
     

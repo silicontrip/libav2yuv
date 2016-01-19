@@ -3,6 +3,7 @@
 
 int AVYUVAdaptor::AVPixelFormatToYUVChroma(PixelFormat pix_fmt) throw (AVException*)
 {
+
     switch (pix_fmt)
 	{
 		case PIX_FMT_YUV420P: return Y4M_CHROMA_420MPEG2; break;
@@ -14,8 +15,8 @@ int AVYUVAdaptor::AVPixelFormatToYUVChroma(PixelFormat pix_fmt) throw (AVExcepti
 		case PIX_FMT_YUVJ420P: return Y4M_CHROMA_420JPEG; break;
 		default:
             
-            
 			throw new AVException("unsupported y4m chroma: " + std::string(av_get_pix_fmt_name(pix_fmt)),UNSUPPORTED_CHROMA);
+			//throw new AVException("unsupported y4m chroma." ,UNSUPPORTED_CHROMA);
 			break;
 	}
 }

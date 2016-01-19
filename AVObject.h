@@ -131,6 +131,7 @@ public:
 	virtual void setSampleFormat(AVSampleFormat);
 
 	virtual void setSamplesPerSecond(int);
+	virtual void open(void);
 
 	// AVRational TCtoSecondsFrames(std::string) throw (AVException*);
 	struct timecodeStruct TCtoStruct(std::string) throw (AVException*); 

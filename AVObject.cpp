@@ -28,8 +28,11 @@ AVObject::AVObject(int samples, int ch, AVSampleFormat sf, int sps) throw (AVExc
 	
 	// AUDIO
 	
-	pFrame=avcodec_alloc_frame();
-	avcodec_get_frame_defaults(pFrame);
+	// TODO: wrap this in a VERSION #if
+	//pFrame=avcodec_alloc_frame();
+	pFrame=av_frame_alloc();
+	//avcodec_get_frame_defaults(pFrame);
+	av_frame_unref(pFrame);
 	
 	this->setSampleChannels(ch);
 	this->setSampleFormat(sf);
@@ -71,10 +74,13 @@ AVObject::AVObject(PixelFormat ch, int h, int w) throw (AVException*)
 	
 }
 
+void AVObject::open(void) {;} 
+
 void AVObject::allocFrame(void) throw (AVException*)
 {
 	
-	pFrame=avcodec_alloc_frame();
+	//pFrame=avcodec_alloc_frame();
+	pFrame=av_frame_alloc();
 	
 	if (pFrame)
 	{
@@ -733,6 +739,8 @@ void AVObject::setInOutTimecode(std::string tc) throw (AVException*)
 
 void AVObject::setFrameRate(AVRational rational) throw (AVException*)
 {	
+
+	//std::cerr << "AVObject::set frame rate\n";
 	
 	try {
 		
@@ -916,7 +924,8 @@ AVObject::~AVObject() {
 	// std::cerr << ">> AVObject destructor\n";
 	
 	if (pFrame)
-		avcodec_free_frame(&pFrame);
+		av_frame_free(&pFrame);
+		//avcodec_free_frame(&pFrame);
 	
 	if (pictureBuffer)
 		av_free(pictureBuffer);

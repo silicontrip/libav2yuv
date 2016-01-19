@@ -92,7 +92,8 @@ void processVideo (Libav2yuvArguments options, std::vector<AVObject *> edlList) 
     //	lav->dumpFormat();
 	
 	//	NSLog(@"%dx%d by %d:%d at %d:%d",[lav getWidth],[lav getHeight],[lav getSampleAspectNum],[lav getSampleAspectDen],[lav getFrameRateNum],[lav getFrameRateDen]);
-	
+
+	lav->open();	
 	Libyuv yuv(lav->getWidth(),
 			   lav->getHeight(),
 			   AVYUVAdaptor::AVRationalToY4mRatio(lav->getSampleAspect()),
@@ -208,6 +209,7 @@ int main(int argc, char *argv[])
 				//	{
 				if (options.getConvert())
 				{
+					lav->open();
 					ChromaFilter * chromaConverter = new ChromaFilter(lav,options.getChroma());
 					//	if (chromaConverter != nil) {
 					//[edlList addObject:chromaConverter];
@@ -224,6 +226,7 @@ int main(int argc, char *argv[])
 		if (edlList.size() > 0 )
 		{
             if (options.getIdentify()) {
+		std::cerr << "identifying video...\n";
                 identifyVideo(edlList);
             } else if (streamMode == AVMEDIA_TYPE_VIDEO) {
 				processVideo(options,edlList);
