@@ -893,7 +893,7 @@ int Libav::decodeNextAudio(void) throw (AVException*)
 int Libav::decodeNextFrame(void) throw (AVException*)
 {
 	
-	int bytes;
+	int error;
 	int frameFinished;
 	
 	if (!this->isOpen)
@@ -904,17 +904,17 @@ int Libav::decodeNextFrame(void) throw (AVException*)
 	
 	// loop until we are passed the frame in marker
 	do {
-		// loop until "frameFinished"
-		do {
 			// Find our specified stream
 			do {
-				bytes = av_read_frame(pFormatCtx, &packet);
+				error = av_read_frame(pFormatCtx, &packet);
 				// this could mean end of file
-				if (bytes < 0) {
+				if (error < 0) {
 				//	throw new AVException ("unable to read frame",IO_ERROR);
-					return bytes;
+					return error;
 				}
 			} while (packet.stream_index != avStream) ;
+		// loop until "frameFinished"
+		do {
 			
 			//	NSLog (@"Decode frame until framefinished");
 			
@@ -929,6 +929,9 @@ int Libav::decodeNextFrame(void) throw (AVException*)
 			len = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
 #endif
 			
+		//	std::cerr << "Libav::decodeNextFrame avcodec_decode len: " << len << " frameFinished: " << frameFinished << "\n";
+
+
 			if (len < 0) {
 				throw new AVException ("unable to decode frame",FILE_ERROR);
 			//	return len;
@@ -950,7 +953,7 @@ int Libav::decodeNextFrame(void) throw (AVException*)
 #else
 	av_free_packet(&packet);
 #endif
-	return bytes;
+	return error;
 }
 
 void Libav::dumpMeta() {
