@@ -87,8 +87,13 @@ int ChromaFilter::decodeNextFrame(void)
 		return ret;
 	pFrameSource = source->getAVFrame();
 	
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 	return sws_scale(imgConvertCtx,  (const uint8_t * const *)((AVPicture *)pFrameSource)->data,
 					 pFrameSource->linesize, 0, this->getHeight(),pFrame->data, pFrame->linesize);
+#else
+	return sws_scale(imgConvertCtx,  (const uint8_t * const *)pFrameSource->data,
+					 pFrameSource->linesize, 0, this->getHeight(),pFrame->data, pFrame->linesize);
+#endif
 	
 }
 
