@@ -2,6 +2,10 @@
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
+#else
+#include <libavutil/imgutils.h>
+#endif
 
 #include <libavutil/rational.h>
 #include <libavutil/pixfmt.h>
@@ -57,8 +61,12 @@ private:
 #if LIBAVFORMAT_VERSION_MAJOR  < 54
 	uint8_t *aBuffer;
 #endif
-	
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 	PixelFormat frameChromaSampling;
+#else
+	AVPixelFormat frameChromaSampling;
+#endif
+	
 	bool isInterlaced;
 	bool interlaceTopFieldFirst;
 	
@@ -73,7 +81,11 @@ public:
 	
 	AVObject();
 	AVObject(int, int, AVSampleFormat, int) throw (AVException*);
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 	AVObject(PixelFormat, int, int) throw (AVException*);
+#else
+	AVObject(AVPixelFormat, int, int) throw (AVException*);
+#endif
 	
 	virtual ~AVObject();
 
@@ -92,7 +104,11 @@ public:
 	virtual int getSampleAspectDen(void);
 	virtual bool hasChromaSampling(void);
 	virtual const std::string getChromaSamplingName(void);
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 	virtual PixelFormat getChromaSampling(void);
+#else
+	virtual AVPixelFormat getChromaSampling(void);
+#endif
 	//virtual bool hasInterlace(void);
 	virtual int getInterlace(void);
 	virtual bool getIsInterlaced(void);
@@ -154,7 +170,11 @@ public:
 	virtual void setSampleAspectNum(int) throw (AVException*);
 	virtual void setSampleAspectDen(int) throw (AVException*);
 
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 	virtual void setChromaSampling(PixelFormat);
+#else
+	virtual void setChromaSampling(AVPixelFormat);
+#endif
 	virtual void setChromaSamplingFromY4M(int) throw (AVException*);
 
 	virtual void setInterlaced(bool);

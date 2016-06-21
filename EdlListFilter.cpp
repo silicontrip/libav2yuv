@@ -143,10 +143,18 @@ void EdlListFilter::validateList(std::vector<struct edlEntry> edlEntries, int st
 					getSampleAspectNum() !=videoEntry->getSampleAspectNum() && getSampleAspectDen() != videoEntry->getSampleAspectDen())
 					throw new AVException("Inconsistent video Aspect Ratio (this is probably minor, I may ignore this in future)",EDL_PARSER_ERROR);
 			
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 			if (getChromaSampling() == PIX_FMT_NONE)
+#else
+			if (getChromaSampling() == AV_PIX_FMT_NONE)
+#endif
 				setChromaSampling(videoEntry->getChromaSampling());
 			else
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 				if (videoEntry->getChromaSampling() !=PIX_FMT_NONE && getChromaSampling() != videoEntry->getChromaSampling())
+#else
+				if (videoEntry->getChromaSampling() !=AV_PIX_FMT_NONE && getChromaSampling() != videoEntry->getChromaSampling())
+#endif
 					throw new AVException("Inconsistent video Chroma subsampling (sometimes this can be ignored)",EDL_PARSER_ERROR);
 			
 			delete videoEntry;

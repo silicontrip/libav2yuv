@@ -1,11 +1,16 @@
 #include "AVYUVAdaptor.h"
 
 
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 int AVYUVAdaptor::AVPixelFormatToYUVChroma(PixelFormat pix_fmt) throw (AVException*)
+#else
+int AVYUVAdaptor::AVPixelFormatToYUVChroma(AVPixelFormat pix_fmt) throw (AVException*)
+#endif
 {
 
     switch (pix_fmt)
 	{
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 		case PIX_FMT_YUV420P: return Y4M_CHROMA_420MPEG2; break;
 		case PIX_FMT_YUVJ422P:
 		case PIX_FMT_YUV422P: return Y4M_CHROMA_422; break;
@@ -13,6 +18,15 @@ int AVYUVAdaptor::AVPixelFormatToYUVChroma(PixelFormat pix_fmt) throw (AVExcepti
 		case PIX_FMT_YUV444P: return Y4M_CHROMA_444; break;
 		case PIX_FMT_YUV411P: return Y4M_CHROMA_411; break;
 		case PIX_FMT_YUVJ420P: return Y4M_CHROMA_420JPEG; break;
+#else
+		case AV_PIX_FMT_YUV420P: return Y4M_CHROMA_420MPEG2; break;
+		case AV_PIX_FMT_YUVJ422P:
+		case AV_PIX_FMT_YUV422P: return Y4M_CHROMA_422; break;
+		case AV_PIX_FMT_YUVJ444P:
+		case AV_PIX_FMT_YUV444P: return Y4M_CHROMA_444; break;
+		case AV_PIX_FMT_YUV411P: return Y4M_CHROMA_411; break;
+		case AV_PIX_FMT_YUVJ420P: return Y4M_CHROMA_420JPEG; break;
+#endif
 		default:
             
 			throw new AVException("unsupported y4m chroma: " + std::string(av_get_pix_fmt_name(pix_fmt)),UNSUPPORTED_CHROMA);

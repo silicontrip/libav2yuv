@@ -49,7 +49,11 @@ void ChromaFilter::setAVSource (AVObject *s)
 	*/
 }	
 
-void ChromaFilter::setAVChroma(PixelFormat convertMode) throw (AVException*)
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
+ void ChromaFilter::setAVChroma(PixelFormat convertMode) throw (AVException*)
+#else
+void ChromaFilter::setAVChroma(AVPixelFormat convertMode) throw (AVException*)
+#endif
 {
 
 	source->open();

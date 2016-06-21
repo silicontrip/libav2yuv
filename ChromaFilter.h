@@ -24,7 +24,11 @@ private:
 	void setAVSource (AVObject*);
 
 	// why aren't I overriding the AVObject methods setChromaSampling and setChromaSamplingFromY4M?
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 	void setAVChroma(PixelFormat) throw (AVException*);
+#else
+	void setAVChroma(AVPixelFormat) throw (AVException*);
+#endif
 	void setY4MChroma(int) throw (AVException*);
 
 	void open(void);

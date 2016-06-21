@@ -16,8 +16,11 @@ AVObject::AVObject()
 	sampleAspect.den=(0);
 	
 	frameCounter = 0;
-	
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 	this->setChromaSampling(PIX_FMT_NONE);
+#else
+	this->setChromaSampling(AV_PIX_FMT_NONE);
+#endif
 	
 	this->setColour(16,128,128);
 	
@@ -57,8 +60,11 @@ AVObject::AVObject(int samples, int ch, AVSampleFormat sf, int sps) throw (AVExc
 		   ch);
 	
 }
-
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 AVObject::AVObject(PixelFormat ch, int h, int w) throw (AVException*)
+#else
+AVObject::AVObject(AVPixelFormat ch, int h, int w) throw (AVException*)
+#endif
 {
 	this->setChromaSampling(ch);
 	this->setHeight(h);
@@ -86,20 +92,34 @@ void AVObject::allocFrame(void) throw (AVException*)
 	{
 		if (hasWidth() && hasHeight() && hasChromaSampling()) 
 		{
-			
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 			PixelFormat ch = this->getChromaSampling();
+#else
+			AVPixelFormat ch = this->getChromaSampling();
+#endif
+
 			int h = this->getHeight();
 			int w = this->getWidth();
 			
 			// std::cerr << "Alloc: " << w << "x" << h << " pix: " << this->getChromaSampling() << " (" << ch << ")\n";
 			
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 			int size = avpicture_get_size(ch, w, h);
+#else
+			int size = av_image_get_buffer_size(ch, w, h,1);
+#endif
+			
 			if (pictureBuffer)
 				av_free(pictureBuffer);
 			
 			pictureBuffer = (uint8_t *)av_malloc(size);
 			if (pictureBuffer) {
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 				avpicture_fill((AVPicture *)pFrame, pictureBuffer, ch, w, h);
+#else
+				av_image_fill_arrays(pFrame->data,pFrame->linesize,pictureBuffer,ch,w,h,1);
+#endif
+
 			} else {
 				av_free(pFrame);
 				pFrame = NULL;
@@ -171,15 +191,22 @@ int AVObject::getSampleAspectDen(void)
 }
 
 bool AVObject::hasChromaSampling(void) {
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 	return frameChromaSampling != PIX_FMT_NONE;
+#else
+	return frameChromaSampling != AV_PIX_FMT_NONE;
+#endif
 }
 
 const std::string AVObject::getChromaSamplingName(void)
 {
 	return std::string(av_get_pix_fmt_name(this->getChromaSampling()));
 }
-
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 PixelFormat AVObject::getChromaSampling(void)
+#else
+AVPixelFormat AVObject::getChromaSampling(void)
+#endif
 {
 	return frameChromaSampling;
 }
@@ -236,6 +263,7 @@ int AVObject::getChromaHeight(void)
 {
 	//dependent on chroma
 	switch (this->getChromaSampling()) {
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 		case PIX_FMT_YUV420P:
 		case PIX_FMT_YUVJ420P:
 		case PIX_FMT_YUVA420P:
@@ -250,6 +278,22 @@ int AVObject::getChromaHeight(void)
 		case PIX_FMT_YUV410P:
 			return frameHeight >>2;
 			break;
+#else
+		case AV_PIX_FMT_YUV420P:
+		case AV_PIX_FMT_YUVJ420P:
+		case AV_PIX_FMT_YUVA420P:
+		case AV_PIX_FMT_YUV440P:
+		case AV_PIX_FMT_YUVJ440P:
+		case AV_PIX_FMT_YUV420P16LE:
+		case AV_PIX_FMT_YUV420P16BE:
+		case AV_PIX_FMT_NV12:
+		case AV_PIX_FMT_NV21:
+			return frameHeight>>1;
+			break;
+		case AV_PIX_FMT_YUV410P:
+			return frameHeight >>2;
+			break;
+#endif
 		default:
 			return frameHeight;
 			break;
@@ -261,6 +305,7 @@ int AVObject::getChromaWidth(void)
 {
 	//dependent on chroma
 	switch (this->getChromaSampling()) {
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 		case PIX_FMT_YUV420P:
 		case PIX_FMT_YUYV422:
 		case PIX_FMT_YUV422P:
@@ -281,6 +326,28 @@ int AVObject::getChromaWidth(void)
 		case PIX_FMT_UYYVYY411:
 			return frameWidth >>2;
 			break;
+#else
+		case AV_PIX_FMT_YUV420P:
+		case AV_PIX_FMT_YUYV422:
+		case AV_PIX_FMT_YUV422P:
+		case AV_PIX_FMT_YUVJ420P:
+		case AV_PIX_FMT_YUVJ422P:
+		case AV_PIX_FMT_UYVY422:
+		case AV_PIX_FMT_YUVA420P:
+		case AV_PIX_FMT_YUV420P16LE:
+		case AV_PIX_FMT_YUV420P16BE:
+		case AV_PIX_FMT_YUV422P16LE:
+		case AV_PIX_FMT_YUV422P16BE:
+		case AV_PIX_FMT_NV12:
+		case AV_PIX_FMT_NV21:
+			return frameWidth>>1;
+			break;
+		case AV_PIX_FMT_YUV410P:
+		case AV_PIX_FMT_YUV411P:
+		case AV_PIX_FMT_UYYVYY411:
+			return frameWidth >>2;
+			break;
+#endif
 		default:
 			return frameHeight;
 			break;
@@ -792,7 +859,11 @@ void AVObject::setSampleAspectDen(int den) throw (AVException*)
 	sampleAspect.den = den;
 }
 
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 void AVObject::setChromaSampling(PixelFormat samp)
+#else
+void AVObject::setChromaSampling(AVPixelFormat samp)
+#endif
 {
 	frameChromaSampling = samp;
 }
@@ -803,11 +874,19 @@ void AVObject::setChromaSamplingFromY4M(int y4mChroma) throw (AVException*)
   //  std::cerr << "setChromaSampling: " << y4mChroma << "\n";
     
 	switch (y4mChroma) {
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 		case Y4M_CHROMA_420MPEG2: this->setChromaSampling(PIX_FMT_YUV420P); break;
 		case Y4M_CHROMA_422: this->setChromaSampling(PIX_FMT_YUV422P); break;
 		case Y4M_CHROMA_444 : this->setChromaSampling(PIX_FMT_YUV444P); break;
 		case Y4M_CHROMA_411: this->setChromaSampling(PIX_FMT_YUV411P); break;
 		case Y4M_CHROMA_420JPEG: this->setChromaSampling(PIX_FMT_YUVJ420P); break;
+#else
+		case Y4M_CHROMA_420MPEG2: this->setChromaSampling(AV_PIX_FMT_YUV420P); break;
+		case Y4M_CHROMA_422: this->setChromaSampling(AV_PIX_FMT_YUV422P); break;
+		case Y4M_CHROMA_444 : this->setChromaSampling(AV_PIX_FMT_YUV444P); break;
+		case Y4M_CHROMA_411: this->setChromaSampling(AV_PIX_FMT_YUV411P); break;
+		case Y4M_CHROMA_420JPEG: this->setChromaSampling(AV_PIX_FMT_YUVJ420P); break;
+#endif
 			
 		default:
             std::stringstream exception;

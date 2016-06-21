@@ -143,7 +143,9 @@ const char *Libav::av_get_codecid(enum AVCodecID codec)
 		case AV_CODEC_ID_ANM: return "ANM";
 		case AV_CODEC_ID_BINKVIDEO: return "BINKVIDEO";
 		case AV_CODEC_ID_IFF_ILBM: return "IFF_ILBM";
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 		case AV_CODEC_ID_IFF_BYTERUN1: return "IFF_BYTERUN1";
+#endif
 		case AV_CODEC_ID_KGV1: return "KGV1";
 		case AV_CODEC_ID_YOP: return "YOP";
 		case AV_CODEC_ID_VP8: return "VP8";
@@ -877,7 +879,11 @@ int Libav::decodeNextAudio(void) throw (AVException*)
 		//avcodec_free_frame(&iFrame);
 		av_frame_free(&iFrame);
 		av_free(iFrame);
+#if LIBAVFORMAT_VERSION_MAJOR  < 57	
 		av_free_packet(&packet);
+#else
+		av_packet_unref(&packet);
+#endif
 		
 		
 		sampleCounter += pFrame->nb_samples;
@@ -950,8 +956,10 @@ int Libav::decodeNextFrame(void) throw (AVException*)
 	
 #if LIBAVCODEC_VERSION_MAJOR < 52 
 	av_freep(&packet);
-#else
+#elsif LIBAVFORMAT_VERSION_MAJOR  < 57	
 	av_free_packet(&packet);
+#else
+	av_packet_unref(&packet);
 #endif
 	return error;
 }
